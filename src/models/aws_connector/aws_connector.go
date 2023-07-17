@@ -2,6 +2,7 @@ package awsconnector
 
 import (
 	"context"
+
 	log "github.com/sirupsen/logrus"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -9,11 +10,11 @@ import (
 )
 
 type AWSConnector struct {
-	cfg aws.Config
+	AwsConfig aws.Config
 }
 
 func New() AWSConnector {
-	ac := AWSConnector{cfg: ConnectToAWS()}
+	ac := AWSConnector{AwsConfig: ConnectToAWS()}
 
 	return ac
 }

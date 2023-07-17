@@ -9,23 +9,16 @@ import (
 	awsconnector "github.com/magneticstain/ip2cr/src/models/aws_connector"
 )
 
-func initLogging() {
-	// initialize all Logrus configs and prefs
-	log.SetFormatter(&log.JSONFormatter{})
-}
-
 func main() {
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
 	flag.Parse()
 
-	initLogging()
+	log.Info("starting IP-2-CloudResource...")
 
-	log.Info("Starting IP-2-CloudResource...")
+	log.Info("generating AWS connection...")
+	ac := awsconnector.New()
 
-	log.Info("Checking AWS connection...")
-	ac := awsconnector.AWSConnector{}
-
-	log.Info("Searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
+	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchctlr.StartSearch(&ac)
 }
