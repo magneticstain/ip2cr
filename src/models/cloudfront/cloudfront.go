@@ -8,6 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip2cr/src/models/aws_connector"
+	"github.com/magneticstain/ip2cr/src/utils"
 )
 
 type CloudfrontPlugin struct {
@@ -20,7 +21,7 @@ func NewCloudfrontPlugin(aws_conn *awsconnector.AWSConnector) CloudfrontPlugin {
 	return cfp
 }
 
-func (cfp CloudfrontPlugin) SearchResources() []types.DistributionSummary {
+func (cfp CloudfrontPlugin) GetResources() []types.DistributionSummary {
 	var distros []types.DistributionSummary
 
 	cf_client := cloudfront.NewFromConfig(cfp.AwsConn.AwsConfig)
@@ -36,4 +37,20 @@ func (cfp CloudfrontPlugin) SearchResources() []types.DistributionSummary {
 	}
 
 	return distros
+}
+
+func (cfp CloudfrontPlugin) SearchResources(tgt_ip string) []types.DistributionSummary {
+	var matched_distros []types.DistributionSummary
+
+	cf_resources := cfp.GetResources()
+
+	for _, cf_distro := range cf_resources {
+		cf_ip := utils.lookupFQDN(cf_distro.DomainName)
+
+		if cf_ip == tgt_ip {
+			matched_distros = append(matched_distros, cf_distro)
+		}
+	}
+
+	return matched_distros
 }
