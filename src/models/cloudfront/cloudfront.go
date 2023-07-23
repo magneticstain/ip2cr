@@ -2,6 +2,8 @@ package cloudfront
 
 import (
 	"context"
+	"net"
+	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
@@ -21,7 +23,14 @@ func NewCloudfrontPlugin(aws_conn *awsconnector.AWSConnector) CloudfrontPlugin {
 	return cfp
 }
 
-func (cfp CloudfrontPlugin) GetResources() []types.DistributionSummary {
+func (cfp CloudfrontPlugin) NormalizeCFDistroFQDN(fqdn *string) string {
+	// CloudFront currently returns a `.` appended to the fqdn
+	// we'll need to get rid of it so that it can be lookup up properly
+
+	return strings.TrimSuffix(*fqdn, ".")
+}
+
+func (cfp CloudfrontPlugin) GetResources() *[]types.DistributionSummary {
 	var distros []types.DistributionSummary
 
 	cf_client := cloudfront.NewFromConfig(cfp.AwsConn.AwsConfig)
@@ -36,21 +45,26 @@ func (cfp CloudfrontPlugin) GetResources() []types.DistributionSummary {
 		distros = append(distros, output.DistributionList.Items...)
 	}
 
-	return distros
+	return &distros
 }
 
-func (cfp CloudfrontPlugin) SearchResources(tgt_ip string) []types.DistributionSummary {
-	var matched_distros []types.DistributionSummary
+func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) *types.DistributionSummary {
+	var cfDistroFQDN string
+	var cfIpAddrs *[]net.IP
+	var matchedDistro types.DistributionSummary
 
 	cf_resources := cfp.GetResources()
 
-	for _, cf_distro := range cf_resources {
-		cf_ip := utils.lookupFQDN(cf_distro.DomainName)
+	for _, cfDistro := range *cf_resources {
+		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
+		cfIpAddrs = utils.LookupFQDN(&cfDistroFQDN)
 
-		if cf_ip == tgt_ip {
-			matched_distros = append(matched_distros, cf_distro)
+		for _, ipAddr := range *cfIpAddrs {
+			if ipAddr.String() == *tgt_ip {
+				matchedDistro = cfDistro
+			}
 		}
 	}
 
-	return matched_distros
+	return &matchedDistro
 }

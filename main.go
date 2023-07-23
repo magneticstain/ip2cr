@@ -20,5 +20,11 @@ func main() {
 	ac := awsconnector.New()
 
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
-	searchctlr.StartSearch(&ac)
+	matchedResource := searchctlr.StartSearch(&ac, ipAddr)
+
+	if matchedResource.RID != "" {
+		log.Info("resource found -> [ ", matchedResource.RID, " ]")
+	} else {
+		log.Info("resource not found :( better luck next time!")
+	}
 }

@@ -6,12 +6,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func lookupFQDN(fqdn string) string {
-	ipAddr, err := net.LookupCNAME(fqdn)
+func LookupFQDN(fqdn *string) *[]net.IP {
+	var ipAddrs []net.IP
+
+	ipAddrs, err := net.LookupIP(*fqdn)
 	if err != nil {
-		log.Error("failed to lookup IP of CloudFront distribution :: [ FQDN: ", fqdn, " // ERR: ", err, " ]")
-		return ""
+		log.Error("failed to lookup IP of CloudFront distribution :: [ FQDN: ", *fqdn, " // ERR: ", err, " ]")
 	}
 
-	return ipAddr
+	return &ipAddrs
 }
