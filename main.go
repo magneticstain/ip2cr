@@ -5,8 +5,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	searchctlr "github.com/magneticstain/ip2cr/src/controllers/search"
-	awsconnector "github.com/magneticstain/ip2cr/src/models/aws_connector"
+	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
+	"github.com/magneticstain/ip2cr/src/search"
 )
 
 func main() {
@@ -16,11 +16,12 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource...")
 
-	log.Info("generating AWS connection...")
+	log.Debug("generating AWS connection...")
 	ac := awsconnector.New()
 
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
-	matchedResource := searchctlr.StartSearch(&ac, ipAddr)
+	searchCtlr := search.NewSearch(&ac)
+	matchedResource := searchCtlr.StartSearch(ipAddr)
 
 	if matchedResource.RID != "" {
 		log.Info("resource found -> [ ", matchedResource.RID, " ]")
