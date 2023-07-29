@@ -9,16 +9,18 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/models/aws_connector"
+	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
+	generalPlugin "github.com/magneticstain/ip2cr/src/plugin"
 	"github.com/magneticstain/ip2cr/src/utils"
 )
 
 type CloudfrontPlugin struct {
-	AwsConn awsconnector.AWSConnector
+	GenPlugin *generalPlugin.Plugin
+	AwsConn   awsconnector.AWSConnector
 }
 
 func NewCloudfrontPlugin(aws_conn *awsconnector.AWSConnector) CloudfrontPlugin {
-	cfp := CloudfrontPlugin{AwsConn: *aws_conn}
+	cfp := CloudfrontPlugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
 
 	return cfp
 }
@@ -53,9 +55,9 @@ func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) *types.DistributionS
 	var cfIpAddrs *[]net.IP
 	var matchedDistro types.DistributionSummary
 
-	cf_resources := cfp.GetResources()
+	cfResources := cfp.GetResources()
 
-	for _, cfDistro := range *cf_resources {
+	for _, cfDistro := range *cfResources {
 		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
 		cfIpAddrs = utils.LookupFQDN(&cfDistroFQDN)
 
