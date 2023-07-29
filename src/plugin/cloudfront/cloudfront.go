@@ -55,9 +55,9 @@ func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) *types.DistributionS
 	var cfIpAddrs *[]net.IP
 	var matchedDistro types.DistributionSummary
 
-	cf_resources := cfp.GetResources()
+	cfResources := cfp.GetResources()
 
-	for _, cfDistro := range *cf_resources {
+	for _, cfDistro := range *cfResources {
 		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
 		cfIpAddrs = utils.LookupFQDN(&cfDistroFQDN)
 
