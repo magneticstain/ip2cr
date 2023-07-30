@@ -5,6 +5,16 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Testing - Run Unit Tests",
+            "type": "go",
+            "request": "launch",
+            "mode": "test",
+            "program": "${workspaceFolder}",
+            "args": ["./..."],
+            "logOutput": "dap",
+            "showLog": true,
+        },
+        {
             "name": "Launch - No Params",
             "type": "go",
             "request": "launch",

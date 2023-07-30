@@ -14,9 +14,9 @@ func main() {
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
 	flag.Parse()
 
-	log.Info("starting IP-2-CloudResource...")
+	log.Info("starting IP-2-CloudResource")
 
-	log.Debug("generating AWS connection...")
+	log.Debug("generating AWS connection")
 	ac := awsconnector.New()
 
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")

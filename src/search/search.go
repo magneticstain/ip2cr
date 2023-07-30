@@ -28,19 +28,19 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	log.Info("searching ", cloudSvc, " in AWS")
 
 	switch cloudSvc {
-	case "elb":
-		pluginConn := elb.NewELBPlugin(search.ac)
-		elb_resource := pluginConn.SearchResources(ipAddr)
-		if elb_resource.LoadBalancerArn != nil { // TODO: the compiler freaks out when I try to point to this (and below) - idk why
-			matchingResource.RID = *elb_resource.LoadBalancerArn
-			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
-		}
 	case "cloudfront":
 		pluginConn := cloudfront.NewCloudfrontPlugin(search.ac)
 		cf_resource := pluginConn.SearchResources(ipAddr)
 		if cf_resource.ARN != nil {
 			matchingResource.RID = *cf_resource.ARN
 			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
+		}
+	case "elb":
+		pluginConn := elb.NewELBPlugin(search.ac)
+		elb_resource := pluginConn.SearchResources(ipAddr)
+		if elb_resource.LoadBalancerArn != nil { // TODO: the compiler freaks out when I try to point to this (and below) - idk why
+			matchingResource.RID = *elb_resource.LoadBalancerArn
+			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
