@@ -16,9 +16,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 
 Tested on Go v1.20.5
 
-## Development
-
-### Testing
+## Testing/Demo
 
 You can use the Terraform plans provided here to generate sample resources in AWS for testing.
 
