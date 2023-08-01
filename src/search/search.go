@@ -30,14 +30,22 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	switch cloudSvc {
 	case "cloudfront":
 		pluginConn := cloudfront.NewCloudfrontPlugin(search.ac)
-		cf_resource := pluginConn.SearchResources(ipAddr)
+		cf_resource, err := pluginConn.SearchResources(ipAddr)
+		if err != nil {
+			return matchingResource, err
+		}
+
 		if cf_resource.ARN != nil {
 			matchingResource.RID = *cf_resource.ARN
 			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
 		}
 	case "elb":
 		pluginConn := elb.NewELBPlugin(search.ac)
-		elb_resource := pluginConn.SearchResources(ipAddr)
+		elb_resource, err := pluginConn.SearchResources(ipAddr)
+		if err != nil {
+			return matchingResource, err
+		}
+
 		if elb_resource.LoadBalancerArn != nil { // TODO: the compiler freaks out when I try to point to this (and below) - idk why
 			matchingResource.RID = *elb_resource.LoadBalancerArn
 			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
@@ -49,7 +57,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	return matchingResource, nil
 }
 
-func (search Search) StartSearch(ipAddr *string) generalResource.Resource {
+func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "elb"}
 
@@ -57,12 +65,14 @@ func (search Search) StartSearch(ipAddr *string) generalResource.Resource {
 
 	for _, svc := range cloudSvcs {
 		cloudResource, err := search.SearchAWS(svc, ipAddr, &matchingResource)
+
 		if err != nil {
-			log.Error(err)
+			return matchingResource, err
 		} else if cloudResource.RID != "" {
-			return matchingResource
+			// resource was found
+			break
 		}
 	}
 
-	return matchingResource
+	return matchingResource, nil
 }

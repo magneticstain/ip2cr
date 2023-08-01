@@ -7,7 +7,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
-	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
 	generalPlugin "github.com/magneticstain/ip2cr/src/plugin"
@@ -32,7 +31,7 @@ func (cfp CloudfrontPlugin) NormalizeCFDistroFQDN(fqdn *string) string {
 	return strings.TrimSuffix(*fqdn, ".")
 }
 
-func (cfp CloudfrontPlugin) GetResources() *[]types.DistributionSummary {
+func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error) {
 	var distros []types.DistributionSummary
 
 	cf_client := cloudfront.NewFromConfig(cfp.AwsConn.AwsConfig)
@@ -41,21 +40,24 @@ func (cfp CloudfrontPlugin) GetResources() *[]types.DistributionSummary {
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			log.Error("error when running CloudFront search :: [ ", err, " ]")
+			return &distros, err
 		}
 
 		distros = append(distros, output.DistributionList.Items...)
 	}
 
-	return &distros
+	return &distros, nil
 }
 
-func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) *types.DistributionSummary {
+func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) (*types.DistributionSummary, error) {
 	var cfDistroFQDN string
 	var cfIpAddrs *[]net.IP
 	var matchedDistro types.DistributionSummary
 
-	cfResources := cfp.GetResources()
+	cfResources, err := cfp.GetResources()
+	if err != nil {
+		return &matchedDistro, err
+	}
 
 	for _, cfDistro := range *cfResources {
 		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
@@ -68,5 +70,5 @@ func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) *types.DistributionS
 		}
 	}
 
-	return &matchedDistro
+	return &matchedDistro, nil
 }

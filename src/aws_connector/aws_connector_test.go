@@ -8,7 +8,7 @@ import (
 )
 
 func TestConnectToAWS(t *testing.T) {
-	ac := awsconnector.New()
+	ac, _ := awsconnector.New()
 
 	acType := reflect.TypeOf(ac.AwsConfig)
 

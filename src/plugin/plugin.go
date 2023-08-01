@@ -1,3 +1,3 @@
 package plugin
 
-type Plugin struct {}
+type Plugin struct{}
