@@ -21,15 +21,24 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 
 ### Roadmap
 
+- [ ] EC2 support
+- [ ] Classic ELB support
 - [ ] JSON output
 - [ ] AWS Organizations support
 - [ ] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)
 
 ## Prerequisites
 
-## Go
+### OS
 
-Tested on Go v1.20.5
+- Linux
+- MacOS
+
+Windows should probably work, but I'm not able to test it.
+
+### Go
+
+IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stable](https://go.dev/dl/#stable).
 
 ## Testing/Demo
 
