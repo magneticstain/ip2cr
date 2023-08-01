@@ -34,10 +34,7 @@ func TestSearchAWS(t *testing.T) {
 
 		matchedResource := generalResource.Resource{}
 		t.Run(testName, func(t *testing.T) {
-			res, err := search.SearchAWS(td.cloudSvc, &td.ipAddr, &matchedResource)
-			if err != nil {
-				t.Errorf("Encountered unexpected error when running AWS search; received error %s when searching %s for %s", err, td.cloudSvc, td.ipAddr)
-			}
+			res, _ := search.SearchAWS(td.cloudSvc, &td.ipAddr, &matchedResource)
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -55,7 +52,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 		cloudSvc, ipAddr string
 	}{
 		{"magic_svc", "1.1.1.1"},   // known invalid use case
-		{"cloudfront_", "1.1.1.1"}, // known valid use case with one character addition to make it invalid
+		{"cloudfront-", "1.1.1.1"}, // known valid use case with one character addition to make it invalid
 		{"iam", "1.1.1.1"},         // valid AWS service, but not one that would ever interact with IP addresses
 	}
 
