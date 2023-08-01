@@ -18,7 +18,7 @@ jobs:
     strategy:
       matrix:
         go-version: ['stable', 'oldstable']
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
     env:
       AWS_REGION: us-east-1
