@@ -6,7 +6,6 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
 	generalPlugin "github.com/magneticstain/ip2cr/src/plugin"
@@ -24,7 +23,7 @@ func NewELBPlugin(aws_conn *awsconnector.AWSConnector) ELBPlugin {
 	return elbp
 }
 
-func (elbp ELBPlugin) GetResources() *[]types.LoadBalancer {
+func (elbp ELBPlugin) GetResources() (*[]types.LoadBalancer, error) {
 	var elbs []types.LoadBalancer
 
 	elb_client := elasticloadbalancingv2.NewFromConfig(elbp.AwsConn.AwsConfig)
@@ -33,20 +32,23 @@ func (elbp ELBPlugin) GetResources() *[]types.LoadBalancer {
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			log.Error("error when running ELB search :: [ ", err, " ]")
+			return &elbs, err
 		}
 
 		elbs = append(elbs, output.LoadBalancers...)
 	}
 
-	return &elbs
+	return &elbs, nil
 }
 
-func (elbp ELBPlugin) SearchResources(tgt_ip *string) *types.LoadBalancer {
+func (elbp ELBPlugin) SearchResources(tgt_ip *string) (*types.LoadBalancer, error) {
 	var elbIpAddrs *[]net.IP
 	var matchedELB types.LoadBalancer
 
-	elbResources := elbp.GetResources()
+	elbResources, err := elbp.GetResources()
+	if err != nil {
+		return &matchedELB, err
+	}
 
 	for _, elb := range *elbResources {
 		elbIpAddrs = utils.LookupFQDN(elb.DNSName)
@@ -58,5 +60,5 @@ func (elbp ELBPlugin) SearchResources(tgt_ip *string) *types.LoadBalancer {
 		}
 	}
 
-	return &matchedELB
+	return &matchedELB, nil
 }

@@ -17,11 +17,17 @@ func main() {
 	log.Info("starting IP-2-CloudResource")
 
 	log.Debug("generating AWS connection")
-	ac := awsconnector.New()
+	ac, err := awsconnector.New()
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac)
-	matchedResource := searchCtlr.StartSearch(ipAddr)
+	matchedResource, err := searchCtlr.StartSearch(ipAddr)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	if matchedResource.RID != "" {
 		log.Info("resource found -> [ ", matchedResource.RID, " ]")

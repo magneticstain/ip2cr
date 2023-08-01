@@ -9,7 +9,7 @@ import (
 )
 
 func cfpFactory() cloudfront.CloudfrontPlugin {
-	ac := awsconnector.New()
+	ac, _ := awsconnector.New()
 
 	cfp := cloudfront.NewCloudfrontPlugin(&ac)
 
@@ -43,7 +43,7 @@ func TestNormalizeCFDistroFQDN(t *testing.T) {
 func TestGetResources(t *testing.T) {
 	cfp := cfpFactory()
 
-	cfResources := cfp.GetResources()
+	cfResources, _ := cfp.GetResources()
 
 	expectedType := "DistributionSummary"
 	for _, cfDistro := range *cfResources {
@@ -71,7 +71,7 @@ func TestSearchResources(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedDistro := cfp.SearchResources(&td.ipAddr)
+			matchedDistro, _ := cfp.SearchResources(&td.ipAddr)
 			matchedDistroType := reflect.TypeOf(*matchedDistro)
 
 			if matchedDistroType.Name() != td.expectedType {

@@ -9,7 +9,7 @@ import (
 )
 
 func elbpFactory() elb.ELBPlugin {
-	ac := awsconnector.New()
+	ac, _ := awsconnector.New()
 
 	elbp := elb.NewELBPlugin(&ac)
 
@@ -19,7 +19,7 @@ func elbpFactory() elb.ELBPlugin {
 func TestGetResources(t *testing.T) {
 	elbp := elbpFactory()
 
-	elbResources := elbp.GetResources()
+	elbResources, _ := elbp.GetResources()
 
 	expectedType := "LoadBalancer"
 	for _, elb := range *elbResources {
@@ -47,7 +47,7 @@ func TestSearchResources(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedELB := elbp.SearchResources(&td.ipAddr)
+			matchedELB, _ := elbp.SearchResources(&td.ipAddr)
 			matchedELBType := reflect.TypeOf(*matchedELB)
 
 			if matchedELBType.Name() != td.expectedType {

@@ -11,7 +11,7 @@ import (
 )
 
 func searchFactory() search.Search {
-	ac := awsconnector.New()
+	ac, _ := awsconnector.New()
 
 	search := search.NewSearch(&ac)
 
@@ -88,7 +88,7 @@ func TestStartSearch(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res := search.StartSearch(&td.ipAddr)
+			res, _ := search.StartSearch(&td.ipAddr)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
