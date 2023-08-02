@@ -50,6 +50,24 @@
             "args": ["--ipaddr=18.161.22.61"]
         },
         {
+            "name": "Launch - IP Param - Test IP - EC2",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "env": {"AWS_REGION": "us-east-1"},
+            "args": ["--ipaddr=3.85.50.80"]
+        },
+        {
+            "name": "Launch - IP Param - Test IP - EC2 - IPv6",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "env": {"AWS_REGION": "us-east-1"},
+            "args": ["--ipaddr=2600:1f18:243e:1300:59e:5c3e:fbd9:344e"]
+        },
+        {
             "name": "Launch - IP Param - Test IP - NLB",
             "type": "go",
             "request": "launch",

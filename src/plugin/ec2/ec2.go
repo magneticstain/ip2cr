@@ -53,7 +53,7 @@ func (ec2p EC2Plugin) SearchResources(tgt_ip *string) (*types.Instance, error) {
 			publicIPv4Addr := instance.PublicIpAddress
 			IPv6Addr := instance.Ipv6Address
 
-			if tgt_ip == publicIPv4Addr || tgt_ip == IPv6Addr {
+			if *publicIPv4Addr == *tgt_ip || *IPv6Addr == *tgt_ip {
 				matchedInstance = instance
 				break
 			}
