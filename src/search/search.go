@@ -48,7 +48,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 		}
 
 		if ec2Resource.InstanceId != nil {
-			matchingResource.RID = *ec2Resource.InstanceId  // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
+			matchingResource.RID = *ec2Resource.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
 			log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
 		}
 	case "elb":
