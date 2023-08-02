@@ -8,6 +8,7 @@ import (
 
 	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
 	"github.com/magneticstain/ip2cr/src/plugin/cloudfront"
+	"github.com/magneticstain/ip2cr/src/plugin/ec2"
 	"github.com/magneticstain/ip2cr/src/plugin/elb"
 	generalResource "github.com/magneticstain/ip2cr/src/resource"
 )
@@ -39,6 +40,17 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			matchingResource.RID = *cf_resource.ARN
 			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
 		}
+	case "ec2":
+		pluginConn := ec2.NewEC2Plugin(search.ac)
+		ec2Resource, err := pluginConn.SearchResources(ipAddr)
+		if err != nil {
+			return matchingResource, err
+		}
+
+		if ec2Resource.InstanceId != nil {
+			matchingResource.RID = *ec2Resource.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
+			log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
+		}
 	case "elb":
 		pluginConn := elb.NewELBPlugin(search.ac)
 		elb_resource, err := pluginConn.SearchResources(ipAddr)
@@ -46,7 +58,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			return matchingResource, err
 		}
 
-		if elb_resource.LoadBalancerArn != nil { // TODO: the compiler freaks out when I try to point to this (and below) - idk why
+		if elb_resource.LoadBalancerArn != nil {
 			matchingResource.RID = *elb_resource.LoadBalancerArn
 			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
@@ -59,7 +71,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 
 func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
-	cloudSvcs := []string{"cloudfront", "elb"}
+	cloudSvcs := []string{"cloudfront", "ec2", "elb"}
 
 	log.Debug("beginning resource gathering")
 

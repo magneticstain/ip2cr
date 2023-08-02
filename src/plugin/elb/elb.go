@@ -56,6 +56,7 @@ func (elbp ELBPlugin) SearchResources(tgt_ip *string) (*types.LoadBalancer, erro
 		for _, ipAddr := range *elbIpAddrs {
 			if ipAddr.String() == *tgt_ip {
 				matchedELB = elb
+				break
 			}
 		}
 	}
