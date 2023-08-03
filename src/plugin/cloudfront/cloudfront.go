@@ -61,7 +61,10 @@ func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) (*types.Distribution
 
 	for _, cfDistro := range *cfResources {
 		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
-		cfIpAddrs = utils.LookupFQDN(&cfDistroFQDN)
+		cfIpAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
+		if err != nil {
+			return &matchedDistro, err
+		}
 
 		for _, ipAddr := range *cfIpAddrs {
 			if ipAddr.String() == *tgt_ip {
