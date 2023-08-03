@@ -21,8 +21,8 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 
 ### Roadmap
 
-- [X] EC2 support (Issue #11)
-- [X] Classic ELB support (Issue #29)
+- [X] EC2 support ([Issue #11](https://github.com/magneticstain/ip2cr/issues/11)
+- [X] Classic ELB support ([Issue #29](https://github.com/magneticstain/ip2cr/issues/29)
 - [ ] JSON output
 - [ ] AWS Organizations support
 - [ ] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)
