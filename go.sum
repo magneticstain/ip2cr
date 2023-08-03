@@ -25,6 +25,8 @@ github.com/aws/aws-sdk-go-v2/service/cloudfront v1.26.9 h1:4O/O22aiQnseomkhDKmLm
 github.com/aws/aws-sdk-go-v2/service/cloudfront v1.26.9/go.mod h1:NmocATyq+MjavfhK3WQwXpsVosmwkaV5fq4dSco8xtA=
 github.com/aws/aws-sdk-go-v2/service/ec2 v1.109.1 h1:2/qkFNl8/LJywuZUjLMMrYhzr+LIHYbxGzj5bh6KCP8=
 github.com/aws/aws-sdk-go-v2/service/ec2 v1.109.1/go.mod h1:vhOCzxDqGgueWq/QnBGZY/3WpvxZnrnA3wQvhp4j+MU=
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.16.1 h1:oRKDcffERgDwV1u8sfq8aZJ1/o0zJDG3/zkg1z0GdOw=
+github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.16.1/go.mod h1:8SaasWW+jAh6w0RhdzOZTnusbgeQmedqCR8F2LGTQyY=
 github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.15 h1:HZmOU11awo+qkEJfB9TyyV0WrQwAtjINY6Mn42SfBFU=
 github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.15/go.mod h1:Q2c5nbALzv09gJv+LkTE1hT6lXo4Db5jCoXU3JvC7es=
 github.com/aws/aws-sdk-go-v2/service/internal/presigned-url v1.9.28/go.mod h1:jj7znCIg05jXlaGBlFMGP8+7UN3VtCkRBG2spnmRQkU=

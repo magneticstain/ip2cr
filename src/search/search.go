@@ -62,6 +62,17 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			matchingResource.RID = *elb_resource.LoadBalancerArn
 			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
+	case "elbv1": // classic ELBs
+		pluginConn := elb.NewELBv1Plugin(search.ac)
+		elb_resource, err := pluginConn.SearchResources(ipAddr)
+		if err != nil {
+			return matchingResource, err
+		}
+
+		if elb_resource.LoadBalancerName != nil { // no ARN available here either
+			matchingResource.RID = *elb_resource.LoadBalancerName
+			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
+		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
 	}
@@ -71,7 +82,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 
 func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
-	cloudSvcs := []string{"cloudfront", "ec2", "elb"}
+	cloudSvcs := []string{"cloudfront", "ec2", "elb", "elbv1"}
 
 	log.Debug("beginning resource gathering")
 
