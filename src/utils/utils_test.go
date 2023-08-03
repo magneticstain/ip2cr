@@ -21,7 +21,7 @@ func TestLookupFQDN(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.fqdn, td.ipAddr)
 		t.Run(testName, func(t *testing.T) {
-			ipAddrs := utils.LookupFQDN(&td.fqdn)
+			ipAddrs, _ := utils.LookupFQDN(&td.fqdn)
 
 			ipFound := false
 			for _, ipAddr := range *ipAddrs {

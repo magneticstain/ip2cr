@@ -51,7 +51,10 @@ func (elbv1p ELBv1Plugin) SearchResources(tgt_ip *string) (*types.LoadBalancerDe
 	}
 
 	for _, elb := range *elbResources {
-		elbIpAddrs = utils.LookupFQDN(elb.DNSName)
+		elbIpAddrs, err = utils.LookupFQDN(elb.DNSName)
+		if err != nil {
+			return &matchedELB, err
+		}
 
 		for _, ipAddr := range *elbIpAddrs {
 			if ipAddr.String() == *tgt_ip {
