@@ -7,7 +7,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/config v1.18.27
 	github.com/aws/aws-sdk-go-v2/service/ec2 v1.110.0
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.16.1
-	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.19.15
+	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.20.1
 	github.com/sirupsen/logrus v1.9.3
 )
 
