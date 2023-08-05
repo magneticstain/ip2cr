@@ -2,9 +2,7 @@
 
 ## Summary
 
-IP-2-CloudResource: a tool used for correlating a cloud IP address with its associated resources.
-
-IP2CR focuses on providing as much context to the user as possible, as fast as possible.
+IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
 
 ### Disclaimer
 
@@ -15,7 +13,8 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - Built for speed and efficiency while only generating a small resource footprint
 - Supports finding IPs for:
   - CloudFront
-  - ALBs & NLBs
+  - ALBs & NLBs (and probably GLBs, but hasn't been tested yet)
+  - Classic ELBs
   - EC2 instances with public IP addresses
 - IPv6 support
 
@@ -34,7 +33,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - Linux
 - MacOS
 
-Windows should probably work, but I'm not able to test it.
+Windows should probably work, but I'm not able to test it at this time.
 
 ### Go
 
