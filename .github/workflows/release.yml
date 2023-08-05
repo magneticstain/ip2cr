@@ -1,10 +1,10 @@
-name: goreleaser
+name: Release
 
 on:
   push:
     # run only against version tags
     tags:
-      - '^v*'
+      - '*'
 
 permissions:
   contents: write
@@ -13,9 +13,6 @@ permissions:
 
 jobs:
   goreleaser:
-    strategy:
-      matrix:
-        go-version: ['stable', 'oldstable']
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -23,9 +20,10 @@ jobs:
           fetch-depth: 0
 
       - run: git fetch --force --tags
+      
       - uses: actions/setup-go@v4
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: ubuntu-latest
           
       - uses: goreleaser/goreleaser-action@v4
         with:
