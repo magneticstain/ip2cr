@@ -6,6 +6,9 @@ IP-2-CloudResource: a tool used for correlating a cloud IP address with its asso
 
 IP2CR focuses on providing as much context to the user as possible, as fast as possible.
 
+[![Build and Test](https://github.com/magneticstain/ip2cr/actions/workflows/build.yml/badge.svg)](https://github.com/magneticstain/ip2cr/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/magneticstain/ip2cr/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip2cr)
+
 ### Disclaimer
 
 I created this project mainly to learn Go. It should be fine for a cloud admin running this on their workstation, trying to identify a resource in the AWS account. But I wouldn't necessarily integrate it with my production monitoring system.
