@@ -1,11 +1,11 @@
 # ip2cr
 
+[![Build and Test](https://github.com/magneticstain/ip2cr/actions/workflows/build.yml/badge.svg)](https://github.com/magneticstain/ip2cr/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/magneticstain/ip2cr/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip2cr)
+
 ## Summary
 
 IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
-
-[![Build and Test](https://github.com/magneticstain/ip2cr/actions/workflows/build.yml/badge.svg)](https://github.com/magneticstain/ip2cr/actions/workflows/build.yml)
-[![codecov](https://codecov.io/gh/magneticstain/ip2cr/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip2cr)
 
 ### Disclaimer
 
