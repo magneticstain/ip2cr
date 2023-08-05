@@ -35,3 +35,7 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+release:
+  github:
+    owner: magneticstain
+    name: ip2cr
