@@ -38,7 +38,16 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1"},
-            "args": ["--ipaddr=34.203.7.169"]
+            "args": ["--ipaddr=3.232.11.205"]
+        },
+        {
+            "name": "Launch - IP Param - Test IP - ALB - Silent Output",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "env": {"AWS_REGION": "us-east-1"},
+            "args": ["--silent", "--ipaddr=3.232.11.205"]
         },
         {
             "name": "Launch - IP Param - Test IP - Cloudfront",
@@ -47,7 +56,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1"},
-            "args": ["--ipaddr=18.239.166.142"]
+            "args": ["--ipaddr=${env:IP2CR_CF_IP}"]
         },
         {
             "name": "Launch - IP Param - Test IP - EC2",
@@ -56,7 +65,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1"},
-            "args": ["--ipaddr=54.87.91.119"]
+            "args": ["--ipaddr=${env:IP2CR_EC2_IP}"]
         },
         {
             "name": "Launch - IP Param - Test IP - EC2 - IPv6",
@@ -65,7 +74,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1"},
-            "args": ["--ipaddr=2600:1f18:243e:1300:e18d:63cb:195f:49ac"]
+            "args": ["--ipaddr=${env:IP2CR_EC2_IPV6}"]
         },
         {
             "name": "Launch - IP Param - Test IP - NLB",
@@ -74,7 +83,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1"},
-            "args": ["--ipaddr=44.217.36.93"]
+            "args": ["--ipaddr=${env:IP2CR_NLB_IP}"]
         },
         {
             "name": "Launch - IP Param - Test IP - Classic ELB",
@@ -83,7 +92,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1"},
-            "args": ["--ipaddr=52.6.54.217"]
+            "args": ["--ipaddr=${env:IP2CR_ELB_IP}"]
         },
         {
             "name": "Launch - IP Param - Test Invalid IP",
