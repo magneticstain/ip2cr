@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -15,7 +16,12 @@ func main() {
 	silent := flag.Bool("silent", false, "If enabled, only output the results")
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
+	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
 	flag.Parse()
+
+	if *jsonOutput {
+		*silent = true
+	}
 
 	if *silent {
 		log.SetOutput(io.Discard)
@@ -37,10 +43,23 @@ func main() {
 	}
 
 	if matchedResource.RID != "" {
-		log.Info("resource found -> [ ", matchedResource.RID, " ]")
+		if !*silent {
+			log.Info("resource found -> [ ", matchedResource.RID, " ]")
+		} else {
+			if *jsonOutput {
+				output, err := json.Marshal(matchedResource)
+				if err != nil {
+					errMap := map[string]error{"error": err}
+					errMapJSON, _ := json.Marshal(errMap)
 
-		if *silent {
-			fmt.Println(matchedResource.RID)
+					fmt.Printf("%s\n", errMapJSON)
+				} else {
+					fmt.Printf("%s\n", output)
+				}
+			} else {
+				// plaintext
+				fmt.Println(matchedResource.RID)
+			}
 		}
 	} else {
 		log.Info("resource not found :( better luck next time!")
