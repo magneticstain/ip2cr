@@ -21,8 +21,11 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
   - Classic ELBs
   - EC2 instances with public IP addresses
 - IPv6 support
+- JSON output to easily integrate with scripts
 
 ### Roadmap
+
+#### 2023
 
 - [X] EC2 support ( [Issue #11](https://github.com/magneticstain/ip2cr/issues/11) )
 - [X] Classic ELB support ( [Issue #29](https://github.com/magneticstain/ip2cr/issues/29) )
