@@ -88,11 +88,16 @@ func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, erro
 	fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr)
 	if err != nil {
 		return matchingResource, err
-	}
-	if *fuzzedSvc == "" {
-		log.Info("could not determine service via IP fuzzing; are you sure this is an AWS IP?")
+	} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
+		log.Info("could not determine service via IP fuzzing")
 	} else {
 		log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
+		cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
+
+		// classic ELBs act within EC2 infrastructure, so we will need to add the `elb` service as well if that's the case
+		if *fuzzedSvc == "EC2" {
+			cloudSvcs = append(cloudSvcs, "elb")
+		}
 	}
 
 	log.Debug("beginning resource gathering")
