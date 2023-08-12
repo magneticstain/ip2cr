@@ -39,7 +39,7 @@ func main() {
 	searchCtlr := search.NewSearch(&ac)
 	matchedResource, err := searchCtlr.StartSearch(ipAddr)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
 	if matchedResource.RID != "" {

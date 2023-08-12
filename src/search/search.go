@@ -11,6 +11,7 @@ import (
 	"github.com/magneticstain/ip2cr/src/plugin/ec2"
 	"github.com/magneticstain/ip2cr/src/plugin/elb"
 	generalResource "github.com/magneticstain/ip2cr/src/resource"
+	ipfuzzing "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing"
 )
 
 type Search struct {
@@ -84,8 +85,17 @@ func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, erro
 	var matchingResource generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elb", "elbv1"}
 
-	log.Debug("beginning resource gathering")
+	fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr)
+	if err != nil {
+		return matchingResource, err
+	}
+	if *fuzzedSvc == "" {
+		log.Info("could not determine service via IP fuzzing; are you sure this is an AWS IP?")
+	} else {
+		log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
+	}
 
+	log.Debug("beginning resource gathering")
 	for _, svc := range cloudSvcs {
 		cloudResource, err := search.SearchAWS(svc, ipAddr, &matchingResource)
 
