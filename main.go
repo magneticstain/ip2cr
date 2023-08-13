@@ -16,16 +16,18 @@ func main() {
 	silent := flag.Bool("silent", false, "If enabled, only output the results")
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
+	ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts)")
+	advIpFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 	flag.Parse()
 
-	if *jsonOutput {
-		*silent = true
-	}
-
 	if *silent {
 		log.SetOutput(io.Discard)
+	}
+
+	if *jsonOutput {
+		*silent = true
 	}
 
 	if *verboseOutput {
