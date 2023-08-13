@@ -51,7 +51,7 @@ func StartAdvancedFuzzing(ipAddr *string) (*string, error) {
 			// service was found!
 			cloudSvc = svcName
 
-			log.Debug("advanced fuzzing identified the service as [ ", svcName, " ]")
+			log.Debug("advanced fuzzing identified the service as [ ", *svcName, " ]")
 
 			// we assume that the first match is the true match; we can adjust this if real-world results don't match this presumption
 			break
