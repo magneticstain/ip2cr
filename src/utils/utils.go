@@ -5,6 +5,7 @@ import (
 )
 
 func ReverseDNSLookup(ipAddr *string) ([]string, error) {
+	// NOTE: IPv6 addresses are not supported (see https://datatracker.ietf.org/doc/html/rfc8501)
 	return net.LookupAddr(*ipAddr)
 }
 
