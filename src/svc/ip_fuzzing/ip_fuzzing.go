@@ -2,20 +2,73 @@ package ipfuzzing
 
 import (
 	"net"
+	"regexp"
 
 	log "github.com/sirupsen/logrus"
 
+	awsfqdnregexmap "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing/models/aws_fqdn_regex_map"
 	awsipprefix "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing/models/aws_ip_prefix"
+	"github.com/magneticstain/ip2cr/src/utils"
 )
 
-func FuzzIP(ipAddr *string) (*string, error) {
+func MapFQDNToSvc(fqdn *string) (*string, error) {
+	var re *regexp.Regexp
+	var svcName *string
+
+	regexMap := awsfqdnregexmap.GetRegexMap()
+	for svc, regex := range regexMap {
+		// check if fqdn matches the associated regex; if so, we have our service
+		re = regexp.MustCompile(regex)
+
+		if re.MatchString(*fqdn) {
+			svcName = &svc
+			break
+		}
+	}
+
+	return svcName, nil
+}
+
+func StartAdvancedFuzzing(ipAddr *string) (*string, error) {
+	// perform a reverse DNS lookup on the IP and then use heuristics to try to determine the associated service
+	var cloudSvc *string
+
+	reverseLookupResult, err := utils.ReverseDNSLookup(ipAddr)
+	if err != nil {
+		return cloudSvc, err
+	} else {
+		log.Debug("reverse DNS lookup for IP [ ", *ipAddr, " ] resolves to [ ", reverseLookupResult, " ]")
+	}
+
+	var svcName *string
+	for _, fqdn := range reverseLookupResult {
+		svcName, err = MapFQDNToSvc(&fqdn)
+		if err != nil {
+			return cloudSvc, nil
+		}
+
+		if svcName != nil {
+			// service was found!
+			cloudSvc = svcName
+
+			log.Debug("advanced fuzzing identified the service as [ ", svcName, " ]")
+
+			// we assume that the first match is the true match; we can adjust this if real-world results don't match this presumption
+			break
+		}
+	}
+
+	return cloudSvc, nil
+}
+
+func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 	var cloudSvc *string
 
 	awsIpSet, err := FetchIpRanges()
 	if err != nil {
 		return cloudSvc, err
 	}
-	log.Debug("AWS public IP dataset => ", awsIpSet)
+	log.Debug("AWS public IP dataset loaded")
 
 	// AWS divides their prefixes by IP version, so we should determine that first to reduce the number of checks needed
 	// Here, we're checking the IP version and then converting the prefixes for the given version to generic prefixes
@@ -28,9 +81,8 @@ func FuzzIP(ipAddr *string) (*string, error) {
 		// IPv6
 		ipPrefixSet, err = ConvertIpPrefixesToGeneric(nil, &awsIpSet.IPv6Prefixes)
 	}
-
 	if err != nil {
-		log.Error("not able to convert versioned IP prefix groups to generic")
+		log.Error("not able to convert versioned IP prefix groups to generic; [ ERR: ", err, " ]")
 	} else {
 		log.Debug("IP prefix set reduced by version successfully")
 	}
@@ -38,6 +90,17 @@ func FuzzIP(ipAddr *string) (*string, error) {
 	fuzzedSvc, err := ResolveIpAddrToCloudSvc(ipAddr, ipPrefixSet)
 	if err != nil {
 		return cloudSvc, err
+	}
+	if (*fuzzedSvc == "" || *fuzzedSvc == "AMAZON") && attemptAdvancedFuzzing {
+		log.Debug("starting advanced IP fuzzing")
+		advFuzzResult, err := StartAdvancedFuzzing(ipAddr)
+		if err != nil {
+			return cloudSvc, err
+		}
+
+		if advFuzzResult != nil {
+			return advFuzzResult, nil
+		}
 	}
 
 	if *fuzzedSvc == "AMAZON" {
