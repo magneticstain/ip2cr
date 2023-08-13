@@ -81,22 +81,24 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	return matchingResource, nil
 }
 
-func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, error) {
+func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzing bool) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 
-	fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr, true)
-	if err != nil {
-		return matchingResource, err
-	} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
-		log.Info("could not determine service via IP fuzzing")
-	} else {
-		log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
-		cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
+	if doIpFuzzing {
+		fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr, doAdvIpFuzzing)
+		if err != nil {
+			return matchingResource, err
+		} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
+			log.Info("could not determine service via IP fuzzing")
+		} else {
+			log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
+			cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
 
-		// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
-		if *fuzzedSvc == "EC2" {
-			cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
+			if *fuzzedSvc == "EC2" {
+				cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+			}
 		}
 	}
 

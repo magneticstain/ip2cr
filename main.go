@@ -22,12 +22,12 @@ func main() {
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 	flag.Parse()
 
-	if *silent {
-		log.SetOutput(io.Discard)
-	}
-
 	if *jsonOutput {
 		*silent = true
+	}
+
+	if *silent {
+		log.SetOutput(io.Discard)
 	}
 
 	if *verboseOutput {
@@ -44,7 +44,7 @@ func main() {
 
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac)
-	matchedResource, err := searchCtlr.StartSearch(ipAddr)
+	matchedResource, err := searchCtlr.StartSearch(ipAddr, *ipFuzzing, *advIpFuzzing)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
