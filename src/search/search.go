@@ -11,6 +11,7 @@ import (
 	"github.com/magneticstain/ip2cr/src/plugin/ec2"
 	"github.com/magneticstain/ip2cr/src/plugin/elb"
 	generalResource "github.com/magneticstain/ip2cr/src/resource"
+	ipfuzzing "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing"
 )
 
 type Search struct {
@@ -51,17 +52,6 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			matchingResource.RID = *ec2Resource.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
 			log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
 		}
-	case "elb":
-		pluginConn := elb.NewELBPlugin(search.ac)
-		elb_resource, err := pluginConn.SearchResources(ipAddr)
-		if err != nil {
-			return matchingResource, err
-		}
-
-		if elb_resource.LoadBalancerArn != nil {
-			matchingResource.RID = *elb_resource.LoadBalancerArn
-			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
-		}
 	case "elbv1": // classic ELBs
 		pluginConn := elb.NewELBv1Plugin(search.ac)
 		elb_resource, err := pluginConn.SearchResources(ipAddr)
@@ -73,6 +63,17 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			matchingResource.RID = *elb_resource.LoadBalancerName
 			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
 		}
+	case "elbv2":
+		pluginConn := elb.NewELBPlugin(search.ac)
+		elb_resource, err := pluginConn.SearchResources(ipAddr)
+		if err != nil {
+			return matchingResource, err
+		}
+
+		if elb_resource.LoadBalancerArn != nil {
+			matchingResource.RID = *elb_resource.LoadBalancerArn
+			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
+		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
 	}
@@ -82,10 +83,24 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 
 func (search Search) StartSearch(ipAddr *string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
-	cloudSvcs := []string{"cloudfront", "ec2", "elb", "elbv1"}
+	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
+
+	fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr, true)
+	if err != nil {
+		return matchingResource, err
+	} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
+		log.Info("could not determine service via IP fuzzing")
+	} else {
+		log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
+		cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
+
+		// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
+		if *fuzzedSvc == "EC2" {
+			cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+		}
+	}
 
 	log.Debug("beginning resource gathering")
-
 	for _, svc := range cloudSvcs {
 		cloudResource, err := search.SearchAWS(svc, ipAddr, &matchingResource)
 

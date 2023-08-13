@@ -11,7 +11,10 @@ require (
 	github.com/sirupsen/logrus v1.9.3
 )
 
-require github.com/jmespath/go-jmespath v0.4.0 // indirect
+require (
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/stretchr/testify v1.8.4 // indirect
+)
 
 require (
 	github.com/aws/aws-sdk-go-v2/credentials v1.13.31 // indirect
