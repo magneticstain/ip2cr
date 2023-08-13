@@ -17,6 +17,7 @@ func main() {
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
+	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 	flag.Parse()
 
 	if *jsonOutput {
@@ -25,6 +26,10 @@ func main() {
 
 	if *silent {
 		log.SetOutput(io.Discard)
+	}
+
+	if *verboseOutput {
+		log.SetLevel(log.DebugLevel)
 	}
 
 	log.Info("starting IP-2-CloudResource")
