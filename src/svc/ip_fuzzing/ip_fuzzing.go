@@ -96,16 +96,24 @@ func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 	// NOTE: this only works for IPv4 at this time as AWS doesn't appear to have PTR records setup for their IPv6 prefixes
 	if parsedIpAddrV4 == nil {
 		log.Debug("skipping advanced fuzzing since IPv6 is not supported by this feature")
-	} else if (*fuzzedSvc == "" || *fuzzedSvc == "AMAZON") && attemptAdvancedFuzzing {
-		log.Debug("starting advanced IP fuzzing")
-		advFuzzResult, err := StartAdvancedFuzzing(ipAddr)
-		if err != nil {
-			return cloudSvc, err
-		}
+	} else if *fuzzedSvc == "" || *fuzzedSvc == "AMAZON" {
+		log.Debug("basic IP fuzzing failed to determine cloud service")
 
-		if advFuzzResult != nil {
-			return advFuzzResult, nil
+		if attemptAdvancedFuzzing {
+			log.Debug("starting advanced IP fuzzing")
+			advFuzzResult, err := StartAdvancedFuzzing(ipAddr)
+			if err != nil {
+				return cloudSvc, err
+			}
+
+			if advFuzzResult != nil {
+				return advFuzzResult, nil
+			}
 		}
+	} else {
+		// cloud service was found
+		log.Debug("basic IP fuzzing determined the IP belongs to the ", *fuzzedSvc, " service")
+		return fuzzedSvc, nil
 	}
 
 	if *fuzzedSvc == "AMAZON" {
