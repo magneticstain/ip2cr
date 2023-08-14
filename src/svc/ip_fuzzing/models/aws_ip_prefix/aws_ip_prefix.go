@@ -1,4 +1,4 @@
-package awsipset
+package awsipprefix
 
 type GenericAWSPrefix struct {
 	IpRange            string
