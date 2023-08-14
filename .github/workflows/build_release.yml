@@ -3,22 +3,20 @@
 # https://github.com/mvdan/github-actions-golang
 # 
 
-name: Build and Test
+name: Build and Test - Release Branches
 
 on:
   push:
-    branches: [ main ]
+    branches: [ release-* ]
   pull_request:
-    branches: [ main ]
-  schedule:
-    - cron: '0 0 * * 0'  # run a build every Sunday at 00:00 to catch gremlins
+    branches: [ release-* ]
 
 jobs:
   build:
     strategy:
       matrix:
-        go-version: ['stable', 'oldstable']
-        os: [ubuntu-latest, macos-latest]
+        go-version: ['stable']
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
       AWS_REGION: us-east-1
