@@ -47,6 +47,45 @@ Windows should probably work, but I'm not able to test it at this time.
 
 IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stable](https://go.dev/dl/#stable).
 
+## Install
+
+To install IP2CR, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
+
+After downloading, extract to your preferred app directory. E.g.:
+
+```bash
+mkdir -p /opt/ip2cr
+tar -xvzf ip2cr_Linux_x86_64_v0.0.3.tar.gz -C /opt/ip2cr/
+cd /opt/ip2cr/
+```
+
+### Current Stable Version
+
+The current stable version of IP2CR is `v0.0.3`.
+
+## Usage
+
+After installing, `cd` to the app directory if not already there and run the `ip2cr` binary.
+
+```bash
+> ./ip2cr --help
+Usage of ./ip2cr:
+  -adv-ip-fuzzing
+    	Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses) (default true)
+  -ip-fuzzing
+    	Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts) (default true)
+  -ipaddr string
+    	IP address to search for (default "127.0.0.1")
+  -json
+    	Outputs results in JSON format; implies usage of --silent flag
+  -silent
+    	If enabled, only output the results
+  -svc string
+    	Specific cloud service to search (default "all")
+  -verbose
+    	Outputs all logs, from debug level to critical
+```
+
 ## Testing/Demo
 
 You can use the Terraform plans provided here to generate sample resources in AWS for testing.
