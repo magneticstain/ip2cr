@@ -7,6 +7,36 @@ import (
 	"github.com/magneticstain/ip2cr/src/utils"
 )
 
+func TestReverseDNSLookup(t *testing.T) {
+	var tests = []struct {
+		ipAddr, fqdn    string
+		expectedVerdict bool
+	}{
+		{"1.1.1.1", "one.one.one.one.", true},
+		{"8.8.8.8", "dns.google.", true},
+		{"1.1.1.1", "google.com.", false},
+	}
+
+	for _, td := range tests {
+		testName := fmt.Sprintf("%s_%s", td.fqdn, td.ipAddr)
+		t.Run(testName, func(t *testing.T) {
+			fqdns, _ := utils.ReverseDNSLookup(&td.ipAddr)
+
+			fqdnFound := false
+			for _, fqdn := range fqdns {
+				if fqdn == td.fqdn {
+					fqdnFound = true
+					break
+				}
+			}
+
+			if fqdnFound != td.expectedVerdict {
+				t.Errorf("reverse IP lookup failed; expected %s to be %t FQDN for %s", td.fqdn, td.expectedVerdict, td.ipAddr)
+			}
+		})
+	}
+}
+
 func TestLookupFQDN(t *testing.T) {
 	var tests = []struct {
 		fqdn, ipAddr    string
