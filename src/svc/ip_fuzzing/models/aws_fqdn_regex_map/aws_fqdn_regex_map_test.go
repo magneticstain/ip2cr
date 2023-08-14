@@ -21,7 +21,7 @@ func TestGetRegexMap(t *testing.T) {
 			svcNameRegex := awsfqdnregexmap.GetRegexMap()
 
 			svcFound := false
-			for svcName, _ := range svcNameRegex {
+			for svcName := range svcNameRegex {
 				if svcName == td.cloudSvc {
 					svcFound = true
 					break
