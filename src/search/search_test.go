@@ -10,12 +10,32 @@ import (
 	"github.com/magneticstain/ip2cr/src/search"
 )
 
+type TestIpAddr struct {
+	ipAddr string
+}
+
 func searchFactory() search.Search {
 	ac, _ := awsconnector.New()
 
 	search := search.NewSearch(&ac)
 
 	return search
+}
+
+func ipFactory() []TestIpAddr {
+	var ipData []TestIpAddr
+
+	ipData = append(
+		ipData,
+		TestIpAddr{"52.4.175.237"}, // cloudfront
+		TestIpAddr{"65.8.191.186"}, // ALB
+		TestIpAddr{"35.170.192.9"}, // EC2
+		TestIpAddr{"2600:1f18:243e:1300:4685:5a7:7c28:c53a"}, // EC2 IPv6
+		TestIpAddr{"3.218.196.10"},                           // NLB
+		TestIpAddr{"34.205.13.193"},                          // Classic ELB
+	)
+
+	return ipData
 }
 
 func TestSearchAWS(t *testing.T) {
@@ -25,8 +45,10 @@ func TestSearchAWS(t *testing.T) {
 		cloudSvc, ipAddr string
 	}{
 		{"cloudfront", "1.1.1.1"},
-		{"elb", "1.1.1.1"},
-		{"ELB", "1.1.1.1"},
+		{"ec2", "1.1.1.1"},
+		{"elbv1", "1.1.1.1"},
+		{"ELBv1", "1.1.1.1"},
+		{"elbv2", "1.1.1.1"},
 	}
 
 	for _, td := range tests {
@@ -69,7 +91,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	}
 }
 
-func TestStartSearch(t *testing.T) {
+func TestStartSearch_NoFuzzing(t *testing.T) {
 	search := searchFactory()
 
 	var tests = []struct {
@@ -85,7 +107,47 @@ func TestStartSearch(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr)
+			res, _ := search.StartSearch(&td.ipAddr, false, false)
+
+			matchedResourceType := reflect.TypeOf(res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestStartSearch_BasicFuzzing(t *testing.T) {
+	search := searchFactory()
+
+	var tests = ipFactory()
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.StartSearch(&td.ipAddr, true, false)
+
+			matchedResourceType := reflect.TypeOf(res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestStartSearch_AdvancedFuzzing(t *testing.T) {
+	search := searchFactory()
+
+	var tests = ipFactory()
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.StartSearch(&td.ipAddr, true, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
