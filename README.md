@@ -32,6 +32,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - [X] Classic ELB support ( [Issue #29](https://github.com/magneticstain/ip2cr/issues/29) )
 - [X] JSON output ( [Issue #37](https://github.com/magneticstain/ip2cr/issues/37) )
 - [X] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)  ( [Issue #39](https://github.com/magneticstain/ip2cr/issues/39) )
+- [ ] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip2cr/issues/77) )
 - [ ] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip2cr/issues/38) )
 - [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip2cr/issues/44) )
 
