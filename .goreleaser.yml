@@ -41,3 +41,29 @@ release:
     owner: magneticstain
     name: ip2cr
   prerelease: auto
+brews:
+  -
+    name: ip2cr
+
+    commit_author:
+      name: magneticstain
+      email: magneticstain@gmail.com
+
+    commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
+
+    folder: Formula
+    homepage: "https://github.com/magneticstain/ip2cr"
+    description: "IP-2-CloudResource: correlate an IP address with its associated cloud resource"
+    license: "MIT"
+
+    test: |
+      system "#{bin}/ip2cr --help"
+
+    repository:
+      owner: magneticstain
+      name: homebrew-ip2cr
+
+      token: "{{ .Env.HOMEBREW_GITHUB_TOKEN }}"
+
+      # pull_request:
+      #   enabled: true
