@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/magneticstain/ip2cr/src/utils"
+	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
 func TestReverseDNSLookup(t *testing.T) {

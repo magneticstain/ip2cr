@@ -8,8 +8,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
-	"github.com/magneticstain/ip2cr/src/search"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/src/search"
 )
 
 func main() {

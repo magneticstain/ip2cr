@@ -7,9 +7,9 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip2cr/src/plugin"
-	"github.com/magneticstain/ip2cr/src/utils"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
+	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
 type ELBv1Plugin struct {

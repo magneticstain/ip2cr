@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
-	"github.com/magneticstain/ip2cr/src/plugin/elb"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
 )
 
 func elbpFactory() elb.ELBPlugin {

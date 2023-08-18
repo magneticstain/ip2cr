@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	ipfuzzing "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing"
+	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
 )
 
 func TestMapFQDNToSvc(t *testing.T) {
