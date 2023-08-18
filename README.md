@@ -51,7 +51,28 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ## Install
 
-To install IP2CR, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
+### Homebrew
+
+The easiest way to install IP2CR is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
+
+```bash
+brew tap magneticstain/ip2cr
+brew install ip2cr
+```
+
+Once the install completes, you should be able to run the `ip2cr` command from your path.
+
+### Go Install
+
+If homebrew isn't an option, you can also install using `go install`:
+
+```bash
+go install github.com/magneticstain/ip-2-cloudresource@latest
+```
+
+### Binary
+
+To install the IP2CR binary, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
 
 After downloading, extract to your preferred app directory. E.g.:
 
