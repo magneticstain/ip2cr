@@ -1,4 +1,4 @@
-module github.com/magneticstain/ip2cr
+module github.com/magneticstain/ip-2-cloudresource
 
 go 1.19
 
