@@ -72,7 +72,7 @@ go install github.com/magneticstain/ip-2-cloudresource@latest
 
 ### Binary
 
-To install the IP2CR binary, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
+Finally, if all else fails or you prefer directly managing IP2CR, to install the IP2CR binary, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
 
 After downloading, extract to your preferred app directory. E.g.:
 
