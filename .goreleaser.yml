@@ -39,7 +39,7 @@ changelog:
 release:
   github:
     owner: magneticstain
-    name: ip2cr
+    name: ip-2-cloudresource
   prerelease: auto
 brews:
   -
@@ -52,7 +52,7 @@ brews:
     commit_msg_template: "Brew formula update for {{ .ProjectName }} version {{ .Tag }}"
 
     folder: Formula
-    homepage: "https://github.com/magneticstain/ip2cr"
+    homepage: "https://github.com/magneticstain/ip-2-cloudresource"
     description: "IP-2-CloudResource: correlate an IP address with its associated cloud resource"
     license: "MIT"
 
