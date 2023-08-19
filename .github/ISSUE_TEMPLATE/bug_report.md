@@ -12,6 +12,7 @@ A clear and concise description of what the bug is.
 
 **To Reproduce**
 Steps to reproduce the behavior:
+
 1. How was IP2CR installed?
 2. What CLI parameters were used?
 3. What data was provided?
@@ -23,7 +24,8 @@ A clear and concise description of what you expected to happen.
 If applicable, add screenshots to help explain your problem.
 
 **Environment:**
- - OS: [e.g. `Ubuntu 22.04`, `Mac OS 13/Ventura`]
+
+- OS: [e.g. `Ubuntu 22.04`, `Mac OS 13/Ventura`]
 - GO version (`go version`): [e.g. `go version go1.20.5 linux/amd64`]
 - IP2CR version (`ip2cr --help`]: [e.g. `v0.0.1`]
 
