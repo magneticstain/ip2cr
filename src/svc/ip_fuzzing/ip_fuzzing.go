@@ -6,9 +6,9 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	awsfqdnregexmap "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing/models/aws_fqdn_regex_map"
-	awsipprefix "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing/models/aws_ip_prefix"
-	"github.com/magneticstain/ip2cr/src/utils"
+	awsfqdnregexmap "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing/models/aws_fqdn_regex_map"
+	awsipprefix "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing/models/aws_ip_prefix"
+	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
 func MapFQDNToSvc(fqdn *string) (*string, error) {

@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 )
 
 func TestConnectToAWS(t *testing.T) {

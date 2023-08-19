@@ -6,12 +6,12 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
-	"github.com/magneticstain/ip2cr/src/plugin/cloudfront"
-	"github.com/magneticstain/ip2cr/src/plugin/ec2"
-	"github.com/magneticstain/ip2cr/src/plugin/elb"
-	generalResource "github.com/magneticstain/ip2cr/src/resource"
-	ipfuzzing "github.com/magneticstain/ip2cr/src/svc/ip_fuzzing"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
+	"github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
+	"github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
+	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
 )
 
 type Search struct {

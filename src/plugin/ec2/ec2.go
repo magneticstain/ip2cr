@@ -6,8 +6,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip2cr/src/plugin"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 )
 
 type EC2Plugin struct {

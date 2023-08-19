@@ -5,9 +5,9 @@ import (
 	"reflect"
 	"testing"
 
-	awsconnector "github.com/magneticstain/ip2cr/src/aws_connector"
-	generalResource "github.com/magneticstain/ip2cr/src/resource"
-	"github.com/magneticstain/ip2cr/src/search"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
+	"github.com/magneticstain/ip-2-cloudresource/src/search"
 )
 
 type TestIpAddr struct {

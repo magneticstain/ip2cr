@@ -1,8 +1,8 @@
-# ip2cr
+# ip-2-cloudresource
 
-[![Build and Test - Main Branch](https://github.com/magneticstain/ip2cr/actions/workflows/build_main.yml/badge.svg)](https://github.com/magneticstain/ip2cr/actions/workflows/build_main.yml)
-[![Build and Test - Release Branches](https://github.com/magneticstain/ip2cr/actions/workflows/build_release.yml/badge.svg)](https://github.com/magneticstain/ip2cr/actions/workflows/build_release.yml)
-[![Release](https://github.com/magneticstain/ip2cr/actions/workflows/release.yml/badge.svg)](https://github.com/magneticstain/ip2cr/actions/workflows/release.yml)
+[![Build and Test - Main Branch](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml)
+[![Build and Test - Release Branches](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml)
+[![Release](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml)
 [![codecov](https://codecov.io/gh/magneticstain/ip2cr/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip2cr)
 
 ## Summary
@@ -28,13 +28,13 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 
 #### 2023
 
-- [X] EC2 support ( [Issue #11](https://github.com/magneticstain/ip2cr/issues/11) )
-- [X] Classic ELB support ( [Issue #29](https://github.com/magneticstain/ip2cr/issues/29) )
-- [X] JSON output ( [Issue #37](https://github.com/magneticstain/ip2cr/issues/37) )
-- [X] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)  ( [Issue #39](https://github.com/magneticstain/ip2cr/issues/39) )
-- [ ] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip2cr/issues/77) )
-- [ ] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip2cr/issues/38) )
-- [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip2cr/issues/44) )
+- [X] EC2 support ( [Issue #11](https://github.com/magneticstain/ip-2-cloudresource/issues/11) )
+- [X] Classic ELB support ( [Issue #29](https://github.com/magneticstain/ip-2-cloudresource/issues/29) )
+- [X] JSON output ( [Issue #37](https://github.com/magneticstain/ip-2-cloudresource/issues/37) )
+- [X] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)  ( [Issue #39](https://github.com/magneticstain/ip-2-cloudresource/issues/39) )
+- [ ] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip-2-cloudresource/issues/77) )
+- [ ] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
+- [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
 
 ## Prerequisites
 
@@ -51,7 +51,28 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ## Install
 
-To install IP2CR, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
+### Homebrew
+
+The easiest way to install IP2CR is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
+
+```bash
+brew tap magneticstain/ip2cr
+brew install ip2cr
+```
+
+Once the install completes, you should be able to run the `ip2cr` command from your path.
+
+### Go Install
+
+If homebrew isn't an option, you can also install using `go install`:
+
+```bash
+go install github.com/magneticstain/ip-2-cloudresource@latest
+```
+
+### Binary
+
+Finally, if all else fails or you prefer directly managing IP2CR, to install the IP2CR binary, download the version that matches your OS from the latest release in the release page. The link for that page can be found to the right of this page.
 
 After downloading, extract to your preferred app directory. E.g.:
 
