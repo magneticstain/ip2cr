@@ -41,6 +41,15 @@
             "args": ["--ipaddr=52.4.175.237", "--verbose"]
         },
         {
+            "name": "Launch - IP Param - Test IP - ALB - Organizations",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "env": {"AWS_REGION": "us-east-1"},
+            "args": ["--ipaddr=52.4.175.237", "--org-search", "--verbose"]
+        },
+        {
             "name": "Launch - IP Param - Test IP - ALB - Silent Output",
             "type": "go",
             "request": "launch",

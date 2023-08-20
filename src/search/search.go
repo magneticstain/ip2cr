@@ -2,6 +2,7 @@ package search
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -10,6 +11,7 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
+	"github.com/magneticstain/ip-2-cloudresource/src/plugin/organizations"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
 )
@@ -22,6 +24,21 @@ func NewSearch(ac *awsconnector.AWSConnector) Search {
 	search := Search{ac: ac}
 
 	return search
+}
+
+func (search Search) RunIpFuzzing(ipAddr *string) (*string, error) {
+	var fuzzedSvc *string
+
+	fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr, true)
+	if err != nil {
+		return fuzzedSvc, err
+	} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
+		log.Info("could not determine service via IP fuzzing")
+	} else {
+		log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
+	}
+
+	return fuzzedSvc, err
 }
 
 func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource *generalResource.Resource) (*generalResource.Resource, error) {
@@ -81,36 +98,63 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	return matchingResource, nil
 }
 
-func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzing bool) (generalResource.Resource, error) {
+func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzing bool, doOrgSearch bool, ordSearchRoleName string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 
 	if doIpFuzzing {
-		fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr, doAdvIpFuzzing)
+		fuzzedSvc, err := search.RunIpFuzzing(ipAddr)
 		if err != nil {
 			return matchingResource, err
-		} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
-			log.Info("could not determine service via IP fuzzing")
-		} else {
-			log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
-			cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
+		}
 
-			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
-			if *fuzzedSvc == "EC2" {
-				cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
-			}
+		cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
+
+		// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
+		if *fuzzedSvc == "EC2" {
+			cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+		}
+	}
+
+	acctsToSearch := []string{
+		"primary",
+	}
+	if doOrgSearch {
+		orgp := organizations.NewOrganizationsPlugin(search.ac)
+		orgAccts, err := orgp.GetResources()
+		if err != nil {
+			return matchingResource, err
+		}
+
+		for _, acct := range *orgAccts {
+			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
+			acctsToSearch = append(acctsToSearch, *acct.Id)
 		}
 	}
 
 	log.Debug("beginning resource gathering")
-	for _, svc := range cloudSvcs {
-		cloudResource, err := search.SearchAWS(svc, ipAddr, &matchingResource)
+	var acctRoleArn string
+	for _, acctId := range acctsToSearch {
+		if acctId != "primary" {
+			// replace connector with assumed role connector
+			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, ordSearchRoleName)
+			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
+			if err != nil {
+				return matchingResource, err
+			} else {
+				search.ac = &ac
+			}
+		}
 
-		if err != nil {
-			return matchingResource, err
-		} else if cloudResource.RID != "" {
-			// resource was found
-			break
+		for _, svc := range cloudSvcs {
+			cloudResource, err := search.SearchAWS(svc, ipAddr, &matchingResource)
+
+			if err != nil {
+				return matchingResource, err
+			} else if cloudResource.RID != "" {
+				// resource was found
+				break
+			}
 		}
 	}
 
