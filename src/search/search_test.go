@@ -107,7 +107,7 @@ func TestStartSearch_NoFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, false, false)
+			res, _ := search.StartSearch(&td.ipAddr, false, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -127,7 +127,7 @@ func TestStartSearch_BasicFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, true, false)
+			res, _ := search.StartSearch(&td.ipAddr, true, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -147,7 +147,7 @@ func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, true, false)
+			res, _ := search.StartSearch(&td.ipAddr, true, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
