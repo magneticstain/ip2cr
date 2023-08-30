@@ -98,7 +98,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	return matchingResource, nil
 }
 
-func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzing bool, doOrgSearch bool, ordSearchRoleName string) (generalResource.Resource, error) {
+func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 
@@ -108,18 +108,21 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 			return matchingResource, err
 		}
 
-		cloudSvcs = []string{strings.ToLower(*fuzzedSvc)}
+		normalizedSvcName := strings.ToLower(*fuzzedSvc)
 
-		// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
-		if *fuzzedSvc == "EC2" {
-			cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+		if normalizedSvcName != "unknown" {
+			cloudSvcs = []string{}
+
+			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
+			if *fuzzedSvc == "EC2" {
+				cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+			}
 		}
 	}
 
-	acctsToSearch := []string{
-		"primary",
-	}
+	var acctsToSearch []string
 	if doOrgSearch {
+		log.Info("starting org account enumeration")
 		orgp := organizations.NewOrganizationsPlugin(search.ac)
 		orgAccts, err := orgp.GetResources()
 		if err != nil {
@@ -135,15 +138,13 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 	log.Debug("beginning resource gathering")
 	var acctRoleArn string
 	for _, acctId := range acctsToSearch {
-		if acctId != "primary" {
-			// replace connector with assumed role connector
-			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, ordSearchRoleName)
-			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
-			if err != nil {
-				return matchingResource, err
-			} else {
-				search.ac = &ac
-			}
+		// replace connector with assumed role connector
+		acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, orgSearchRoleName)
+		ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
+		if err != nil {
+			return matchingResource, err
+		} else {
+			search.ac = &ac
 		}
 
 		for _, svc := range cloudSvcs {
