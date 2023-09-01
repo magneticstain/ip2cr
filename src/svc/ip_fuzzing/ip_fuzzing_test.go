@@ -4,8 +4,25 @@ import (
 	"fmt"
 	"testing"
 
+	"slices"
+
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
 )
+
+func GetValidCloudSvcs(includeUnknownSvc bool) *[]string {
+	validSvcs := []string{
+		"CLOUDFRONT",
+		"EC2",
+		"ELBv1",
+		"ELBv2",
+	}
+
+	if includeUnknownSvc {
+		validSvcs = append(validSvcs, "UNKNOWN")
+	}
+
+	return &validSvcs
+}
 
 func TestMapFQDNToSvc(t *testing.T) {
 	var tests = []struct {
@@ -97,6 +114,36 @@ func TestMStartAdvancedFuzzing_InvalidIPs(t *testing.T) {
 			_, err := ipfuzzing.StartAdvancedFuzzing(&td.ipAddr)
 			if err == nil {
 				t.Errorf("expected error when performing advanced IP fuzzing, but didn't")
+			}
+		})
+	}
+}
+
+func TestFuzzIP(t *testing.T) {
+	var tests = []struct {
+		ipAddr        string
+		useAdvFuzzing bool
+	}{
+		{"1.1.1.1", false},
+		{"35.170.192.9", false},
+		{"2600:1f18:243e:1300:4685:5a7:7c28:c53a", false},
+		{"1.1.1.1", true},
+		{"35.170.192.9", true},
+		{"2600:1f18:243e:1300:4685:5a7:7c28:c53a", true},
+	}
+
+	for _, td := range tests {
+		testName := fmt.Sprintf("%s_%t", td.ipAddr, td.useAdvFuzzing)
+		validSvcs := GetValidCloudSvcs(true)
+
+		t.Run(testName, func(t *testing.T) {
+			svcName, err := ipfuzzing.FuzzIP(&td.ipAddr, td.useAdvFuzzing)
+			if err != nil {
+				t.Errorf("unexpected error received when attempting to fuzz %s IP using general fuzzing: %s", td.ipAddr, err)
+			}
+
+			if !slices.Contains[[]string, string](*validSvcs, *svcName) {
+				t.Errorf("unexpected service name when performing IP fuzzing tests; received %s", *svcName)
 			}
 		})
 	}
