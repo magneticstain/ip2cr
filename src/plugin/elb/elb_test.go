@@ -65,7 +65,7 @@ func elbv1pFactory() elb.ELBv1Plugin {
 	return elbv1p
 }
 
-func TestGetResourcesElbv1(t *testing.T) {
+func TestGetResources_Elbv1(t *testing.T) {
 	elbv1p := elbv1pFactory()
 
 	elbResources, _ := elbv1p.GetResources()
@@ -79,7 +79,7 @@ func TestGetResourcesElbv1(t *testing.T) {
 	}
 }
 
-func TestSearchResourcesElbv1(t *testing.T) {
+func TestSearchResources_Elbv1(t *testing.T) {
 	elbv1p := elbv1pFactory()
 
 	var tests = []struct {
