@@ -10,8 +10,48 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
 )
+
+func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
+	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
+
+	if !*silent {
+		if matchedResource.RID != "" {
+			var acctStr string
+			if matchedResource.AccountId == "current" {
+				acctStr = "current account"
+			} else {
+				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountId, acctAliasFmted)
+			}
+
+			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
+		} else {
+			log.Info("resource not found :( better luck next time!")
+		}
+	} else {
+		if *jsonOutput {
+			output, err := json.Marshal(matchedResource)
+			if err != nil {
+				errMap := map[string]error{"error": err}
+				errMapJSON, _ := json.Marshal(errMap)
+
+				fmt.Printf("%s\n", errMapJSON)
+			} else {
+				fmt.Printf("%s\n", output)
+			}
+		} else {
+			// plaintext
+			if matchedResource.RID != "" {
+				fmt.Println(matchedResource.RID)
+				fmt.Printf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
+			} else {
+				fmt.Println("not found")
+			}
+		}
+	}
+}
 
 func main() {
 	silent := flag.Bool("silent", false, "If enabled, only output the results")
@@ -52,36 +92,5 @@ func main() {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
-	if matchedResource.RID != "" {
-		acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
-
-		if !*silent {
-			var acctStr string
-			if matchedResource.AccountId == "current" {
-				acctStr = "current account"
-			} else {
-				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountId, acctAliasFmted)
-			}
-
-			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
-		} else {
-			if *jsonOutput {
-				output, err := json.Marshal(matchedResource)
-				if err != nil {
-					errMap := map[string]error{"error": err}
-					errMapJSON, _ := json.Marshal(errMap)
-
-					fmt.Printf("%s\n", errMapJSON)
-				} else {
-					fmt.Printf("%s\n", output)
-				}
-			} else {
-				// plaintext
-				fmt.Println(matchedResource.RID)
-				fmt.Printf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
-			}
-		}
-	} else {
-		log.Info("resource not found :( better luck next time!")
-	}
+	OutputResults(&matchedResource, silent, jsonOutput)
 }
