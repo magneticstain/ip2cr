@@ -98,6 +98,10 @@ Usage of ./ip2cr:
     	IP address to search for (default "127.0.0.1")
   -json
     	Outputs results in JSON format; implies usage of --silent flag
+  -org-search
+    	Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)
+  -org-search-role-name string
+    	The name of the role in each child account of an AWS Organization to assume when performing a search (default "ip2cr")
   -silent
     	If enabled, only output the results
   -svc string
