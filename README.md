@@ -83,10 +83,6 @@ tar -xvzf ip2cr_Linux_x86_64_v0.0.3.tar.gz -C /opt/ip2cr/
 cd /opt/ip2cr/
 ```
 
-### Current Stable Version
-
-The current stable version of IP2CR is `v0.0.3`.
-
 ## Usage
 
 After installing, `cd` to the app directory if not already there and run the `ip2cr` binary.
