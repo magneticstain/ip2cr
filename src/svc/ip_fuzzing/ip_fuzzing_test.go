@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"slices"
+	"golang.org/x/exp/slices" // Update to the stable `slices` package once 1.12 becomes oldstable ( Issue #112 )
 
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
 )
