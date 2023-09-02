@@ -116,7 +116,7 @@ func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 		return fuzzedSvc, nil
 	}
 
-	if *fuzzedSvc == "AMAZON" {
+	if *fuzzedSvc == "AMAZON" || *fuzzedSvc == "" {
 		// AWS's generic service name for ranges
 		normalizedSvcName := "UNKNOWN"
 		cloudSvc = &normalizedSvcName

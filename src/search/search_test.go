@@ -107,12 +107,12 @@ func TestStartSearch_NoFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, false, false)
+			res, _ := search.StartSearch(&td.ipAddr, false, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
-				t.Errorf("Overall search failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
 		})
 	}
@@ -127,12 +127,12 @@ func TestStartSearch_BasicFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, true, false)
+			res, _ := search.StartSearch(&td.ipAddr, true, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
-				t.Errorf("Overall search failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+				t.Errorf("Overall search with IP fuzzing enabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
 		})
 	}
@@ -147,12 +147,32 @@ func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, true, false)
+			res, _ := search.StartSearch(&td.ipAddr, true, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
-				t.Errorf("Overall search failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+				t.Errorf("Overall search with advanced IP fuzzing disabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestStartSearch_OrgSearchEnabled(t *testing.T) {
+	search := searchFactory()
+
+	var tests = ipFactory()
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.StartSearch(&td.ipAddr, false, false, true, "ip2cr-org-role")
+
+			matchedResourceType := reflect.TypeOf(res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
 		})
 	}

@@ -3,7 +3,7 @@
 [![Build and Test - Main Branch](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml)
 [![Build and Test - Release Branches](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml)
 [![Release](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml)
-[![codecov](https://codecov.io/gh/magneticstain/ip2cr/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip2cr)
+[![codecov](https://codecov.io/gh/magneticstain/ip-2-cloudresource/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip-2-cloudresource)
 
 ## Summary
 
@@ -21,6 +21,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
   - ALBs & NLBs (and probably GLBs, but hasn't been tested yet)
   - Classic ELBs
   - EC2 instances with public IP addresses
+- Support for searching through accounts within an AWS Organization
 - IPv6 support
 - JSON output to easily integrate with scripts
 
@@ -33,7 +34,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - [X] JSON output ( [Issue #37](https://github.com/magneticstain/ip-2-cloudresource/issues/37) )
 - [X] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)  ( [Issue #39](https://github.com/magneticstain/ip-2-cloudresource/issues/39) )
 - [X] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip-2-cloudresource/issues/77) )
-- [ ] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
+- [X] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
 - [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
 
 ## Prerequisites
