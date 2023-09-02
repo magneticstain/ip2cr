@@ -78,7 +78,7 @@ func main() {
 			} else {
 				// plaintext
 				fmt.Println(matchedResource.RID)
-				fmt.Sprintf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
+				fmt.Printf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
 			}
 		}
 	} else {
