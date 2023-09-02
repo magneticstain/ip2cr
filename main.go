@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -52,8 +53,17 @@ func main() {
 	}
 
 	if matchedResource.RID != "" {
+		acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
+
 		if !*silent {
-			log.Info("resource found -> [ ", matchedResource.RID, " ]")
+			var acctStr string
+			if matchedResource.AccountId == "current" {
+				acctStr = "current account"
+			} else {
+				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountId, acctAliasFmted)
+			}
+
+			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
 		} else {
 			if *jsonOutput {
 				output, err := json.Marshal(matchedResource)
@@ -68,6 +78,7 @@ func main() {
 			} else {
 				// plaintext
 				fmt.Println(matchedResource.RID)
+				fmt.Printf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
 			}
 		}
 	} else {

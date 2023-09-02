@@ -11,6 +11,7 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
+	"github.com/magneticstain/ip-2-cloudresource/src/plugin/iam"
 	"github.com/magneticstain/ip-2-cloudresource/src/plugin/organizations"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
@@ -115,7 +116,7 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 
 			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
 			if *fuzzedSvc == "EC2" {
-				cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+				cloudSvcs = append(cloudSvcs, *fuzzedSvc, "elbv1", "elbv2")
 			}
 		}
 	}
@@ -133,18 +134,22 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
 			acctsToSearch = append(acctsToSearch, *acct.Id)
 		}
+	} else {
+		acctsToSearch = append(acctsToSearch, "current")
 	}
 
 	log.Debug("beginning resource gathering")
 	var acctRoleArn string
 	for _, acctId := range acctsToSearch {
-		// replace connector with assumed role connector
-		acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, orgSearchRoleName)
-		ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
-		if err != nil {
-			return matchingResource, err
-		} else {
-			search.ac = &ac
+		if acctId != "current" {
+			// replace connector with assumed role connector
+			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, orgSearchRoleName)
+			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
+			if err != nil {
+				return matchingResource, err
+			} else {
+				search.ac = &ac
+			}
 		}
 
 		for _, svc := range cloudSvcs {
@@ -154,6 +159,19 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 				return matchingResource, err
 			} else if cloudResource.RID != "" {
 				// resource was found
+				matchingResource.AccountId = acctId
+
+				if acctId != "current" {
+					// resolve account's aliases
+					iamp := iam.NewIAMPlugin(search.ac)
+					acctAliases, err := iamp.GetResources()
+					if err != nil {
+						return matchingResource, err
+					}
+
+					matchingResource.AccountAliases = acctAliases
+				}
+
 				break
 			}
 		}
