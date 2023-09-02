@@ -11,6 +11,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/iam v1.22.5
 	github.com/aws/aws-sdk-go-v2/service/organizations v1.20.4
 	github.com/sirupsen/logrus v1.9.3
+	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
 )
 
 require (
