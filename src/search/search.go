@@ -42,6 +42,51 @@ func (search Search) RunIpFuzzing(ipAddr *string) (*string, error) {
 	return fuzzedSvc, err
 }
 
+func (search Search) FetchOrgAcctIds() (*[]string, error) {
+	var acctIds []string
+
+	orgp := organizations.NewOrganizationsPlugin(search.ac)
+	orgAccts, err := orgp.GetResources()
+	if err != nil {
+		return &acctIds, err
+	}
+
+	for _, acct := range *orgAccts {
+		log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
+		acctIds = append(acctIds, *acct.Id)
+	}
+
+	return &acctIds, nil
+}
+
+func (search Search) RunSearch(matchingResource *generalResource.Resource, cloudSvcs *[]string, ipAddr *string, acctId *string) (*generalResource.Resource, error) {
+	for _, svc := range *cloudSvcs {
+		cloudResource, err := search.SearchAWS(svc, ipAddr, matchingResource)
+
+		if err != nil {
+			return matchingResource, err
+		} else if cloudResource.RID != "" {
+			// resource was found
+			matchingResource.AccountId = *acctId
+
+			if *acctId != "current" {
+				// resolve account's aliases
+				iamp := iam.NewIAMPlugin(search.ac)
+				acctAliases, err := iamp.GetResources()
+				if err != nil {
+					return matchingResource, err
+				}
+
+				matchingResource.AccountAliases = acctAliases
+			}
+
+			break
+		}
+	}
+
+	return matchingResource, nil
+}
+
 func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource *generalResource.Resource) (*generalResource.Resource, error) {
 	cloudSvc = strings.ToLower(cloudSvc)
 
@@ -121,26 +166,22 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 		}
 	}
 
-	var acctsToSearch []string
+	var acctsToSearch *[]string
 	if doOrgSearch {
+		var err error
+
 		log.Info("starting org account enumeration")
-		orgp := organizations.NewOrganizationsPlugin(search.ac)
-		orgAccts, err := orgp.GetResources()
+		acctsToSearch, err = search.FetchOrgAcctIds()
 		if err != nil {
 			return matchingResource, err
 		}
-
-		for _, acct := range *orgAccts {
-			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
-			acctsToSearch = append(acctsToSearch, *acct.Id)
-		}
 	} else {
-		acctsToSearch = append(acctsToSearch, "current")
+		acctsToSearch = &[]string{"current"}
 	}
 
 	log.Debug("beginning resource gathering")
 	var acctRoleArn string
-	for _, acctId := range acctsToSearch {
+	for _, acctId := range *acctsToSearch {
 		if acctId != "current" {
 			// replace connector with assumed role connector
 			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, orgSearchRoleName)
@@ -152,29 +193,7 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 			}
 		}
 
-		for _, svc := range cloudSvcs {
-			cloudResource, err := search.SearchAWS(svc, ipAddr, &matchingResource)
-
-			if err != nil {
-				return matchingResource, err
-			} else if cloudResource.RID != "" {
-				// resource was found
-				matchingResource.AccountId = acctId
-
-				if acctId != "current" {
-					// resolve account's aliases
-					iamp := iam.NewIAMPlugin(search.ac)
-					acctAliases, err := iamp.GetResources()
-					if err != nil {
-						return matchingResource, err
-					}
-
-					matchingResource.AccountAliases = acctAliases
-				}
-
-				break
-			}
-		}
+		search.RunSearch(&matchingResource, &cloudSvcs, ipAddr, &acctId)
 	}
 
 	return matchingResource, nil

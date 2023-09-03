@@ -28,7 +28,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=52.4.175.237", "--verbose"]
+            "args": ["--ipaddr=3.217.18.23", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - ALB - Organizations",
@@ -37,7 +37,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=52.4.175.237", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
+            "args": ["--ipaddr=3.217.18.23", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - ALB - Silent Output",
@@ -46,7 +46,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--silent", "--ipaddr=52.4.175.237", "--verbose"]
+            "args": ["--silent", "--ipaddr=3.217.18.23", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - ALB - JSON Output",
@@ -55,7 +55,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--json", "--ipaddr=52.4.175.237", "--verbose"]
+            "args": ["--json", "--ipaddr=3.217.18.23", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - Cloudfront",

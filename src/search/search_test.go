@@ -8,6 +8,7 @@ import (
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
+	"golang.org/x/exp/slices"
 )
 
 type TestIpAddr struct {
@@ -27,15 +28,46 @@ func ipFactory() []TestIpAddr {
 
 	ipData = append(
 		ipData,
-		TestIpAddr{"52.4.175.237"}, // cloudfront
-		TestIpAddr{"65.8.191.186"}, // ALB
-		TestIpAddr{"35.170.192.9"}, // EC2
+		TestIpAddr{"52.4.175.237"},  // CloudFront
+		TestIpAddr{"65.8.191.186"},  // ALB
+		TestIpAddr{"35.170.192.9"},  // EC2
+		TestIpAddr{"3.218.196.10"},  // NLB
+		TestIpAddr{"34.205.13.193"}, // Classic ELB
 		TestIpAddr{"2600:1f18:243e:1300:4685:5a7:7c28:c53a"}, // EC2 IPv6
-		TestIpAddr{"3.218.196.10"},                           // NLB
-		TestIpAddr{"34.205.13.193"},                          // Classic ELB
 	)
 
 	return ipData
+}
+
+func cloudSvcsFactory() []string {
+	cloudSvcs := []string{
+		"CLOUDFRONT",
+		"EC2",
+		"UNKNOWN",
+	}
+
+	return cloudSvcs
+}
+
+func TestRunIpFuzzing(t *testing.T) {
+	search := searchFactory()
+	var tests = ipFactory()
+
+	validSvcs := cloudSvcsFactory()
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		t.Run(testName, func(t *testing.T) {
+			fuzzedSvc, err := search.RunIpFuzzing(&td.ipAddr)
+			if err != nil {
+				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
+			}
+
+			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
+				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
+			}
+		})
+	}
 }
 
 func TestSearchAWS(t *testing.T) {

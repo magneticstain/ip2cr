@@ -54,6 +54,7 @@ func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 }
 
 func main() {
+	// CLI param parsing
 	silent := flag.Bool("silent", false, "If enabled, only output the results")
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
@@ -68,23 +69,23 @@ func main() {
 	if *jsonOutput {
 		*silent = true
 	}
-
 	if *silent {
 		log.SetOutput(io.Discard)
 	}
-
 	if *verboseOutput {
 		log.SetLevel(log.DebugLevel)
 	}
 
 	log.Info("starting IP-2-CloudResource")
 
+	// cloud connections
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
+	// search
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac)
 	matchedResource, err := searchCtlr.StartSearch(ipAddr, *ipFuzzing, *advIpFuzzing, *orgSearch, *orgSearchRoleName)
@@ -92,5 +93,6 @@ func main() {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
+	// output
 	OutputResults(&matchedResource, silent, jsonOutput)
 }
