@@ -7,12 +7,22 @@ import (
 	"io"
 	"strings"
 
+	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
 )
+
+func initRollbar() {
+	rollbar.SetToken("98a9cbd56b164657ab447d79eac9b258")
+	rollbar.SetCaptureIp(rollbar.CaptureIpAnonymize)
+	rollbar.SetServerHost("anonymous")
+	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
+	rollbar.SetCodeVersion("v1.0.0")
+	rollbar.SetEnvironment("development")
+}
 
 func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
@@ -53,6 +63,26 @@ func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 	}
 }
 
+func RunCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIpFuzzing *bool, orgSearch *bool, orgSearchRoleName *string, silent *bool, jsonOutput *bool) {
+	// cloud connections
+	log.Debug("generating AWS connection")
+	ac, err := awsconnector.New()
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// search
+	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
+	searchCtlr := search.NewSearch(&ac)
+	matchedResource, err := searchCtlr.StartSearch(ipAddr, *ipFuzzing, *advIpFuzzing, *orgSearch, *orgSearchRoleName)
+	if err != nil {
+		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
+	}
+
+	// output
+	OutputResults(&matchedResource, silent, jsonOutput)
+}
+
 func main() {
 	// CLI param parsing
 	silent := flag.Bool("silent", false, "If enabled, only output the results")
@@ -78,21 +108,9 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	// cloud connections
-	log.Debug("generating AWS connection")
-	ac, err := awsconnector.New()
-	if err != nil {
-		log.Fatal(err)
-	}
+	initRollbar()
 
-	// search
-	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
-	searchCtlr := search.NewSearch(&ac)
-	matchedResource, err := searchCtlr.StartSearch(ipAddr, *ipFuzzing, *advIpFuzzing, *orgSearch, *orgSearchRoleName)
-	if err != nil {
-		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
-	}
+	rollbar.WrapAndWait(RunCloudSearch, ipAddr, cloudSvc, ipFuzzing, advIpFuzzing, orgSearch, orgSearchRoleName, silent, jsonOutput)
 
-	// output
-	OutputResults(&matchedResource, silent, jsonOutput)
+	rollbar.Close()
 }
