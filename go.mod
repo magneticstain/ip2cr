@@ -16,6 +16,7 @@ require (
 
 require (
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	github.com/rollbar/rollbar-go v1.4.5 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 )
 
