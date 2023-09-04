@@ -24,8 +24,8 @@ func NewELBv1Plugin(awsConn *awsconnector.AWSConnector) ELBv1Plugin {
 func (elbv1p ELBv1Plugin) GetResources() (*[]types.LoadBalancerDescription, error) {
 	var elbs []types.LoadBalancerDescription
 
-	elb_client := elasticloadbalancing.NewFromConfig(elbv1p.AwsConn.AwsConfig)
-	paginator := elasticloadbalancing.NewDescribeLoadBalancersPaginator(elb_client, nil)
+	elbClient := elasticloadbalancing.NewFromConfig(elbv1p.AwsConn.AwsConfig)
+	paginator := elasticloadbalancing.NewDescribeLoadBalancersPaginator(elbClient, nil)
 
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())

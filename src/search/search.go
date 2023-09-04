@@ -27,7 +27,7 @@ func NewSearch(ac *awsconnector.AWSConnector) Search {
 	return search
 }
 
-func (search Search) RunIpFuzzing(ipAddr *string) (*string, error) {
+func (search Search) RunIPFuzzing(ipAddr *string) (*string, error) {
 	var fuzzedSvc *string
 
 	fuzzedSvc, err := ipfuzzing.FuzzIP(ipAddr, true)
@@ -62,18 +62,18 @@ func (search Search) FetchOrgAcctIds() (*[]string, error) {
 func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource *generalResource.Resource) (*generalResource.Resource, error) {
 	cloudSvc = strings.ToLower(cloudSvc)
 
-	log.Debug("searching ", cloudSvc, " in AWS; account: ", matchingResource.AccountId, " (", matchingResource.AccountAliases, ")")
+	log.Debug("searching ", cloudSvc, " in AWS; account: ", matchingResource.AccountID, " (", matchingResource.AccountAliases, ")")
 
 	switch cloudSvc {
 	case "cloudfront":
 		pluginConn := cloudfront.NewCloudfrontPlugin(search.ac)
-		cf_resource, err := pluginConn.SearchResources(ipAddr)
+		cfResource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 
-		if cf_resource.ARN != nil {
-			matchingResource.RID = *cf_resource.ARN
+		if cfResource.ARN != nil {
+			matchingResource.RID = *cfResource.ARN
 			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
 		}
 	case "ec2":
@@ -89,24 +89,24 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 		}
 	case "elbv1": // classic ELBs
 		pluginConn := elb.NewELBv1Plugin(search.ac)
-		elb_resource, err := pluginConn.SearchResources(ipAddr)
+		elbResource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 
-		if elb_resource.LoadBalancerName != nil { // no ARN available here either
-			matchingResource.RID = *elb_resource.LoadBalancerName
+		if elbResource.LoadBalancerName != nil { // no ARN available here either
+			matchingResource.RID = *elbResource.LoadBalancerName
 			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	case "elbv2":
 		pluginConn := elb.NewELBPlugin(search.ac)
-		elb_resource, err := pluginConn.SearchResources(ipAddr)
+		elbResource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 
-		if elb_resource.LoadBalancerArn != nil {
-			matchingResource.RID = *elb_resource.LoadBalancerArn
+		if elbResource.LoadBalancerArn != nil {
+			matchingResource.RID = *elbResource.LoadBalancerArn
 			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	default:
@@ -116,7 +116,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 	return matchingResource, nil
 }
 
-func (search Search) RunSearch(matchingResource *generalResource.Resource, cloudSvcs *[]string, ipAddr *string, acctId *string) (*generalResource.Resource, error) {
+func (search Search) RunSearch(matchingResource *generalResource.Resource, cloudSvcs *[]string, ipAddr *string, acctID *string) (*generalResource.Resource, error) {
 	for _, svc := range *cloudSvcs {
 		cloudResource, err := search.SearchAWS(svc, ipAddr, matchingResource)
 
@@ -124,9 +124,9 @@ func (search Search) RunSearch(matchingResource *generalResource.Resource, cloud
 			return matchingResource, err
 		} else if cloudResource.RID != "" {
 			// resource was found
-			matchingResource.AccountId = *acctId
+			matchingResource.AccountID = *acctID
 
-			if *acctId != "current" {
+			if *acctID != "current" {
 				// resolve account's aliases
 				iamp := iam.NewIAMPlugin(search.ac)
 				acctAliases, err := iamp.GetResources()
@@ -144,12 +144,12 @@ func (search Search) RunSearch(matchingResource *generalResource.Resource, cloud
 	return matchingResource, nil
 }
 
-func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (generalResource.Resource, error) {
+func (search Search) StartSearch(ipAddr *string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 
-	if doIpFuzzing {
-		fuzzedSvc, err := search.RunIpFuzzing(ipAddr)
+	if doIPFuzzing {
+		fuzzedSvc, err := search.RunIPFuzzing(ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
@@ -181,19 +181,19 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 
 	log.Info("beginning resource gathering")
 	var acctRoleArn string
-	for _, acctId := range *acctsToSearch {
-		if acctId != "current" {
+	for _, acctID := range *acctsToSearch {
+		if acctID != "current" {
 			// replace connector with assumed role connector
-			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctId, orgSearchRoleName)
+			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
 			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
 			if err != nil {
 				return matchingResource, err
-			} else {
-				search.ac = &ac
 			}
+
+			search.ac = &ac
 		}
 
-		search.RunSearch(&matchingResource, &cloudSvcs, ipAddr, &acctId)
+		search.RunSearch(&matchingResource, &cloudSvcs, ipAddr, &acctID)
 		if matchingResource.RID != "" {
 			break
 		}

@@ -30,10 +30,10 @@ func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 	if !*silent {
 		if matchedResource.RID != "" {
 			var acctStr string
-			if matchedResource.AccountId == "current" {
+			if matchedResource.AccountID == "current" {
 				acctStr = "current account"
 			} else {
-				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountId, acctAliasFmted)
+				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountID, acctAliasFmted)
 			}
 
 			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
@@ -55,7 +55,7 @@ func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 			// plaintext
 			if matchedResource.RID != "" {
 				fmt.Println(matchedResource.RID)
-				fmt.Printf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
+				fmt.Printf("%s (%s)", matchedResource.AccountID, acctAliasFmted)
 			} else {
 				fmt.Println("not found")
 			}

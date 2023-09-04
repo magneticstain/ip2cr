@@ -49,7 +49,7 @@ func cloudSvcsFactory() []string {
 	return cloudSvcs
 }
 
-func TestRunIpFuzzing(t *testing.T) {
+func TestRunIPFuzzing(t *testing.T) {
 	search := searchFactory()
 	var tests = ipFactory()
 
@@ -58,7 +58,7 @@ func TestRunIpFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIpFuzzing(&td.ipAddr)
+			fuzzedSvc, err := search.RunIPFuzzing(&td.ipAddr)
 			if err != nil {
 				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}

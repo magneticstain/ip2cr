@@ -36,9 +36,8 @@ func RunAdvancedFuzzing(ipAddr *string) (*string, error) {
 	reverseLookupResult, err := utils.ReverseDNSLookup(ipAddr)
 	if err != nil {
 		return cloudSvc, err
-	} else {
-		log.Debug("reverse DNS lookup for IP [ ", *ipAddr, " ] resolves to [ ", reverseLookupResult, " ]")
 	}
+	log.Debug("reverse DNS lookup for IP [ ", *ipAddr, " ] resolves to [ ", reverseLookupResult, " ]")
 
 	var svcName *string
 	for _, fqdn := range reverseLookupResult {
@@ -64,7 +63,7 @@ func RunAdvancedFuzzing(ipAddr *string) (*string, error) {
 func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 	var cloudSvc *string
 
-	awsIpSet, err := FetchIpRanges()
+	awsIPSet, err := FetchIPRanges()
 	if err != nil {
 		return cloudSvc, err
 	}
@@ -77,10 +76,10 @@ func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 	parsedIPAddrV4 := parsedIPAddr.To4()
 	if parsedIPAddrV4 != nil {
 		// IPv4
-		ipPrefixSet, err = ConvertIpPrefixesToGeneric(&awsIpSet.Prefixes, nil)
+		ipPrefixSet, err = ConvertIPPrefixesToGeneric(&awsIPSet.Prefixes, nil)
 	} else {
 		// IPv6
-		ipPrefixSet, err = ConvertIpPrefixesToGeneric(nil, &awsIpSet.IPv6Prefixes)
+		ipPrefixSet, err = ConvertIPPrefixesToGeneric(nil, &awsIPSet.IPv6Prefixes)
 	}
 	if err != nil {
 		log.Error("not able to convert versioned IP prefix groups to generic; [ ERR: ", err, " ]")

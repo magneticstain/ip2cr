@@ -1,6 +1,6 @@
 package resource
 
 type Resource struct {
-	RID, AccountId string
+	RID, AccountID string
 	AccountAliases []string
 }
