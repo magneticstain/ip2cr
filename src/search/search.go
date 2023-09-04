@@ -8,11 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/iam"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/organizations"
+	cfp "github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
+	ec2p "github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
+	elbp "github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
+	iamp "github.com/magneticstain/ip-2-cloudresource/src/plugin/iam"
+	orgp "github.com/magneticstain/ip-2-cloudresource/src/plugin/organizations"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/src/svc/ip_fuzzing"
 )
@@ -45,7 +45,7 @@ func (search Search) RunIPFuzzing(ipAddr *string) (*string, error) {
 func (search Search) FetchOrgAcctIds() (*[]string, error) {
 	var acctIds []string
 
-	orgp := organizations.NewOrganizationsPlugin(search.ac)
+	orgp := orgp.NewOrganizationsPlugin(search.ac)
 	orgAccts, err := orgp.GetResources()
 	if err != nil {
 		return &acctIds, err
@@ -66,7 +66,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 
 	switch cloudSvc {
 	case "cloudfront":
-		pluginConn := cloudfront.NewCloudfrontPlugin(search.ac)
+		pluginConn := cfp.NewCloudfrontPlugin(search.ac)
 		cfResource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
@@ -77,7 +77,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
 		}
 	case "ec2":
-		pluginConn := ec2.NewEC2Plugin(search.ac)
+		pluginConn := ec2p.NewEC2Plugin(search.ac)
 		ec2Resource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
@@ -88,7 +88,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
 		}
 	case "elbv1": // classic ELBs
-		pluginConn := elb.NewELBv1Plugin(search.ac)
+		pluginConn := elbp.NewELBv1Plugin(search.ac)
 		elbResource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
@@ -99,7 +99,7 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	case "elbv2":
-		pluginConn := elb.NewELBPlugin(search.ac)
+		pluginConn := elbp.NewELBPlugin(search.ac)
 		elbResource, err := pluginConn.SearchResources(ipAddr)
 		if err != nil {
 			return matchingResource, err
@@ -128,7 +128,7 @@ func (search Search) RunSearch(matchingResource *generalResource.Resource, cloud
 
 			if *acctID != "current" {
 				// resolve account's aliases
-				iamp := iam.NewIAMPlugin(search.ac)
+				iamp := iamp.NewIAMPlugin(search.ac)
 				acctAliases, err := iamp.GetResources()
 				if err != nil {
 					return matchingResource, err

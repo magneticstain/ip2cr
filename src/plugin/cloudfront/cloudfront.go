@@ -1,4 +1,4 @@
-package cloudfront
+package plugin
 
 import (
 	"context"
