@@ -62,7 +62,7 @@ func (search Search) FetchOrgAcctIds() (*[]string, error) {
 func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource *generalResource.Resource) (*generalResource.Resource, error) {
 	cloudSvc = strings.ToLower(cloudSvc)
 
-	log.Info("searching ", cloudSvc, " in AWS; account: ", matchingResource.AccountId, " (", matchingResource.AccountAliases, ")")
+	log.Debug("searching ", cloudSvc, " in AWS; account: ", matchingResource.AccountId, " (", matchingResource.AccountAliases, ")")
 
 	switch cloudSvc {
 	case "cloudfront":
@@ -179,7 +179,7 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 		acctsToSearch = &[]string{"current"}
 	}
 
-	log.Debug("beginning resource gathering")
+	log.Info("beginning resource gathering")
 	var acctRoleArn string
 	for _, acctId := range *acctsToSearch {
 		if acctId != "current" {
