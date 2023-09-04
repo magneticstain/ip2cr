@@ -48,7 +48,7 @@ func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*types.Instance, error) {
 	for _, ec2Reservation := range *ec2Resources {
 		// unpack instances from reservation
 		for _, instance := range ec2Reservation.Instances {
-			publicIPv4Addr := instance.PublicIPAddress
+			publicIPv4Addr := instance.PublicIpAddress
 			IPv6Addr := instance.Ipv6Address
 
 			if *publicIPv4Addr == *tgtIP || *IPv6Addr == *tgtIP {
