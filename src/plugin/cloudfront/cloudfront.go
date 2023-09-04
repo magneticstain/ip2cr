@@ -49,7 +49,7 @@ func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error)
 	return &distros, nil
 }
 
-func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) (*types.DistributionSummary, error) {
+func (cfp CloudfrontPlugin) SearchResources(tgtIp *string) (*types.DistributionSummary, error) {
 	var cfDistroFQDN string
 	var cfIpAddrs *[]net.IP
 	var matchedDistro types.DistributionSummary
@@ -67,7 +67,7 @@ func (cfp CloudfrontPlugin) SearchResources(tgt_ip *string) (*types.Distribution
 		}
 
 		for _, ipAddr := range *cfIpAddrs {
-			if ipAddr.String() == *tgt_ip {
+			if ipAddr.String() == *tgtIp {
 				matchedDistro = cfDistro
 			}
 		}

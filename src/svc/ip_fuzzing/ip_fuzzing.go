@@ -29,7 +29,7 @@ func MapFQDNToSvc(fqdn *string) (*string, error) {
 	return svcName, nil
 }
 
-func StartAdvancedFuzzing(ipAddr *string) (*string, error) {
+func RunAdvancedFuzzing(ipAddr *string) (*string, error) {
 	// perform a reverse DNS lookup on the IP and then use heuristics to try to determine the associated service
 	var cloudSvc *string
 
@@ -101,7 +101,7 @@ func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 
 		if attemptAdvancedFuzzing {
 			log.Debug("starting advanced IP fuzzing")
-			advFuzzResult, err := StartAdvancedFuzzing(ipAddr)
+			advFuzzResult, err := RunAdvancedFuzzing(ipAddr)
 			if err != nil {
 				return cloudSvc, err
 			}

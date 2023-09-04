@@ -59,38 +59,10 @@ func (search Search) FetchOrgAcctIds() (*[]string, error) {
 	return &acctIds, nil
 }
 
-func (search Search) RunSearch(matchingResource *generalResource.Resource, cloudSvcs *[]string, ipAddr *string, acctId *string) (*generalResource.Resource, error) {
-	for _, svc := range *cloudSvcs {
-		cloudResource, err := search.SearchAWS(svc, ipAddr, matchingResource)
-
-		if err != nil {
-			return matchingResource, err
-		} else if cloudResource.RID != "" {
-			// resource was found
-			matchingResource.AccountId = *acctId
-
-			if *acctId != "current" {
-				// resolve account's aliases
-				iamp := iam.NewIAMPlugin(search.ac)
-				acctAliases, err := iamp.GetResources()
-				if err != nil {
-					return matchingResource, err
-				}
-
-				matchingResource.AccountAliases = acctAliases
-			}
-
-			break
-		}
-	}
-
-	return matchingResource, nil
-}
-
 func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource *generalResource.Resource) (*generalResource.Resource, error) {
 	cloudSvc = strings.ToLower(cloudSvc)
 
-	log.Info("searching ", cloudSvc, " in AWS")
+	log.Info("searching ", cloudSvc, " in AWS; account: ", matchingResource.AccountId, " (", matchingResource.AccountAliases, ")")
 
 	switch cloudSvc {
 	case "cloudfront":
@@ -139,6 +111,34 @@ func (search Search) SearchAWS(cloudSvc string, ipAddr *string, matchingResource
 		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
+	}
+
+	return matchingResource, nil
+}
+
+func (search Search) RunSearch(matchingResource *generalResource.Resource, cloudSvcs *[]string, ipAddr *string, acctId *string) (*generalResource.Resource, error) {
+	for _, svc := range *cloudSvcs {
+		cloudResource, err := search.SearchAWS(svc, ipAddr, matchingResource)
+
+		if err != nil {
+			return matchingResource, err
+		} else if cloudResource.RID != "" {
+			// resource was found
+			matchingResource.AccountId = *acctId
+
+			if *acctId != "current" {
+				// resolve account's aliases
+				iamp := iam.NewIAMPlugin(search.ac)
+				acctAliases, err := iamp.GetResources()
+				if err != nil {
+					return matchingResource, err
+				}
+
+				matchingResource.AccountAliases = acctAliases
+			}
+
+			break
+		}
 	}
 
 	return matchingResource, nil
@@ -194,6 +194,9 @@ func (search Search) StartSearch(ipAddr *string, doIpFuzzing bool, doAdvIpFuzzin
 		}
 
 		search.RunSearch(&matchingResource, &cloudSvcs, ipAddr, &acctId)
+		if matchingResource.RID != "" {
+			break
+		}
 	}
 
 	return matchingResource, nil

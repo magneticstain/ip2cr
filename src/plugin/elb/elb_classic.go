@@ -41,7 +41,7 @@ func (elbv1p ELBv1Plugin) GetResources() (*[]types.LoadBalancerDescription, erro
 	return &elbs, nil
 }
 
-func (elbv1p ELBv1Plugin) SearchResources(tgt_ip *string) (*types.LoadBalancerDescription, error) {
+func (elbv1p ELBv1Plugin) SearchResources(tgtIp *string) (*types.LoadBalancerDescription, error) {
 	var elbIpAddrs *[]net.IP
 	var matchedELB types.LoadBalancerDescription
 
@@ -57,7 +57,7 @@ func (elbv1p ELBv1Plugin) SearchResources(tgt_ip *string) (*types.LoadBalancerDe
 		}
 
 		for _, ipAddr := range *elbIpAddrs {
-			if ipAddr.String() == *tgt_ip {
+			if ipAddr.String() == *tgtIp {
 				matchedELB = elb
 				break
 			}

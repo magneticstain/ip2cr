@@ -39,7 +39,7 @@ func (ec2p EC2Plugin) GetResources() (*[]types.Reservation, error) {
 	return &instances, nil
 }
 
-func (ec2p EC2Plugin) SearchResources(tgt_ip *string) (*types.Instance, error) {
+func (ec2p EC2Plugin) SearchResources(tgtIp *string) (*types.Instance, error) {
 	var matchedInstance types.Instance
 
 	ec2Resources, err := ec2p.GetResources()
@@ -53,7 +53,7 @@ func (ec2p EC2Plugin) SearchResources(tgt_ip *string) (*types.Instance, error) {
 			publicIPv4Addr := instance.PublicIpAddress
 			IPv6Addr := instance.Ipv6Address
 
-			if *publicIPv4Addr == *tgt_ip || *IPv6Addr == *tgt_ip {
+			if *publicIPv4Addr == *tgtIp || *IPv6Addr == *tgtIp {
 				matchedInstance = instance
 				break
 			}
