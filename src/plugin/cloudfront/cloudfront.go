@@ -9,17 +9,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
 type CloudfrontPlugin struct {
-	GenPlugin *generalPlugin.Plugin
 	AwsConn   awsconnector.AWSConnector
 }
 
 func NewCloudfrontPlugin(aws_conn *awsconnector.AWSConnector) CloudfrontPlugin {
-	cfp := CloudfrontPlugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
+	cfp := CloudfrontPlugin{AwsConn: *aws_conn}
 
 	return cfp
 }

@@ -7,16 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 )
 
 type OrganizationsPlugin struct {
-	GenPlugin *generalPlugin.Plugin
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
 func NewOrganizationsPlugin(aws_conn *awsconnector.AWSConnector) OrganizationsPlugin {
-	orgp := OrganizationsPlugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
+	orgp := OrganizationsPlugin{AwsConn: *aws_conn}
 
 	return orgp
 }

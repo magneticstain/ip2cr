@@ -7,16 +7,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 )
 
 type EC2Plugin struct {
-	GenPlugin *generalPlugin.Plugin
 	AwsConn   awsconnector.AWSConnector
 }
 
 func NewEC2Plugin(aws_conn *awsconnector.AWSConnector) EC2Plugin {
-	ec2p := EC2Plugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
+	ec2p := EC2Plugin{AwsConn: *aws_conn}
 
 	return ec2p
 }

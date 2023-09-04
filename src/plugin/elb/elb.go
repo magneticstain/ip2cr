@@ -8,17 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
 type ELBPlugin struct {
-	GenPlugin *generalPlugin.Plugin
 	AwsConn   awsconnector.AWSConnector
 }
 
 func NewELBPlugin(aws_conn *awsconnector.AWSConnector) ELBPlugin {
-	elbp := ELBPlugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
+	elbp := ELBPlugin{AwsConn: *aws_conn}
 
 	return elbp
 }
