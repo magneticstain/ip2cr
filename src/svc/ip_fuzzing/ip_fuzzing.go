@@ -73,9 +73,9 @@ func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 	// AWS divides their prefixes by IP version, so we should determine that first to reduce the number of checks needed
 	// Here, we're checking the IP version and then converting the prefixes for the given version to generic prefixes
 	var ipPrefixSet *[]awsipprefix.GenericAWSPrefix
-	parsedIpAddr := net.ParseIP(*ipAddr)
-	parsedIpAddrV4 := parsedIpAddr.To4()
-	if parsedIpAddrV4 != nil {
+	parsedIPAddr := net.ParseIP(*ipAddr)
+	parsedIPAddrV4 := parsedIPAddr.To4()
+	if parsedIPAddrV4 != nil {
 		// IPv4
 		ipPrefixSet, err = ConvertIpPrefixesToGeneric(&awsIpSet.Prefixes, nil)
 	} else {
@@ -88,13 +88,13 @@ func FuzzIP(ipAddr *string, attemptAdvancedFuzzing bool) (*string, error) {
 		log.Debug("IP prefix set reduced by version successfully")
 	}
 
-	fuzzedSvc, err := ResolveIpAddrToCloudSvc(ipAddr, ipPrefixSet)
+	fuzzedSvc, err := ResolveIPAddrToCloudSvc(ipAddr, ipPrefixSet)
 	if err != nil {
 		return cloudSvc, err
 	}
 	// if AWS IP range scanning doesn't work, we can try advanced fuxxing, which uses reverse DNS and heuristics to try to determine the service
 	// NOTE: this only works for IPv4 at this time as AWS doesn't appear to have PTR records setup for their IPv6 prefixes
-	if parsedIpAddrV4 == nil {
+	if parsedIPAddrV4 == nil {
 		log.Debug("skipping advanced fuzzing since IPv6 is not supported by this feature")
 	} else if *fuzzedSvc == "" || *fuzzedSvc == "AMAZON" {
 		log.Debug("basic IP fuzzing failed to determine cloud service")

@@ -16,8 +16,8 @@ type CloudfrontPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewCloudfrontPlugin(aws_conn *awsconnector.AWSConnector) CloudfrontPlugin {
-	cfp := CloudfrontPlugin{AwsConn: *aws_conn}
+func NewCloudfrontPlugin(awsConn *awsconnector.AWSConnector) CloudfrontPlugin {
+	cfp := CloudfrontPlugin{AwsConn: *awsConn}
 
 	return cfp
 }
@@ -32,8 +32,8 @@ func (cfp CloudfrontPlugin) NormalizeCFDistroFQDN(fqdn *string) string {
 func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error) {
 	var distros []types.DistributionSummary
 
-	cf_client := cloudfront.NewFromConfig(cfp.AwsConn.AwsConfig)
-	paginator := cloudfront.NewListDistributionsPaginator(cf_client, &cloudfront.ListDistributionsInput{})
+	cfClient := cloudfront.NewFromConfig(cfp.AwsConn.AwsConfig)
+	paginator := cloudfront.NewListDistributionsPaginator(cfClient, &cloudfront.ListDistributionsInput{})
 
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
@@ -47,9 +47,9 @@ func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error)
 	return &distros, nil
 }
 
-func (cfp CloudfrontPlugin) SearchResources(tgtIp *string) (*types.DistributionSummary, error) {
+func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*types.DistributionSummary, error) {
 	var cfDistroFQDN string
-	var cfIpAddrs *[]net.IP
+	var cfIPAddrs *[]net.IP
 	var matchedDistro types.DistributionSummary
 
 	cfResources, err := cfp.GetResources()
@@ -59,13 +59,13 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIp *string) (*types.DistributionS
 
 	for _, cfDistro := range *cfResources {
 		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
-		cfIpAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
+		cfIPAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
 		if err != nil {
 			return &matchedDistro, err
 		}
 
-		for _, ipAddr := range *cfIpAddrs {
-			if ipAddr.String() == *tgtIp {
+		for _, ipAddr := range *cfIPAddrs {
+			if ipAddr.String() == *tgtIP {
 				matchedDistro = cfDistro
 			}
 		}

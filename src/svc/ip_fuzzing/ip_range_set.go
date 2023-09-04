@@ -67,9 +67,9 @@ func ConvertIpPrefixesToGeneric(ipv4Prefixes *[]awsipprefix.AwsIpv4Prefix, ipv6P
 	return &ipPrefixes, nil
 }
 
-func ResolveIpAddrToCloudSvc(ipAddr *string, ipPrefixSet *[]awsipprefix.GenericAWSPrefix) (*string, error) {
+func ResolveIPAddrToCloudSvc(ipAddr *string, ipPrefixSet *[]awsipprefix.GenericAWSPrefix) (*string, error) {
 	var cloudSvc string
-	parsedIpAddr := net.ParseIP(*ipAddr)
+	parsedIPAddr := net.ParseIP(*ipAddr)
 
 	for _, ipPrefix := range *ipPrefixSet {
 		_, cidrNet, err := net.ParseCIDR(ipPrefix.IpRange)
@@ -77,7 +77,7 @@ func ResolveIpAddrToCloudSvc(ipAddr *string, ipPrefixSet *[]awsipprefix.GenericA
 			return &cloudSvc, err
 		}
 
-		if cidrNet.Contains(parsedIpAddr) {
+		if cidrNet.Contains(parsedIPAddr) {
 			// target IP is within this IP range
 			cloudSvc = ipPrefix.Service
 			break
