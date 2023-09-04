@@ -13,7 +13,7 @@ import (
 )
 
 type CloudfrontPlugin struct {
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
 func NewCloudfrontPlugin(aws_conn *awsconnector.AWSConnector) CloudfrontPlugin {

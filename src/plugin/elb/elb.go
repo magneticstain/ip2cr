@@ -12,7 +12,7 @@ import (
 )
 
 type ELBPlugin struct {
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
 func NewELBPlugin(aws_conn *awsconnector.AWSConnector) ELBPlugin {

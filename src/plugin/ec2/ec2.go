@@ -10,7 +10,7 @@ import (
 )
 
 type EC2Plugin struct {
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
 func NewEC2Plugin(aws_conn *awsconnector.AWSConnector) EC2Plugin {

@@ -9,7 +9,7 @@ import (
 )
 
 type IAMPlugin struct {
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
 func NewIAMPlugin(aws_conn *awsconnector.AWSConnector) IAMPlugin {
