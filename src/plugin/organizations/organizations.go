@@ -1,4 +1,4 @@
-package organizations
+package plugin
 
 import (
 	"context"
@@ -13,8 +13,8 @@ type OrganizationsPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewOrganizationsPlugin(aws_conn *awsconnector.AWSConnector) OrganizationsPlugin {
-	orgp := OrganizationsPlugin{AwsConn: *aws_conn}
+func NewOrganizationsPlugin(awsConn *awsconnector.AWSConnector) OrganizationsPlugin {
+	orgp := OrganizationsPlugin{AwsConn: *awsConn}
 
 	return orgp
 }

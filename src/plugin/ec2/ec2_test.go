@@ -1,17 +1,17 @@
-package ec2_test
+package plugin_test
 
 import (
 	"reflect"
 	"testing"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
+	plugin "github.com/magneticstain/ip-2-cloudresource/src/plugin/ec2"
 )
 
-func ec2pFactory() ec2.EC2Plugin {
+func ec2pFactory() plugin.EC2Plugin {
 	ac, _ := awsconnector.New()
 
-	ec2p := ec2.NewEC2Plugin(&ac)
+	ec2p := plugin.NewEC2Plugin(&ac)
 
 	return ec2p
 }

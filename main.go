@@ -24,16 +24,16 @@ func initRollbar() {
 	rollbar.SetEnvironment("development")
 }
 
-func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
+func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
 
 	if !*silent {
 		if matchedResource.RID != "" {
 			var acctStr string
-			if matchedResource.AccountId == "current" {
+			if matchedResource.AccountID == "current" {
 				acctStr = "current account"
 			} else {
-				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountId, acctAliasFmted)
+				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountID, acctAliasFmted)
 			}
 
 			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
@@ -55,7 +55,7 @@ func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 			// plaintext
 			if matchedResource.RID != "" {
 				fmt.Println(matchedResource.RID)
-				fmt.Printf("%s (%s)", matchedResource.AccountId, acctAliasFmted)
+				fmt.Printf("%s (%s)", matchedResource.AccountID, acctAliasFmted)
 			} else {
 				fmt.Println("not found")
 			}
@@ -63,7 +63,7 @@ func OutputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 	}
 }
 
-func RunCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIpFuzzing *bool, orgSearch *bool, orgSearchRoleName *string, silent *bool, jsonOutput *bool) {
+func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzzing *bool, orgSearch *bool, orgSearchRoleName *string, silent *bool, jsonOutput *bool) {
 	// cloud connections
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
@@ -74,13 +74,13 @@ func RunCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIpFuzz
 	// search
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac)
-	matchedResource, err := searchCtlr.StartSearch(ipAddr, *ipFuzzing, *advIpFuzzing, *orgSearch, *orgSearchRoleName)
+	matchedResource, err := searchCtlr.StartSearch(ipAddr, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchRoleName)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
 	// output
-	OutputResults(&matchedResource, silent, jsonOutput)
+	outputResults(&matchedResource, silent, jsonOutput)
 }
 
 func main() {
@@ -89,7 +89,7 @@ func main() {
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
 	ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts)")
-	advIpFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
+	advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
 	orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)")
 	orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
@@ -110,7 +110,7 @@ func main() {
 
 	initRollbar()
 
-	rollbar.WrapAndWait(RunCloudSearch, ipAddr, cloudSvc, ipFuzzing, advIpFuzzing, orgSearch, orgSearchRoleName, silent, jsonOutput)
+	rollbar.WrapAndWait(runCloudSearch, ipAddr, cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchRoleName, silent, jsonOutput)
 
 	rollbar.Close()
 }

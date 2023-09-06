@@ -1,4 +1,4 @@
-package iam
+package plugin
 
 import (
 	"context"
@@ -12,8 +12,8 @@ type IAMPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewIAMPlugin(aws_conn *awsconnector.AWSConnector) IAMPlugin {
-	iamp := IAMPlugin{AwsConn: *aws_conn}
+func NewIAMPlugin(awsConn *awsconnector.AWSConnector) IAMPlugin {
+	iamp := IAMPlugin{AwsConn: *awsConn}
 
 	return iamp
 }

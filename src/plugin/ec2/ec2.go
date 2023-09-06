@@ -1,4 +1,4 @@
-package ec2
+package plugin
 
 import (
 	"context"
@@ -13,8 +13,8 @@ type EC2Plugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewEC2Plugin(aws_conn *awsconnector.AWSConnector) EC2Plugin {
-	ec2p := EC2Plugin{AwsConn: *aws_conn}
+func NewEC2Plugin(awsConn *awsconnector.AWSConnector) EC2Plugin {
+	ec2p := EC2Plugin{AwsConn: *awsConn}
 
 	return ec2p
 }
@@ -37,7 +37,7 @@ func (ec2p EC2Plugin) GetResources() (*[]types.Reservation, error) {
 	return &instances, nil
 }
 
-func (ec2p EC2Plugin) SearchResources(tgtIp *string) (*types.Instance, error) {
+func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*types.Instance, error) {
 	var matchedInstance types.Instance
 
 	ec2Resources, err := ec2p.GetResources()
@@ -51,7 +51,7 @@ func (ec2p EC2Plugin) SearchResources(tgtIp *string) (*types.Instance, error) {
 			publicIPv4Addr := instance.PublicIpAddress
 			IPv6Addr := instance.Ipv6Address
 
-			if *publicIPv4Addr == *tgtIp || *IPv6Addr == *tgtIp {
+			if *publicIPv4Addr == *tgtIP || *IPv6Addr == *tgtIP {
 				matchedInstance = instance
 				break
 			}

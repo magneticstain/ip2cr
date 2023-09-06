@@ -11,7 +11,7 @@ import (
 	"golang.org/x/exp/slices"
 )
 
-type TestIpAddr struct {
+type TestIPAddr struct {
 	ipAddr string
 }
 
@@ -23,17 +23,17 @@ func searchFactory() search.Search {
 	return search
 }
 
-func ipFactory() []TestIpAddr {
-	var ipData []TestIpAddr
+func ipFactory() []TestIPAddr {
+	var ipData []TestIPAddr
 
 	ipData = append(
 		ipData,
-		TestIpAddr{"52.4.175.237"},  // CloudFront
-		TestIpAddr{"65.8.191.186"},  // ALB
-		TestIpAddr{"35.170.192.9"},  // EC2
-		TestIpAddr{"3.218.196.10"},  // NLB
-		TestIpAddr{"34.205.13.193"}, // Classic ELB
-		TestIpAddr{"2600:1f18:243e:1300:4685:5a7:7c28:c53a"}, // EC2 IPv6
+		TestIPAddr{"52.4.175.237"},  // CloudFront
+		TestIPAddr{"65.8.191.186"},  // ALB
+		TestIPAddr{"35.170.192.9"},  // EC2
+		TestIPAddr{"3.218.196.10"},  // NLB
+		TestIPAddr{"34.205.13.193"}, // Classic ELB
+		TestIPAddr{"2600:1f18:243e:1300:4685:5a7:7c28:c53a"}, // EC2 IPv6
 	)
 
 	return ipData
@@ -49,7 +49,7 @@ func cloudSvcsFactory() []string {
 	return cloudSvcs
 }
 
-func TestRunIpFuzzing(t *testing.T) {
+func TestRunIPFuzzing(t *testing.T) {
 	search := searchFactory()
 	var tests = ipFactory()
 
@@ -58,7 +58,7 @@ func TestRunIpFuzzing(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIpFuzzing(&td.ipAddr)
+			fuzzedSvc, err := search.RunIPFuzzing(&td.ipAddr)
 			if err != nil {
 				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}

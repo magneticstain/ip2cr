@@ -1,4 +1,4 @@
-package elb
+package plugin
 
 import (
 	"context"
@@ -15,8 +15,8 @@ type ELBPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewELBPlugin(aws_conn *awsconnector.AWSConnector) ELBPlugin {
-	elbp := ELBPlugin{AwsConn: *aws_conn}
+func NewELBPlugin(awsConn *awsconnector.AWSConnector) ELBPlugin {
+	elbp := ELBPlugin{AwsConn: *awsConn}
 
 	return elbp
 }
@@ -39,8 +39,8 @@ func (elbp ELBPlugin) GetResources() (*[]types.LoadBalancer, error) {
 	return &elbs, nil
 }
 
-func (elbp ELBPlugin) SearchResources(tgtIp *string) (*types.LoadBalancer, error) {
-	var elbIpAddrs *[]net.IP
+func (elbp ELBPlugin) SearchResources(tgtIP *string) (*types.LoadBalancer, error) {
+	var elbIPAddrs *[]net.IP
 	var matchedELB types.LoadBalancer
 
 	elbResources, err := elbp.GetResources()
@@ -49,13 +49,13 @@ func (elbp ELBPlugin) SearchResources(tgtIp *string) (*types.LoadBalancer, error
 	}
 
 	for _, elb := range *elbResources {
-		elbIpAddrs, err = utils.LookupFQDN(elb.DNSName)
+		elbIPAddrs, err = utils.LookupFQDN(elb.DNSName)
 		if err != nil {
 			return &matchedELB, err
 		}
 
-		for _, ipAddr := range *elbIpAddrs {
-			if ipAddr.String() == *tgtIp {
+		for _, ipAddr := range *elbIPAddrs {
+			if ipAddr.String() == *tgtIP {
 				matchedELB = elb
 				break
 			}

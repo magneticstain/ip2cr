@@ -1,17 +1,17 @@
-package elb_test
+package plugin_test
 
 import (
 	"reflect"
 	"testing"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
+	plugin "github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
 )
 
-func elbpFactory() elb.ELBPlugin {
+func elbpFactory() plugin.ELBPlugin {
 	ac, _ := awsconnector.New()
 
-	elbp := elb.NewELBPlugin(&ac)
+	elbp := plugin.NewELBPlugin(&ac)
 
 	return elbp
 }
@@ -57,10 +57,10 @@ func TestSearchResources(t *testing.T) {
 	}
 }
 
-func elbv1pFactory() elb.ELBv1Plugin {
+func elbv1pFactory() plugin.ELBv1Plugin {
 	ac, _ := awsconnector.New()
 
-	elbv1p := elb.NewELBv1Plugin(&ac)
+	elbv1p := plugin.NewELBv1Plugin(&ac)
 
 	return elbv1p
 }
