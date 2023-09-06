@@ -193,7 +193,11 @@ func (search Search) StartSearch(ipAddr *string, doIPFuzzing bool, doAdvIPFuzzin
 			search.ac = &ac
 		}
 
-		search.RunSearch(&matchingResource, &cloudSvcs, ipAddr, &acctID)
+		_, err := search.RunSearch(&matchingResource, &cloudSvcs, ipAddr, &acctID)
+		if err != nil {
+			return matchingResource, err
+		}
+
 		if matchingResource.RID != "" {
 			break
 		}
