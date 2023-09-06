@@ -51,10 +51,8 @@ jobs:
       - name: Build
         run: go build -v ./...
 
-      - name: Install golint
-        run: go install golang.org/x/lint/golint@latest
-      - name: Run golint
-        run: golint ./...
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3.7.0
 
       - name: Test
         run: go test -v -race -shuffle=on -coverprofile=coverage.txt ./...
