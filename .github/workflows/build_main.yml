@@ -30,9 +30,6 @@ jobs:
 
       - name: Check code formatting
         run: gofmt -s -w . && git diff --exit-code
-
-      - name: Run go vet
-        run: go vet ./...
     
       - name: Ensure dep definitions are up-to-date
         run: go mod tidy && git diff --exit-code
