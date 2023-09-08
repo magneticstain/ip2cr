@@ -65,7 +65,7 @@ func (search Search) SearchAWS(cloudSvc string) (bool, error) {
 	resourceFound := false
 	cloudSvc = strings.ToLower(cloudSvc)
 
-	log.Debug("searching ", cloudSvc, " in AWS; account: ", search.MatchingResource.AccountID, " (", search.MatchingResource.AccountAliases, ")")
+	log.Debug("searching ", cloudSvc, " in AWS")
 
 	switch cloudSvc {
 	case "cloudfront":
@@ -125,6 +125,21 @@ func (search Search) SearchAWS(cloudSvc string) (bool, error) {
 
 func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (bool, error) {
 	resourceFound := false
+
+	if *acctID != "current" {
+		// resolve account's aliases
+		iamp := iamp.NewIAMPlugin(search.ac)
+		acctAliases, err := iamp.GetResources()
+		if err != nil {
+			return resourceFound, err
+		}
+
+		log.Info("starting AWS resource search in account: ", *acctID, " ", acctAliases)
+
+		search.MatchingResource.AccountAliases = acctAliases
+	} else {
+		log.Info("starting AWS resource search in principal account")
+	}
 
 	for _, svc := range *cloudSvcs {
 		_, err := search.SearchAWS(svc)
