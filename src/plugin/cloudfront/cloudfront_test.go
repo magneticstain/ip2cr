@@ -17,8 +17,6 @@ func cfpFactory() plugin.CloudfrontPlugin {
 }
 
 func TestNormalizeCFDistroFQDN(t *testing.T) {
-	cfp := cfpFactory()
-
 	var tests = []struct {
 		origFQDN, normalizedFQDN string
 	}{
@@ -31,7 +29,7 @@ func TestNormalizeCFDistroFQDN(t *testing.T) {
 		testName := td.origFQDN
 
 		t.Run(testName, func(t *testing.T) {
-			normalizedFQDN := cfp.NormalizeCFDistroFQDN(&td.origFQDN)
+			normalizedFQDN := plugin.NormalizeCFDistroFQDN(&td.origFQDN)
 
 			if normalizedFQDN != td.normalizedFQDN {
 				t.Errorf("CloudFront distribution domain normalization failed; expected %s, received %s", td.normalizedFQDN, normalizedFQDN)

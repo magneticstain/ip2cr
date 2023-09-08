@@ -22,7 +22,7 @@ func NewCloudfrontPlugin(awsConn *awsconnector.AWSConnector) CloudfrontPlugin {
 	return cfp
 }
 
-func (cfp CloudfrontPlugin) NormalizeCFDistroFQDN(fqdn *string) string {
+func NormalizeCFDistroFQDN(fqdn *string) string {
 	// CloudFront currently returns a `.` appended to the fqdn
 	// we'll need to get rid of it so that it can be lookup up properly
 
@@ -58,7 +58,7 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*types.DistributionS
 	}
 
 	for _, cfDistro := range *cfResources {
-		cfDistroFQDN = cfp.NormalizeCFDistroFQDN(cfDistro.DomainName)
+		cfDistroFQDN = NormalizeCFDistroFQDN(cfDistro.DomainName)
 		cfIPAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
 		if err != nil {
 			return &matchedDistro, err
