@@ -2,5 +2,13 @@ coverage:
   status:
     project:
       default:
+        target: 70%
+        threshold: 5%
+    patch:
+      default:
         target: 75%
         threshold: 25%
+      releases:
+        target: 70%
+        branches:
+          - main
