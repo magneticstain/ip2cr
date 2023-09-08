@@ -5,10 +5,8 @@ coverage:
         target: 70%
         threshold: 5%
     patch:
-      default:
-        target: 75%
-        threshold: 25%
+      default: false
       releases:
-        target: 70%
+        target: 75%
         branches:
           - main
