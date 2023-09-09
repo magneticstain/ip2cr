@@ -119,17 +119,17 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 }
 
 func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalResource.Resource, error) {
+	var acctAliases []string
 	var matchingResource generalResource.Resource
+	var err error
 
 	if *acctID != "current" {
 		// resolve account's aliases
 		iamp := iamp.NewIAMPlugin(search.ac)
-		acctAliases, err := iamp.GetResources()
+		acctAliases, err = iamp.GetResources()
 		if err != nil {
 			return &matchingResource, err
 		}
-
-		matchingResource.AccountAliases = acctAliases
 
 		log.Info("starting AWS resource search in account: ", *acctID, " ", acctAliases)
 	} else {
@@ -137,13 +137,14 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 	}
 
 	for _, svc := range *cloudSvcs {
-		matchingResource, err := search.SearchAWS(svc)
+		matchingResource, err = search.SearchAWS(svc)
 
 		if err != nil {
 			return &matchingResource, err
 		} else if matchingResource.RID != "" {
 			// resource was found
 			matchingResource.AccountID = *acctID
+			matchingResource.AccountAliases = acctAliases
 			return &matchingResource, nil
 		}
 	}
