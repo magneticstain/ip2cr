@@ -28,10 +28,10 @@ func NewSearch(ac *awsconnector.AWSConnector, ipAddr *string) Search {
 	return search
 }
 
-func (search Search) RunIPFuzzing() (*string, error) {
+func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	var fuzzedSvc *string
 
-	fuzzedSvc, err := ipfuzzing.FuzzIP(search.ipAddr, true)
+	fuzzedSvc, err := ipfuzzing.FuzzIP(search.ipAddr, doAdvIPFuzzing)
 	if err != nil {
 		return fuzzedSvc, err
 	} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
@@ -154,9 +154,10 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (*generalResource.Resource, error) {
 	var matchingResource *generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
+	var err error
 
-	if doIPFuzzing {
-		fuzzedSvc, err := search.RunIPFuzzing()
+	if doIPFuzzing || doAdvIPFuzzing {
+		fuzzedSvc, err := search.RunIPFuzzing(doAdvIPFuzzing)
 		if err != nil {
 			return matchingResource, err
 		}
@@ -176,7 +177,7 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 	var acctsToSearch *[]string
 	if doOrgSearch {
 		log.Info("starting org account enumeration")
-		var err error
+
 		acctsToSearch, err = search.fetchOrgAcctIds()
 		if err != nil {
 			return matchingResource, err
@@ -199,7 +200,7 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 			search.ac = &ac
 		}
 
-		matchingResource, err := search.runSearch(&cloudSvcs, &acctID)
+		matchingResource, err = search.runSearch(&cloudSvcs, &acctID)
 		if err != nil {
 			return matchingResource, err
 		}
