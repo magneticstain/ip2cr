@@ -43,13 +43,13 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	return fuzzedSvc, err
 }
 
-func (search Search) fetchOrgAcctIds() (*[]string, error) {
+func (search Search) fetchOrgAcctIds() ([]string, error) {
 	var acctIds []string
 
 	orgp := orgp.NewOrganizationsPlugin(search.ac)
 	orgAccts, err := orgp.GetResources()
 	if err != nil {
-		return &acctIds, err
+		return acctIds, err
 	}
 
 	for _, acct := range *orgAccts {
@@ -57,7 +57,7 @@ func (search Search) fetchOrgAcctIds() (*[]string, error) {
 		acctIds = append(acctIds, *acct.Id)
 	}
 
-	return &acctIds, nil
+	return acctIds, nil
 }
 
 func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error) {
@@ -152,14 +152,15 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 }
 
 func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (*generalResource.Resource, error) {
-	var matchingResource *generalResource.Resource
+	var matchingResource generalResource.Resource
+	var resultResource *generalResource.Resource
 	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 	var err error
 
 	if doIPFuzzing || doAdvIPFuzzing {
 		fuzzedSvc, err := search.RunIPFuzzing(doAdvIPFuzzing)
 		if err != nil {
-			return matchingResource, err
+			return &matchingResource, err
 		}
 
 		normalizedSvcName := strings.ToLower(*fuzzedSvc)
@@ -174,41 +175,40 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 		}
 	}
 
-	var acctsToSearch *[]string
+	var acctsToSearch []string
 	if doOrgSearch {
 		log.Info("starting org account enumeration")
 
 		acctsToSearch, err = search.fetchOrgAcctIds()
 		if err != nil {
-			return matchingResource, err
+			log.Info("here")
+			return &matchingResource, err
 		}
 	} else {
-		acctsToSearch = &[]string{"current"}
+		acctsToSearch = append(acctsToSearch, "current")
 	}
 
 	log.Info("beginning resource gathering")
 	var acctRoleArn string
-	for _, acctID := range *acctsToSearch {
+	for _, acctID := range acctsToSearch {
 		if acctID != "current" {
 			// replace connector with assumed role connector
 			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
 			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
 			if err != nil {
-				return matchingResource, err
+				return &matchingResource, err
 			}
 
 			search.ac = &ac
 		}
 
-		matchingResource, err = search.runSearch(&cloudSvcs, &acctID)
+		resultResource, err = search.runSearch(&cloudSvcs, &acctID)
 		if err != nil {
-			return matchingResource, err
-		}
-
-		if matchingResource.RID != "" {
-			return matchingResource, err
+			return &matchingResource, err
+		} else if matchingResource.RID != "" {
+			return resultResource, err
 		}
 	}
 
-	return matchingResource, nil
+	return &matchingResource, nil
 }
