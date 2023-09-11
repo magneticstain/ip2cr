@@ -205,8 +205,9 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 		resultResource, err = search.runSearch(&cloudSvcs, &acctID)
 		if err != nil {
 			return &matchingResource, err
-		} else if matchingResource.RID != "" {
-			return resultResource, err
+		} else if resultResource.RID != "" {
+			matchingResource = *resultResource
+			break
 		}
 	}
 
