@@ -118,3 +118,9 @@ Usage of ./ip2cr:
 You can use the Terraform plans provided here to generate sample resources in AWS for testing.
 
 <https://github.com/magneticstain/tf-ip2cr>
+
+## Support, Feature Requests, and General Community Discussion
+
+The `Discusions` module of this repository has been setup as a place to get support, request new features, and facilitate any general discorse related to IP2CR.
+
+If you are having an issue when using IP2CR, or just need general help, you should start here as opposed to creating an Issue. Any Issues created for support purposes will be closed.
