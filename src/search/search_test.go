@@ -58,13 +58,35 @@ func TestRunIPFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIPFuzzing()
+			fuzzedSvc, err := search.RunIPFuzzing(false)
 			if err != nil {
 				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
 			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
 				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
+			}
+		})
+	}
+}
+
+func TestRunIPFuzzing_AdvancedFuzzing(t *testing.T) {
+	var tests = ipFactory()
+
+	validSvcs := ipFuzzingCloudSvcsFactory()
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			fuzzedSvc, err := search.RunIPFuzzing(true)
+			if err != nil {
+				t.Errorf("Advanced IP fuzzing routine unexpectedly failed; error: %s", err)
+			}
+
+			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
+				t.Errorf("Advanced IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
 			}
 		})
 	}
@@ -90,7 +112,7 @@ func TestSearchAWS(t *testing.T) {
 			res, _ := search.SearchAWS(td.cloudSvc)
 
 			resType := reflect.TypeOf(res)
-			expectedType := "bool"
+			expectedType := "Resource"
 			if resType.Name() != expectedType {
 				t.Errorf("AWS resource search failed; expected %s after search, received %s", expectedType, resType.Name())
 			}
@@ -121,7 +143,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	}
 }
 
-func TestStartSearch_NoFuzzing(t *testing.T) {
+func TestInitSearch_NoFuzzing(t *testing.T) {
 	var tests = []struct {
 		ipAddr string
 	}{
@@ -139,8 +161,8 @@ func TestStartSearch_NoFuzzing(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch(false, false, false, "")
 
-			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "bool"
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -148,7 +170,7 @@ func TestStartSearch_NoFuzzing(t *testing.T) {
 	}
 }
 
-func TestStartSearch_BasicFuzzing(t *testing.T) {
+func TestInitSearch_BasicFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -159,8 +181,8 @@ func TestStartSearch_BasicFuzzing(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch(true, false, false, "")
 
-			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "bool"
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing enabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -168,7 +190,7 @@ func TestStartSearch_BasicFuzzing(t *testing.T) {
 	}
 }
 
-func TestStartSearch_AdvancedFuzzing(t *testing.T) {
+func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -179,8 +201,8 @@ func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch(true, false, false, "")
 
-			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "bool"
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with advanced IP fuzzing disabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -188,7 +210,7 @@ func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 	}
 }
 
-func TestStartSearch_OrgSearchEnabled(t *testing.T) {
+func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -199,8 +221,8 @@ func TestStartSearch_OrgSearchEnabled(t *testing.T) {
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch(false, false, true, "ip2cr-org-role")
 
-			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "bool"
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}

@@ -49,6 +49,15 @@
             "args": ["--ipaddr=52.71.162.180", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
         },
         {
+            "name": "Launch - IP Param - Test IP - ALB - Organizations - No Fuzzing",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "main.go",
+            "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
+            "args": ["--ipaddr=34.228.172.96", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--ip-fuzzing=false", "--adv-ip-fuzzing=false", "--verbose"]
+        },
+        {
             "name": "Launch - IP Param - Test IP - ALB - Silent Output",
             "type": "go",
             "request": "launch",
@@ -73,7 +82,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=18.239.176.187", "--verbose"]
+            "args": ["--ipaddr=13.35.86.108", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - EC2",
@@ -82,7 +91,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=107.23.227.94", "--verbose"]
+            "args": ["--ipaddr=3.87.254.18", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - EC2 - IPv6",
@@ -91,7 +100,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=2600:1f18:86a:a000:e0a5:9610:a205:63db", "--verbose"]
+            "args": ["--ipaddr=2600:1f18:86a:a000:d1a1:87d1:7722:81c2", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - EC2 - IPv6 - Org Search",
@@ -100,7 +109,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=2600:1f18:86a:a000:4b2c:386e:f194:2304", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
+            "args": ["--ipaddr=2600:1f18:86a:a000:d1a1:87d1:7722:81c2", "--org-search", "--org-search-role-name=ip2cr-xaccount-connector", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - NLB",
@@ -109,7 +118,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=34.236.189.143", "--verbose"]
+            "args": ["--ipaddr=44.215.97.212", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test IP - Classic ELB",
@@ -118,7 +127,7 @@
             "mode": "debug",
             "program": "main.go",
             "env": {"AWS_REGION": "us-east-1", "AWS_PROFILE": "jcarlsonpurcell-personal"},
-            "args": ["--ipaddr=44.219.102.137", "--verbose"]
+            "args": ["--ipaddr=52.4.249.101", "--verbose"]
         },
         {
             "name": "Launch - IP Param - Test Known-Excluded IP",
