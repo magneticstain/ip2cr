@@ -1,24 +1,22 @@
-package cloudfront_test
+package plugin_test
 
 import (
 	"reflect"
 	"testing"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
+	plugin "github.com/magneticstain/ip-2-cloudresource/src/plugin/cloudfront"
 )
 
-func cfpFactory() cloudfront.CloudfrontPlugin {
+func cfpFactory() plugin.CloudfrontPlugin {
 	ac, _ := awsconnector.New()
 
-	cfp := cloudfront.NewCloudfrontPlugin(&ac)
+	cfp := plugin.NewCloudfrontPlugin(&ac)
 
 	return cfp
 }
 
 func TestNormalizeCFDistroFQDN(t *testing.T) {
-	cfp := cfpFactory()
-
 	var tests = []struct {
 		origFQDN, normalizedFQDN string
 	}{
@@ -31,7 +29,7 @@ func TestNormalizeCFDistroFQDN(t *testing.T) {
 		testName := td.origFQDN
 
 		t.Run(testName, func(t *testing.T) {
-			normalizedFQDN := cfp.NormalizeCFDistroFQDN(&td.origFQDN)
+			normalizedFQDN := plugin.NormalizeCFDistroFQDN(&td.origFQDN)
 
 			if normalizedFQDN != td.normalizedFQDN {
 				t.Errorf("CloudFront distribution domain normalization failed; expected %s, received %s", td.normalizedFQDN, normalizedFQDN)

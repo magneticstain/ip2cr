@@ -6,41 +6,93 @@ import (
 	"testing"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
+	"golang.org/x/exp/slices"
 )
 
-type TestIpAddr struct {
+type TestIPAddr struct {
 	ipAddr string
 }
 
-func searchFactory() search.Search {
+func searchFactory(ipAddr *string) search.Search {
 	ac, _ := awsconnector.New()
 
-	search := search.NewSearch(&ac)
+	search := search.NewSearch(&ac, ipAddr)
 
 	return search
 }
 
-func ipFactory() []TestIpAddr {
-	var ipData []TestIpAddr
+func ipFactory() []TestIPAddr {
+	var ipData []TestIPAddr
 
 	ipData = append(
 		ipData,
-		TestIpAddr{"52.4.175.237"}, // cloudfront
-		TestIpAddr{"65.8.191.186"}, // ALB
-		TestIpAddr{"35.170.192.9"}, // EC2
-		TestIpAddr{"2600:1f18:243e:1300:4685:5a7:7c28:c53a"}, // EC2 IPv6
-		TestIpAddr{"3.218.196.10"},                           // NLB
-		TestIpAddr{"34.205.13.193"},                          // Classic ELB
+		TestIPAddr{"52.4.175.237"},  // CloudFront
+		TestIPAddr{"65.8.191.186"},  // ALB
+		TestIPAddr{"35.170.192.9"},  // EC2
+		TestIPAddr{"3.218.196.10"},  // NLB
+		TestIPAddr{"34.205.13.193"}, // Classic ELB
+		TestIPAddr{"2600:1f18:243e:1300:4685:5a7:7c28:c53a"}, // EC2 IPv6
 	)
 
 	return ipData
 }
 
-func TestSearchAWS(t *testing.T) {
-	search := searchFactory()
+func ipFuzzingCloudSvcsFactory() []string {
+	cloudSvcs := []string{
+		"CLOUDFRONT",
+		"EC2",
+		"UNKNOWN",
+	}
 
+	return cloudSvcs
+}
+
+func TestRunIPFuzzing(t *testing.T) {
+	var tests = ipFactory()
+
+	validSvcs := ipFuzzingCloudSvcsFactory()
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			fuzzedSvc, err := search.RunIPFuzzing(false)
+			if err != nil {
+				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
+			}
+
+			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
+				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
+			}
+		})
+	}
+}
+
+func TestRunIPFuzzing_AdvancedFuzzing(t *testing.T) {
+	var tests = ipFactory()
+
+	validSvcs := ipFuzzingCloudSvcsFactory()
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			fuzzedSvc, err := search.RunIPFuzzing(true)
+			if err != nil {
+				t.Errorf("Advanced IP fuzzing routine unexpectedly failed; error: %s", err)
+			}
+
+			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
+				t.Errorf("Advanced IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
+			}
+		})
+	}
+}
+
+func TestSearchAWS(t *testing.T) {
 	var tests = []struct {
 		cloudSvc, ipAddr string
 	}{
@@ -54,22 +106,21 @@ func TestSearchAWS(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
-		matchedResource := generalResource.Resource{}
-		t.Run(testName, func(t *testing.T) {
-			res, _ := search.SearchAWS(td.cloudSvc, &td.ipAddr, &matchedResource)
+		search := searchFactory(&td.ipAddr)
 
-			matchedResourceType := reflect.TypeOf(*res)
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.SearchAWS(td.cloudSvc)
+
+			resType := reflect.TypeOf(res)
 			expectedType := "Resource"
-			if matchedResourceType.Name() != expectedType {
-				t.Errorf("AWS resource search failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			if resType.Name() != expectedType {
+				t.Errorf("AWS resource search failed; expected %s after search, received %s", expectedType, resType.Name())
 			}
 		})
 	}
 }
 
 func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
-	search := searchFactory()
-
 	var tests = []struct {
 		cloudSvc, ipAddr string
 	}{
@@ -81,9 +132,10 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
-		matchedResource := generalResource.Resource{}
+		search := searchFactory(&td.ipAddr)
+
 		t.Run(testName, func(t *testing.T) {
-			_, err := search.SearchAWS(td.cloudSvc, &td.ipAddr, &matchedResource)
+			_, err := search.SearchAWS(td.cloudSvc)
 			if err == nil {
 				t.Errorf("Error was expected, but not seen, when performing general search; using %s for unknown cloud service key", td.cloudSvc)
 			}
@@ -91,9 +143,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	}
 }
 
-func TestStartSearch_NoFuzzing(t *testing.T) {
-	search := searchFactory()
-
+func TestInitSearch_NoFuzzing(t *testing.T) {
 	var tests = []struct {
 		ipAddr string
 	}{
@@ -106,10 +156,12 @@ func TestStartSearch_NoFuzzing(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, false, false, false, "")
+		search := searchFactory(&td.ipAddr)
 
-			matchedResourceType := reflect.TypeOf(res)
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch(false, false, false, "")
+
+			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -118,18 +170,18 @@ func TestStartSearch_NoFuzzing(t *testing.T) {
 	}
 }
 
-func TestStartSearch_BasicFuzzing(t *testing.T) {
-	search := searchFactory()
-
+func TestInitSearch_BasicFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, true, false, false, "")
+		search := searchFactory(&td.ipAddr)
 
-			matchedResourceType := reflect.TypeOf(res)
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch(true, false, false, "")
+
+			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing enabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -138,18 +190,18 @@ func TestStartSearch_BasicFuzzing(t *testing.T) {
 	}
 }
 
-func TestStartSearch_AdvancedFuzzing(t *testing.T) {
-	search := searchFactory()
-
+func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, true, false, false, "")
+		search := searchFactory(&td.ipAddr)
 
-			matchedResourceType := reflect.TypeOf(res)
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch(true, false, false, "")
+
+			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with advanced IP fuzzing disabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -158,18 +210,18 @@ func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 	}
 }
 
-func TestStartSearch_OrgSearchEnabled(t *testing.T) {
-	search := searchFactory()
-
+func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		t.Run(testName, func(t *testing.T) {
-			res, _ := search.StartSearch(&td.ipAddr, false, false, true, "ip2cr-org-role")
+		search := searchFactory(&td.ipAddr)
 
-			matchedResourceType := reflect.TypeOf(res)
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch(false, false, true, "ip2cr-org-role")
+
+			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())

@@ -1,17 +1,17 @@
-package iam_test
+package plugin_test
 
 import (
 	"reflect"
 	"testing"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/iam"
+	plugin "github.com/magneticstain/ip-2-cloudresource/src/plugin/iam"
 )
 
-func iampFactory() iam.IAMPlugin {
+func iampFactory() plugin.IAMPlugin {
 	ac, _ := awsconnector.New()
 
-	iamp := iam.NewIAMPlugin(&ac)
+	iamp := plugin.NewIAMPlugin(&ac)
 
 	return iamp
 }

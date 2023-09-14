@@ -1,4 +1,4 @@
-package iam
+package plugin
 
 import (
 	"context"
@@ -6,16 +6,14 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 )
 
 type IAMPlugin struct {
-	GenPlugin *generalPlugin.Plugin
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
-func NewIAMPlugin(aws_conn *awsconnector.AWSConnector) IAMPlugin {
-	iamp := IAMPlugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
+func NewIAMPlugin(awsConn *awsconnector.AWSConnector) IAMPlugin {
+	iamp := IAMPlugin{AwsConn: *awsConn}
 
 	return iamp
 }

@@ -72,7 +72,7 @@ func TestMapFQDNToSvc_InvalidSvcs(t *testing.T) {
 	}
 }
 
-func TestMStartAdvancedFuzzing(t *testing.T) {
+func TestRunAdvancedFuzzing(t *testing.T) {
 	var tests = []struct {
 		cloudSvc, ipAddr string
 	}{
@@ -87,7 +87,7 @@ func TestMStartAdvancedFuzzing(t *testing.T) {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := ipfuzzing.StartAdvancedFuzzing(&td.ipAddr)
+			fuzzedSvc, err := ipfuzzing.RunAdvancedFuzzing(&td.ipAddr)
 			if err != nil {
 				t.Errorf("unexpected error received when attempting to fuzz %s service using advanced fuzzing: %s", td.cloudSvc, err)
 			}
@@ -99,7 +99,7 @@ func TestMStartAdvancedFuzzing(t *testing.T) {
 	}
 }
 
-func TestMStartAdvancedFuzzing_InvalidIPs(t *testing.T) {
+func TestRunAdvancedFuzzing_InvalidIPs(t *testing.T) {
 	var tests = []struct {
 		cloudSvc, ipAddr string
 	}{
@@ -111,7 +111,7 @@ func TestMStartAdvancedFuzzing_InvalidIPs(t *testing.T) {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			_, err := ipfuzzing.StartAdvancedFuzzing(&td.ipAddr)
+			_, err := ipfuzzing.RunAdvancedFuzzing(&td.ipAddr)
 			if err == nil {
 				t.Errorf("expected error when performing advanced IP fuzzing, but didn't")
 			}

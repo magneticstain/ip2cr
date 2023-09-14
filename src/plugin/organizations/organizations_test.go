@@ -1,17 +1,17 @@
-package organizations_test
+package plugin_test
 
 import (
 	"reflect"
 	"testing"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/plugin/organizations"
+	plugin "github.com/magneticstain/ip-2-cloudresource/src/plugin/organizations"
 )
 
-func orgFactory() organizations.OrganizationsPlugin {
+func orgFactory() plugin.OrganizationsPlugin {
 	ac, _ := awsconnector.New()
 
-	orgp := organizations.NewOrganizationsPlugin(&ac)
+	orgp := plugin.NewOrganizationsPlugin(&ac)
 
 	return orgp
 }

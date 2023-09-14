@@ -1,4 +1,4 @@
-package elb
+package plugin
 
 import (
 	"context"
@@ -8,17 +8,15 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	generalPlugin "github.com/magneticstain/ip-2-cloudresource/src/plugin"
 	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
 type ELBv1Plugin struct {
-	GenPlugin *generalPlugin.Plugin
-	AwsConn   awsconnector.AWSConnector
+	AwsConn awsconnector.AWSConnector
 }
 
-func NewELBv1Plugin(aws_conn *awsconnector.AWSConnector) ELBv1Plugin {
-	elbv1p := ELBv1Plugin{GenPlugin: &generalPlugin.Plugin{}, AwsConn: *aws_conn}
+func NewELBv1Plugin(awsConn *awsconnector.AWSConnector) ELBv1Plugin {
+	elbv1p := ELBv1Plugin{AwsConn: *awsConn}
 
 	return elbv1p
 }
@@ -26,8 +24,8 @@ func NewELBv1Plugin(aws_conn *awsconnector.AWSConnector) ELBv1Plugin {
 func (elbv1p ELBv1Plugin) GetResources() (*[]types.LoadBalancerDescription, error) {
 	var elbs []types.LoadBalancerDescription
 
-	elb_client := elasticloadbalancing.NewFromConfig(elbv1p.AwsConn.AwsConfig)
-	paginator := elasticloadbalancing.NewDescribeLoadBalancersPaginator(elb_client, nil)
+	elbClient := elasticloadbalancing.NewFromConfig(elbv1p.AwsConn.AwsConfig)
+	paginator := elasticloadbalancing.NewDescribeLoadBalancersPaginator(elbClient, nil)
 
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
@@ -41,8 +39,8 @@ func (elbv1p ELBv1Plugin) GetResources() (*[]types.LoadBalancerDescription, erro
 	return &elbs, nil
 }
 
-func (elbv1p ELBv1Plugin) SearchResources(tgt_ip *string) (*types.LoadBalancerDescription, error) {
-	var elbIpAddrs *[]net.IP
+func (elbv1p ELBv1Plugin) SearchResources(tgtIP *string) (*types.LoadBalancerDescription, error) {
+	var elbIPAddrs *[]net.IP
 	var matchedELB types.LoadBalancerDescription
 
 	elbResources, err := elbv1p.GetResources()
@@ -51,13 +49,13 @@ func (elbv1p ELBv1Plugin) SearchResources(tgt_ip *string) (*types.LoadBalancerDe
 	}
 
 	for _, elb := range *elbResources {
-		elbIpAddrs, err = utils.LookupFQDN(elb.DNSName)
+		elbIPAddrs, err = utils.LookupFQDN(elb.DNSName)
 		if err != nil {
 			return &matchedELB, err
 		}
 
-		for _, ipAddr := range *elbIpAddrs {
-			if ipAddr.String() == *tgt_ip {
+		for _, ipAddr := range *elbIPAddrs {
+			if ipAddr.String() == *tgtIP {
 				matchedELB = elb
 				break
 			}

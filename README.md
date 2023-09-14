@@ -3,6 +3,7 @@
 [![Build and Test - Main Branch](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml)
 [![Build and Test - Release Branches](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml)
 [![Release](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![codecov](https://codecov.io/gh/magneticstain/ip-2-cloudresource/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip-2-cloudresource)
 
 ## Summary
@@ -11,7 +12,7 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 
 ### Disclaimer
 
-I created this project mainly to learn Go. It should be fine for a cloud admin running this on their workstation, trying to identify a resource in the AWS account. But I wouldn't necessarily integrate it with my production monitoring system.
+I created this project mainly to learn Go. It should be fine for a cloud admin running this on their workstation, trying to identify a resource in the AWS account. But I wouldn't necessarily integrate it with my production monitoring system/lunar lander.
 
 ## Features
 
@@ -36,6 +37,8 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - [X] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip-2-cloudresource/issues/77) )
 - [X] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
 - [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
+- [ ] Add Support For Concurrent Account-Based ResourceSsearches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
+- [ ] Improve Unit Tests to Integrate With tf-ip2cr and Use Real Data ( [Issue #142](https://github.com/magneticstain/ip-2-cloudresource/issues/142) )
 
 ## Prerequisites
 
@@ -83,10 +86,6 @@ tar -xvzf ip2cr_Linux_x86_64_v0.0.3.tar.gz -C /opt/ip2cr/
 cd /opt/ip2cr/
 ```
 
-### Current Stable Version
-
-The current stable version of IP2CR is `v0.0.3`.
-
 ## Usage
 
 After installing, `cd` to the app directory if not already there and run the `ip2cr` binary.
@@ -102,6 +101,10 @@ Usage of ./ip2cr:
     	IP address to search for (default "127.0.0.1")
   -json
     	Outputs results in JSON format; implies usage of --silent flag
+  -org-search
+    	Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)
+  -org-search-role-name string
+    	The name of the role in each child account of an AWS Organization to assume when performing a search (default "ip2cr")
   -silent
     	If enabled, only output the results
   -svc string
@@ -115,3 +118,9 @@ Usage of ./ip2cr:
 You can use the Terraform plans provided here to generate sample resources in AWS for testing.
 
 <https://github.com/magneticstain/tf-ip2cr>
+
+## Support, Feature Requests, and General Community Discussion
+
+The `Discusions` module of this repository has been setup as a place to get support, request new features, and facilitate any general discorse related to IP2CR.
+
+If you are having an issue when using IP2CR, or just need general help, you should start here as opposed to creating an Issue. Any Issues created for support purposes will be closed.
