@@ -21,7 +21,7 @@ func initRollbar() {
 	rollbar.SetServerHost("anonymous")
 	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
 	rollbar.SetCodeVersion("v1.0.0")
-	rollbar.SetEnvironment("development")
+	rollbar.SetEnvironment("production")
 }
 
 func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
