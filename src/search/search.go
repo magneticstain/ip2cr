@@ -28,6 +28,21 @@ func NewSearch(ac *awsconnector.AWSConnector, ipAddr *string) Search {
 	return search
 }
 
+func reconcileCloudSvcParam(cloudSvc string) *[]string {
+	var cloudSvcs []string
+
+	if cloudSvc == "all" {
+		cloudSvcs = []string{"cloudfront", "ec2", "elbv1", "elbv2"}
+	} else if strings.Contains(cloudSvc, ",") {
+		// csv provided, split the values into a slice
+		cloudSvcs = strings.Split(cloudSvc, ",")
+	} else {
+		cloudSvcs = []string{cloudSvc}
+	}
+
+	return &cloudSvcs
+}
+
 func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	var fuzzedSvc *string
 
@@ -152,11 +167,12 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 	return &matchingResource, nil
 }
 
-func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (*generalResource.Resource, error) {
+func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (*generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var resultResource *generalResource.Resource
-	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 	var err error
+
+	cloudSvcs := reconcileCloudSvcParam(cloudSvc)
 
 	if doIPFuzzing || doAdvIPFuzzing {
 		fuzzedSvc, err := search.RunIPFuzzing(doAdvIPFuzzing)
@@ -167,11 +183,11 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 		normalizedSvcName := strings.ToLower(*fuzzedSvc)
 
 		if normalizedSvcName != "unknown" {
-			cloudSvcs = []string{normalizedSvcName}
+			cloudSvcs = &[]string{normalizedSvcName}
 
 			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
 			if normalizedSvcName == "ec2" {
-				cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+				cloudSvcs = &[]string{normalizedSvcName, "elbv1", "elbv2"}
 			}
 		}
 	}
@@ -203,7 +219,7 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 			search.ac = &ac
 		}
 
-		resultResource, err = search.runSearch(&cloudSvcs, &acctID)
+		resultResource, err = search.runSearch(cloudSvcs, &acctID)
 		if err != nil {
 			return &matchingResource, err
 		} else if resultResource.RID != "" {
