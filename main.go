@@ -74,7 +74,7 @@ func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzz
 	// search
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac, ipAddr)
-	matchingResource, err := searchCtlr.InitSearch(*ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchRoleName)
+	matchingResource, err := searchCtlr.InitSearch(*cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchRoleName)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
@@ -87,7 +87,7 @@ func main() {
 	// CLI param parsing
 	silent := flag.Bool("silent", false, "If enabled, only output the results")
 	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for")
-	cloudSvc := flag.String("svc", "all", "Specific cloud service to search")
+	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: cloudfront , ec2 , elbv1 , elbv2")
 	ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts)")
 	advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
 	orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)")
@@ -104,6 +104,12 @@ func main() {
 	}
 	if *verboseOutput {
 		log.SetLevel(log.DebugLevel)
+	}
+
+	// if the service(s) are specified, then we don't need to spend our time fuzzing the IP
+	if *cloudSvc != "all" {
+		*ipFuzzing = false
+		*advIPFuzzing = false
 	}
 
 	log.Info("starting IP-2-CloudResource")

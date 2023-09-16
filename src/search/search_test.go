@@ -143,6 +143,33 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	}
 }
 
+func TestInitSearch_CloudSvcs(t *testing.T) {
+	var tests = []struct {
+		ipAddr, cloudSvc string
+	}{
+		{"1.1.1.1", "cloudfront"},
+		{"299.11.906.43", "elbv1,elbv2"},
+		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "ec2"},
+		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "not_a_svc"},
+	}
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "")
+
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
 func TestInitSearch_NoFuzzing(t *testing.T) {
 	var tests = []struct {
 		ipAddr string
@@ -159,7 +186,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(false, false, false, "")
+			res, _ := search.InitSearch("all", false, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -179,7 +206,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(true, false, false, "")
+			res, _ := search.InitSearch("all", true, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -199,7 +226,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(true, false, false, "")
+			res, _ := search.InitSearch("all", true, false, false, "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -219,7 +246,7 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(false, false, true, "ip2cr-org-role")
+			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
