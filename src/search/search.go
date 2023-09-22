@@ -76,7 +76,8 @@ func (search Search) fetchOrgAcctIds() ([]string, error) {
 }
 
 func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error) {
-	var matchingResource generalResource.Resource
+	var matchingResource *generalResource.Resource
+	
 	cloudSvc = strings.ToLower(cloudSvc)
 
 	log.Debug("searching ", cloudSvc, " in AWS")
@@ -84,20 +85,15 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 	switch cloudSvc {
 	case "cloudfront":
 		pluginConn := cfp.NewCloudfrontPlugin(search.ac)
-		cfResource, err := pluginConn.SearchResources(search.ipAddr)
+		matchingResource, err := pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
-			return matchingResource, err
-		}
-
-		if cfResource.ARN != nil {
-			matchingResource.RID = *cfResource.ARN
-			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
+			return *matchingResource, err
 		}
 	case "ec2":
 		pluginConn := ec2p.NewEC2Plugin(search.ac)
 		ec2Resource, err := pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
-			return matchingResource, err
+			return *matchingResource, err
 		}
 
 		if ec2Resource.InstanceId != nil {
@@ -108,7 +104,7 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 		pluginConn := elbp.NewELBv1Plugin(search.ac)
 		elbResource, err := pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
-			return matchingResource, err
+			return *matchingResource, err
 		}
 
 		if elbResource.LoadBalancerName != nil { // no ARN available here either
@@ -119,7 +115,7 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 		pluginConn := elbp.NewELBPlugin(search.ac)
 		elbResource, err := pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
-			return matchingResource, err
+			return *matchingResource, err
 		}
 
 		if elbResource.LoadBalancerArn != nil {
@@ -127,10 +123,10 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	default:
-		return matchingResource, errors.New("invalid cloud service provided for AWS search")
+		return *matchingResource, errors.New("invalid cloud service provided for AWS search")
 	}
 
-	return matchingResource, nil
+	return *matchingResource, nil
 }
 
 func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalResource.Resource, error) {
