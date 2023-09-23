@@ -99,25 +99,15 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 		}
 	case "elbv1": // classic ELBs
 		pluginConn := elbp.NewELBv1Plugin(search.ac)
-		elbResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if elbResource.LoadBalancerName != nil { // no ARN available here either
-			matchingResource.RID = *elbResource.LoadBalancerName
-			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	case "elbv2":
 		pluginConn := elbp.NewELBPlugin(search.ac)
-		elbResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if elbResource.LoadBalancerArn != nil {
-			matchingResource.RID = *elbResource.LoadBalancerArn
-			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
