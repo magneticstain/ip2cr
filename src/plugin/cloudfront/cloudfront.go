@@ -70,7 +70,10 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*generalResource.Res
 		for _, ipAddr := range *cfIPAddrs {
 			if ipAddr.String() == *tgtIP {
 				matchingResource.RID = *cfDistro.ARN
+
 				log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
+
+				break
 			}
 		}
 	}
