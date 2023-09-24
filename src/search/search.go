@@ -183,7 +183,6 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 
 		acctsToSearch, err = search.fetchOrgAcctIds()
 		if err != nil {
-			log.Info("here")
 			return &matchingResource, err
 		}
 	} else {
