@@ -21,7 +21,7 @@ func TestGetResources(t *testing.T) {
 
 	elbResources, _ := elbp.GetResources()
 
-	expectedType := "LoadBalancer"
+	expectedType := "Resource"
 	for _, elb := range *elbResources {
 		elbType := reflect.TypeOf(elb)
 		if elbType.Name() != expectedType {
@@ -36,11 +36,11 @@ func TestSearchResources(t *testing.T) {
 	var tests = []struct {
 		ipAddr, expectedType string
 	}{
-		{"1.1.1.1", "LoadBalancer"},
-		{"1234.45.9666.1", "LoadBalancer"},
-		{"18.161.22.61", "LoadBalancer"},
-		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "LoadBalancer"},
-		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "LoadBalancer"},
+		{"1.1.1.1", "Resource"},
+		{"1234.45.9666.1", "Resource"},
+		{"18.161.22.61", "Resource"},
+		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "Resource"},
+		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "Resource"},
 	}
 
 	for _, td := range tests {
@@ -70,7 +70,7 @@ func TestGetResources_Elbv1(t *testing.T) {
 
 	elbResources, _ := elbv1p.GetResources()
 
-	expectedType := "LoadBalancerDescription"
+	expectedType := "Resource"
 	for _, elb := range *elbResources {
 		elbType := reflect.TypeOf(elb)
 		if elbType.Name() != expectedType {
@@ -85,11 +85,11 @@ func TestSearchResources_Elbv1(t *testing.T) {
 	var tests = []struct {
 		ipAddr, expectedType string
 	}{
-		{"1.1.1.1", "LoadBalancerDescription"},
-		{"1234.45.9666.1", "LoadBalancerDescription"},
-		{"18.161.22.61", "LoadBalancerDescription"},
-		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "LoadBalancerDescription"},
-		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "LoadBalancerDescription"},
+		{"1.1.1.1", "Resource"},
+		{"1234.45.9666.1", "Resource"},
+		{"18.161.22.61", "Resource"},
+		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "Resource"},
+		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "Resource"},
 	}
 
 	for _, td := range tests {

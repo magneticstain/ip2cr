@@ -43,7 +43,7 @@ func TestGetResources(t *testing.T) {
 
 	cfResources, _ := cfp.GetResources()
 
-	expectedType := "DistributionSummary"
+	expectedType := "Resource"
 	for _, cfDistro := range *cfResources {
 		cfDistroType := reflect.TypeOf(cfDistro)
 		if cfDistroType.Name() != expectedType {
@@ -58,11 +58,11 @@ func TestSearchResources(t *testing.T) {
 	var tests = []struct {
 		ipAddr, expectedType string
 	}{
-		{"1.1.1.1", "DistributionSummary"},
-		{"1234.45.9666.1", "DistributionSummary"},
-		{"18.161.22.61", "DistributionSummary"},
-		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "DistributionSummary"},
-		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "DistributionSummary"},
+		{"1.1.1.1", "Resource"},
+		{"1234.45.9666.1", "Resource"},
+		{"18.161.22.61", "Resource"},
+		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "Resource"},
+		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "Resource"},
 	}
 
 	for _, td := range tests {

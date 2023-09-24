@@ -77,6 +77,9 @@ func (search Search) fetchOrgAcctIds() ([]string, error) {
 
 func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
+	var tmpResource *generalResource.Resource
+	var err error
+
 	cloudSvc = strings.ToLower(cloudSvc)
 
 	log.Debug("searching ", cloudSvc, " in AWS")
@@ -84,51 +87,33 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 	switch cloudSvc {
 	case "cloudfront":
 		pluginConn := cfp.NewCloudfrontPlugin(search.ac)
-		cfResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if cfResource.ARN != nil {
-			matchingResource.RID = *cfResource.ARN
-			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
 		}
 	case "ec2":
 		pluginConn := ec2p.NewEC2Plugin(search.ac)
-		ec2Resource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if ec2Resource.InstanceId != nil {
-			matchingResource.RID = *ec2Resource.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
-			log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
 		}
 	case "elbv1": // classic ELBs
 		pluginConn := elbp.NewELBv1Plugin(search.ac)
-		elbResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if elbResource.LoadBalancerName != nil { // no ARN available here either
-			matchingResource.RID = *elbResource.LoadBalancerName
-			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	case "elbv2":
 		pluginConn := elbp.NewELBPlugin(search.ac)
-		elbResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if elbResource.LoadBalancerArn != nil {
-			matchingResource.RID = *elbResource.LoadBalancerArn
-			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
 	}
+
+	matchingResource = *tmpResource
 
 	return matchingResource, nil
 }
