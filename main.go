@@ -63,7 +63,7 @@ func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 	}
 }
 
-func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzzing *bool, orgSearch *bool, orgSearchRoleName *string, silent *bool, jsonOutput *bool) {
+func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzzing *bool, orgSearch *bool, orgSearchRoleName *string, orgSearchOrgUnitID *string, silent *bool, jsonOutput *bool) {
 	// cloud connections
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
@@ -74,7 +74,7 @@ func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzz
 	// search
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac, ipAddr)
-	matchingResource, err := searchCtlr.InitSearch(*cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchRoleName)
+	matchingResource, err := searchCtlr.InitSearch(*cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchRoleName, *orgSearchOrgUnitID)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
@@ -92,6 +92,7 @@ func main() {
 	advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
 	orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)")
 	orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search")
+	orgSearchOrgUnitID := flag.String("org-search-ou-id", "", "The ID of the AWS Organizations Organizational Unit to target when performing a search")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 	flag.Parse()
@@ -116,7 +117,7 @@ func main() {
 
 	initRollbar()
 
-	rollbar.WrapAndWait(runCloudSearch, ipAddr, cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchRoleName, silent, jsonOutput)
+	rollbar.WrapAndWait(runCloudSearch, ipAddr, cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchRoleName, orgSearchOrgUnitID, silent, jsonOutput)
 
 	rollbar.Close()
 }
