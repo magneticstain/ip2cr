@@ -58,10 +58,10 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	return fuzzedSvc, err
 }
 
-func (search Search) fetchOrgAcctIds() ([]string, error) {
+func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID *string) ([]string, error) {
 	var acctIds []string
 
-	orgp := orgp.NewOrganizationsPlugin(search.ac)
+	orgp := orgp.NewOrganizationsPlugin(search.ac, orgSearchOrgUnitID)
 	orgAccts, err := orgp.GetResources()
 	if err != nil {
 		return acctIds, err
@@ -152,7 +152,7 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 	return &matchingResource, nil
 }
 
-func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (*generalResource.Resource, error) {
+func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string, orgSearchOrgUnitID string) (*generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var resultResource *generalResource.Resource
 	var err error
@@ -181,7 +181,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 	if doOrgSearch {
 		log.Info("starting org account enumeration")
 
-		acctsToSearch, err = search.fetchOrgAcctIds()
+		acctsToSearch, err = search.fetchOrgAcctIds(&orgSearchOrgUnitID)
 		if err != nil {
 			return &matchingResource, err
 		}

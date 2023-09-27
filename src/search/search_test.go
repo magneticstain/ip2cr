@@ -159,7 +159,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "")
+			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -186,7 +186,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, false, "")
+			res, _ := search.InitSearch("all", false, false, false, "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -206,7 +206,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "")
+			res, _ := search.InitSearch("all", true, false, false, "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -226,7 +226,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "")
+			res, _ := search.InitSearch("all", true, false, false, "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -246,7 +246,98 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role")
+			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", "")
+
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
+	// REF: https://docs.aws.amazon.com/organizations/latest/APIReference/API_Organization.html#organizations-Type-Organization-Id
+
+	var tests = []struct {
+		orgID, ipAddr string
+	}{
+		{"o-0000000000", "1.1.1.1"},
+		{"o-9999999999", "1.1.1.1"},
+		{"o-1234567890abcde", "1.1.1.1"},
+		{"o-00000000000000000000000000000000", "1.1.1.1"},
+		{"o-99999999999999999999999999999999", "1.1.1.1"},
+	}
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", td.orgID)
+
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
+	// REF: https://docs.aws.amazon.com/organizations/latest/APIReference/API_OrganizationalUnit.html#organizations-Type-OrganizationalUnit-Id
+
+	var tests = []struct {
+		OUID, ipAddr string
+	}{
+		{"ou-aaaa", "1.1.1.1"},
+		{"ou-zzzz", "1.1.1.1"},
+		{"ou-1234567890abcde", "1.1.1.1"},
+		{"ou-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "1.1.1.1"},
+		{"ou-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", "1.1.1.1"},
+	}
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", td.OUID)
+
+			matchedResourceType := reflect.TypeOf(*res)
+			expectedType := "Resource"
+			if matchedResourceType.Name() != expectedType {
+				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
+	var tests = []struct {
+		OUID, ipAddr string
+	}{
+		{"abcde", "1.1.1.1"},
+		{"ou-", "1.1.1.1"},
+		{"ou-a", "1.1.1.1"},
+		{"ou-zzz", "1.1.1.1"},
+		{"ou-zzzABCd", "1.1.1.1"},
+		{"ou-1234567890abcde", "1.1.1.1"},
+		{"ou-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "1.1.1.1"},
+		{"ou-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", "1.1.1.1"},
+	}
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		search := searchFactory(&td.ipAddr)
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", td.OUID)
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"

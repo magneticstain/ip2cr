@@ -3,6 +3,8 @@ package plugin
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/service/organizations"
 	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
 
@@ -14,8 +16,8 @@ type OrganizationsPlugin struct {
 	OrgUnitID string
 }
 
-func NewOrganizationsPlugin(awsConn *awsconnector.AWSConnector) OrganizationsPlugin {
-	orgp := OrganizationsPlugin{AwsConn: *awsConn}
+func NewOrganizationsPlugin(awsConn *awsconnector.AWSConnector, orgSearchOrgUnitID *string) OrganizationsPlugin {
+	orgp := OrganizationsPlugin{AwsConn: *awsConn, OrgUnitID: *orgSearchOrgUnitID}
 
 	return orgp
 }
@@ -63,6 +65,7 @@ func (orgp OrganizationsPlugin) GetResources() (*[]types.Account, error) {
 	orgClient := organizations.NewFromConfig(orgp.AwsConn.AwsConfig)
 
 	if orgp.OrgUnitID != "" {
+		log.Debug("fetching accounts from specified OU (", orgp.OrgUnitID, ")")
 		orgAccts, err = orgp.listAllAccountsInOrganizationalUnit(orgClient)
 	} else {
 		orgAccts, err = listAllAccountsInOrganization(orgClient)
