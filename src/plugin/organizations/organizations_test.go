@@ -10,8 +10,9 @@ import (
 
 func orgFactory() plugin.OrganizationsPlugin {
 	ac, _ := awsconnector.New()
+	OUID := ""
 
-	orgp := plugin.NewOrganizationsPlugin(&ac)
+	orgp := plugin.NewOrganizationsPlugin(&ac, &OUID)
 
 	return orgp
 }
