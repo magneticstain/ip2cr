@@ -5,10 +5,13 @@ import (
 	"net"
 	"strings"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
@@ -47,29 +50,33 @@ func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error)
 	return &distros, nil
 }
 
-func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*types.DistributionSummary, error) {
+func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*generalResource.Resource, error) {
 	var cfDistroFQDN string
 	var cfIPAddrs *[]net.IP
-	var matchedDistro types.DistributionSummary
+	var matchingResource generalResource.Resource
 
 	cfResources, err := cfp.GetResources()
 	if err != nil {
-		return &matchedDistro, err
+		return &matchingResource, err
 	}
 
 	for _, cfDistro := range *cfResources {
 		cfDistroFQDN = NormalizeCFDistroFQDN(cfDistro.DomainName)
 		cfIPAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
 		if err != nil {
-			return &matchedDistro, err
+			return &matchingResource, err
 		}
 
 		for _, ipAddr := range *cfIPAddrs {
 			if ipAddr.String() == *tgtIP {
-				matchedDistro = cfDistro
+				matchingResource.RID = *cfDistro.ARN
+
+				log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
+
+				break
 			}
 		}
 	}
 
-	return &matchedDistro, nil
+	return &matchingResource, nil
 }

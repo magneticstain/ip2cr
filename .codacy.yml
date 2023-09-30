@@ -1,5 +1,6 @@
 ---
 exclude_paths:
   - ".github/**"
-  - "*_test.go"
+  - "**_test.go"
   - "README.md"
+  - "CODE_OF_CONDUCT.md"

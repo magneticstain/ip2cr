@@ -3,10 +3,13 @@ package plugin
 import (
 	"context"
 
+	log "github.com/sirupsen/logrus"
+
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/src/resource"
 )
 
 type EC2Plugin struct {
@@ -37,12 +40,12 @@ func (ec2p EC2Plugin) GetResources() (*[]types.Reservation, error) {
 	return &instances, nil
 }
 
-func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*types.Instance, error) {
-	var matchedInstance types.Instance
+func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*generalResource.Resource, error) {
+	var matchingResource generalResource.Resource
 
 	ec2Resources, err := ec2p.GetResources()
 	if err != nil {
-		return &matchedInstance, err
+		return &matchingResource, err
 	}
 
 	for _, ec2Reservation := range *ec2Resources {
@@ -52,11 +55,14 @@ func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*types.Instance, error) {
 			IPv6Addr := instance.Ipv6Address
 
 			if *publicIPv4Addr == *tgtIP || *IPv6Addr == *tgtIP {
-				matchedInstance = instance
+				matchingResource.RID = *instance.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
+
+				log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
+
 				break
 			}
 		}
 	}
 
-	return &matchedInstance, nil
+	return &matchingResource, nil
 }
