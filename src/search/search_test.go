@@ -271,7 +271,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 	}
 
 	for _, td := range tests {
-		testName := td.ipAddr
+		testName := td.orgID
 
 		search := searchFactory(&td.ipAddr)
 
