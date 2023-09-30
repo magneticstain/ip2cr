@@ -21,7 +21,7 @@ func TestGetResources(t *testing.T) {
 
 	ec2Resources, _ := ec2p.GetResources()
 
-	expectedType := "Reservation"
+	expectedType := "Resource"
 	for _, instance := range *ec2Resources {
 		ec2Type := reflect.TypeOf(instance)
 		if ec2Type.Name() != expectedType {
@@ -36,11 +36,11 @@ func TestSearchResources(t *testing.T) {
 	var tests = []struct {
 		ipAddr, expectedType string
 	}{
-		{"1.1.1.1", "Instance"},
-		{"1234.45.9666.1", "Instance"},
-		{"18.161.22.61", "Instance"},
-		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "Instance"},
-		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "Instance"},
+		{"1.1.1.1", "Resource"},
+		{"1234.45.9666.1", "Resource"},
+		{"18.161.22.61", "Resource"},
+		{"2600:9000:24eb:dc00:1:3b80:4f00:21", "Resource"},
+		{"x2600:9000:24eb:XYZ1:1:3b80:4f00:21", "Resource"},
 	}
 
 	for _, td := range tests {

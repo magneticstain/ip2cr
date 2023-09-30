@@ -28,6 +28,21 @@ func NewSearch(ac *awsconnector.AWSConnector, ipAddr *string) Search {
 	return search
 }
 
+func reconcileCloudSvcParam(cloudSvc string) *[]string {
+	var cloudSvcs []string
+
+	if cloudSvc == "all" {
+		cloudSvcs = []string{"cloudfront", "ec2", "elbv1", "elbv2"}
+	} else if strings.Contains(cloudSvc, ",") {
+		// csv provided, split the values into a slice
+		cloudSvcs = strings.Split(cloudSvc, ",")
+	} else {
+		cloudSvcs = []string{cloudSvc}
+	}
+
+	return &cloudSvcs
+}
+
 func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	var fuzzedSvc *string
 
@@ -43,10 +58,10 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	return fuzzedSvc, err
 }
 
-func (search Search) fetchOrgAcctIds() ([]string, error) {
+func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID *string) ([]string, error) {
 	var acctIds []string
 
-	orgp := orgp.NewOrganizationsPlugin(search.ac)
+	orgp := orgp.NewOrganizationsPlugin(search.ac, orgSearchOrgUnitID)
 	orgAccts, err := orgp.GetResources()
 	if err != nil {
 		return acctIds, err
@@ -62,6 +77,9 @@ func (search Search) fetchOrgAcctIds() ([]string, error) {
 
 func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
+	var tmpResource *generalResource.Resource
+	var err error
+
 	cloudSvc = strings.ToLower(cloudSvc)
 
 	log.Debug("searching ", cloudSvc, " in AWS")
@@ -69,51 +87,33 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 	switch cloudSvc {
 	case "cloudfront":
 		pluginConn := cfp.NewCloudfrontPlugin(search.ac)
-		cfResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if cfResource.ARN != nil {
-			matchingResource.RID = *cfResource.ARN
-			log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
 		}
 	case "ec2":
 		pluginConn := ec2p.NewEC2Plugin(search.ac)
-		ec2Resource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if ec2Resource.InstanceId != nil {
-			matchingResource.RID = *ec2Resource.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
-			log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
 		}
 	case "elbv1": // classic ELBs
 		pluginConn := elbp.NewELBv1Plugin(search.ac)
-		elbResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if elbResource.LoadBalancerName != nil { // no ARN available here either
-			matchingResource.RID = *elbResource.LoadBalancerName
-			log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	case "elbv2":
 		pluginConn := elbp.NewELBPlugin(search.ac)
-		elbResource, err := pluginConn.SearchResources(search.ipAddr)
+		tmpResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
-		}
-
-		if elbResource.LoadBalancerArn != nil {
-			matchingResource.RID = *elbResource.LoadBalancerArn
-			log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
 		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
 	}
+
+	matchingResource = *tmpResource
 
 	return matchingResource, nil
 }
@@ -152,11 +152,12 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 	return &matchingResource, nil
 }
 
-func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string) (*generalResource.Resource, error) {
+func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string, orgSearchOrgUnitID string) (*generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var resultResource *generalResource.Resource
-	cloudSvcs := []string{"cloudfront", "ec2", "elbv1", "elbv2"}
 	var err error
+
+	cloudSvcs := reconcileCloudSvcParam(cloudSvc)
 
 	if doIPFuzzing || doAdvIPFuzzing {
 		fuzzedSvc, err := search.RunIPFuzzing(doAdvIPFuzzing)
@@ -167,11 +168,11 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 		normalizedSvcName := strings.ToLower(*fuzzedSvc)
 
 		if normalizedSvcName != "unknown" {
-			cloudSvcs = []string{normalizedSvcName}
+			cloudSvcs = &[]string{normalizedSvcName}
 
 			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
 			if normalizedSvcName == "ec2" {
-				cloudSvcs = append(cloudSvcs, "elbv1", "elbv2")
+				cloudSvcs = &[]string{normalizedSvcName, "elbv1", "elbv2"}
 			}
 		}
 	}
@@ -180,9 +181,8 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 	if doOrgSearch {
 		log.Info("starting org account enumeration")
 
-		acctsToSearch, err = search.fetchOrgAcctIds()
+		acctsToSearch, err = search.fetchOrgAcctIds(&orgSearchOrgUnitID)
 		if err != nil {
-			log.Info("here")
 			return &matchingResource, err
 		}
 	} else {
@@ -203,7 +203,7 @@ func (search Search) InitSearch(doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSear
 			search.ac = &ac
 		}
 
-		resultResource, err = search.runSearch(&cloudSvcs, &acctID)
+		resultResource, err = search.runSearch(cloudSvcs, &acctID)
 		if err != nil {
 			return &matchingResource, err
 		} else if resultResource.RID != "" {
