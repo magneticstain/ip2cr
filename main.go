@@ -20,8 +20,8 @@ func initRollbar() {
 	rollbar.SetCaptureIp(rollbar.CaptureIpAnonymize)
 	rollbar.SetServerHost("anonymous")
 	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
-	rollbar.SetCodeVersion("v1.0.1")
-	rollbar.SetEnvironment("production")
+	rollbar.SetCodeVersion("v1.0.2")
+	rollbar.SetEnvironment("development")
 }
 
 func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
