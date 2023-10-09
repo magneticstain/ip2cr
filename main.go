@@ -71,16 +71,6 @@ func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzz
 		log.Fatal(err)
 	}
 
-	// if *orgSearchXaccountRoleARN != "" {
-	// 	log.Debug("assuming role ( ", *orgSearchXaccountRoleARN, " ) for AWS connector")
-	// 	xaccountAC, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, &ac.AwsConfig)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	} else {
-	// 		ac = xaccountAC
-	// 	}
-	// }
-
 	// search
 	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
 	searchCtlr := search.NewSearch(&ac, ipAddr)
