@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
@@ -58,8 +59,17 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
 	return fuzzedSvc, err
 }
 
-func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID *string) ([]string, error) {
+func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID *string, orgSearchXaccountRoleARN *string) ([]string, error) {
 	var acctIds []string
+
+	// assume xaccount role first if ARN is provided
+	if *orgSearchXaccountRoleARN != "" {
+		arac, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.ac.AwsConfig)
+		if err != nil {
+			return acctIds, err
+		}
+		search.ac = &arac
+	}
 
 	orgp := orgp.NewOrganizationsPlugin(search.ac, orgSearchOrgUnitID)
 	orgAccts, err := orgp.GetResources()
@@ -152,7 +162,7 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 	return &matchingResource, nil
 }
 
-func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchRoleName string, orgSearchOrgUnitID string) (*generalResource.Resource, error) {
+func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string) (*generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var resultResource *generalResource.Resource
 	var err error
@@ -181,7 +191,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 	if doOrgSearch {
 		log.Info("starting org account enumeration")
 
-		acctsToSearch, err = search.fetchOrgAcctIds(&orgSearchOrgUnitID)
+		acctsToSearch, err = search.fetchOrgAcctIds(&orgSearchOrgUnitID, &orgSearchXaccountRoleARN)
 		if err != nil {
 			return &matchingResource, err
 		}
@@ -195,7 +205,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 		if acctID != "current" {
 			// replace connector with assumed role connector
 			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
-			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn)
+			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn, aws.Config{})
 			if err != nil {
 				return &matchingResource, err
 			}
