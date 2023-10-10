@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/aws"
+
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
 	"golang.org/x/exp/slices"
@@ -159,7 +161,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "")
+			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -186,7 +188,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, false, "", "")
+			res, _ := search.InitSearch("all", false, false, false, "", "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -206,7 +208,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "")
+			res, _ := search.InitSearch("all", true, false, false, "", "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -226,7 +228,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "")
+			res, _ := search.InitSearch("all", true, false, false, "", "", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -246,12 +248,36 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", "")
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", "")
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
+			}
+		})
+	}
+}
+
+func TestInitSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
+	var tests = []struct {
+		orgXaccountRoleARN string
+	}{
+		{"arn:aws:iam::123456789012:role/valid_role"},
+		{"arn:aws:bad::123456:role/invalid_role"},
+		{"arn:aws:iam::123456789012:user/invalid_user"}, // only roles are supported by this function
+	}
+
+	for _, td := range tests {
+		testName := td.orgXaccountRoleARN
+
+		t.Run(testName, func(t *testing.T) {
+			ac, _ := awsconnector.NewAWSConnectorAssumeRole(&td.orgXaccountRoleARN, aws.Config{})
+
+			acType := reflect.TypeOf(ac.AwsConfig)
+
+			if acType.Name() != "Config" {
+				t.Errorf("AWS connector failed to connect when assuming xaccount service role; wanted aws.Config type, received %s", acType.Name())
 			}
 		})
 	}
@@ -276,7 +302,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", td.orgID)
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID)
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -306,7 +332,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", td.OUID)
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID)
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
@@ -337,7 +363,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 		search := searchFactory(&td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "ip2cr-org-role", td.OUID)
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID)
 
 			matchedResourceType := reflect.TypeOf(*res)
 			expectedType := "Resource"
