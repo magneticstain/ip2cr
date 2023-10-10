@@ -14,27 +14,32 @@ type AWSConnector struct {
 }
 
 func New() (AWSConnector, error) {
-	cfg, err := ConnectToAWS(nil)
+	cfg, err := ConnectToAWS(nil, aws.Config{})
 
 	ac := AWSConnector{AwsConfig: cfg}
 
 	return ac, err
 }
 
-func NewAWSConnectorAssumeRole(roleArn *string) (AWSConnector, error) {
-	cfg, err := ConnectToAWS(roleArn)
+func NewAWSConnectorAssumeRole(roleArn *string, baseConfig aws.Config) (AWSConnector, error) {
+	cfg, err := ConnectToAWS(roleArn, baseConfig)
 
 	ac := AWSConnector{AwsConfig: cfg}
 
 	return ac, err
 }
 
-func ConnectToAWS(roleArn *string) (aws.Config, error) {
+func ConnectToAWS(roleArn *string, baseConfig aws.Config) (aws.Config, error) {
 	var cfg aws.Config
+	var err error
 
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return cfg, err
+	if baseConfig.Region != "" {
+		cfg = baseConfig
+	} else {
+		cfg, err = config.LoadDefaultConfig(context.TODO())
+		if err != nil {
+			return cfg, err
+		}
 	}
 
 	if roleArn != nil {
