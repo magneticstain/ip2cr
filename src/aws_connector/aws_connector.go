@@ -31,13 +31,15 @@ func NewAWSConnectorAssumeRole(roleArn *string, baseConfig aws.Config) (AWSConne
 
 func ConnectToAWS(roleArn *string, baseConfig aws.Config) (aws.Config, error) {
 	var cfg aws.Config
+	var err error
 
 	if baseConfig.Region != "" {
 		cfg = baseConfig
-	}
-	cfg, err := config.LoadDefaultConfig(context.TODO())
-	if err != nil {
-		return cfg, err
+	} else {
+		cfg, err = config.LoadDefaultConfig(context.TODO())
+		if err != nil {
+			return cfg, err
+		}
 	}
 
 	if roleArn != nil {
