@@ -57,12 +57,12 @@ jobs:
       - name: Go Benchmark
         run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
     
-      - name: Upload Coverage
-        uses: codecov/codecov-action@v3
-        continue-on-error: true
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.txt
-          fail_ci_if_error: false
+      # - name: Upload Coverage
+      #   uses: codecov/codecov-action@v3
+      #   continue-on-error: true
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     file: ./coverage.txt
+      #     fail_ci_if_error: false
 
 
