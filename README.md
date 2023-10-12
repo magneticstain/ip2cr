@@ -5,7 +5,6 @@
 [![Release](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/release.yml)
 
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
-[![codecov](https://codecov.io/gh/magneticstain/ip-2-cloudresource/branch/main/graph/badge.svg?token=YI5A0BA12D)](https://codecov.io/gh/magneticstain/ip-2-cloudresource)
 
 ![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v1.0.1)
 ![GitHub issues](https://img.shields.io/github/issues/magneticstain/ip-2-cloudresource)
