@@ -58,11 +58,8 @@ jobs:
         run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
     
       - name: Upload Coverage
-        uses: codecov/codecov-action@v3
-        continue-on-error: true
+        uses: codacy/codacy-coverage-reporter-action@v1
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          file: ./coverage.txt
-          fail_ci_if_error: false
-
-
+          project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
+          coverage-reports: ./coverage.txt
+          force-coverage-parser: go
