@@ -237,11 +237,9 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 		close(matchingResourceBuffer)
 	}()
 
-	select {
-	case resultResource, found := <-matchingResourceBuffer:
-		if found {
-			matchingResource = resultResource
-		}
+	resultResource, found := <-matchingResourceBuffer
+	if found {
+		matchingResource = resultResource
 	}
 
 	return &matchingResource, nil
