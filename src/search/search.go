@@ -226,7 +226,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 	log.Info("beginning resource gathering")
 	matchingResourceBuffer := make(chan generalResource.Resource, 1)
 	var wg sync.WaitGroup
-	
+
 	for _, acctID := range acctsToSearch {
 		wg.Add(1)
 		go search.runSearchWorker(matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
