@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	log "github.com/sirupsen/logrus"
@@ -128,7 +129,7 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 	return matchingResource, nil
 }
 
-func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalResource.Resource, error) {
+func (search Search) doAccountSearch(cloudSvcs *[]string, acctID *string) (*generalResource.Resource, error) {
 	var acctAliases []string
 	var matchingResource generalResource.Resource
 	var err error
@@ -162,9 +163,32 @@ func (search Search) runSearch(cloudSvcs *[]string, acctID *string) (*generalRes
 	return &matchingResource, nil
 }
 
+func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, cloudSvcs *[]string, orgSearchRoleName string, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if acctID != "current" {
+		// replace connector with assumed role connector
+		acctRoleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
+		ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn, aws.Config{})
+		if err != nil {
+			log.Error("error when assuming role for account search worker: ", err)
+			return
+		}
+
+		search.ac = &ac
+	}
+
+	resultResource, err := search.doAccountSearch(cloudSvcs, &acctID)
+	if err != nil {
+		log.Error("error when running search withing account search worker: ", err)
+	} else if resultResource.RID != "" {
+		matchingResourceBuffer <- *resultResource
+		return
+	}
+}
+
 func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string) (*generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
-	var resultResource *generalResource.Resource
 	var err error
 
 	cloudSvcs := reconcileCloudSvcParam(cloudSvc)
@@ -200,26 +224,22 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 	}
 
 	log.Info("beginning resource gathering")
-	var acctRoleArn string
+	matchingResourceBuffer := make(chan generalResource.Resource, 1)
+	var wg sync.WaitGroup
+
 	for _, acctID := range acctsToSearch {
-		if acctID != "current" {
-			// replace connector with assumed role connector
-			acctRoleArn = fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
-			ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn, aws.Config{})
-			if err != nil {
-				return &matchingResource, err
-			}
+		wg.Add(1)
+		go search.runSearchWorker(matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
+	}
 
-			search.ac = &ac
-		}
+	go func() {
+		wg.Wait()
+		close(matchingResourceBuffer)
+	}()
 
-		resultResource, err = search.runSearch(cloudSvcs, &acctID)
-		if err != nil {
-			return &matchingResource, err
-		} else if resultResource.RID != "" {
-			matchingResource = *resultResource
-			break
-		}
+	resultResource, found := <-matchingResourceBuffer
+	if found {
+		matchingResource = resultResource
 	}
 
 	return &matchingResource, nil
