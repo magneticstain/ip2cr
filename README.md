@@ -43,7 +43,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - [X] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip-2-cloudresource/issues/77) )
 - [X] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
 - [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
-- [ ] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
+- [X] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
 - [ ] Improve Unit Tests to Integrate With tf-ip2cr and Use Real Data ( [Issue #142](https://github.com/magneticstain/ip-2-cloudresource/issues/142) )
 
 ## Prerequisites
