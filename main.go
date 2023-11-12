@@ -24,10 +24,10 @@ func initRollbar() {
 	rollbar.SetEnvironment("development")
 }
 
-func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput *bool) {
+func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
 
-	if !*silent {
+	if !silent {
 		if matchedResource.RID != "" {
 			var acctStr string
 			if matchedResource.AccountID == "current" {
@@ -41,7 +41,7 @@ func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 			log.Info("resource not found :( better luck next time!")
 		}
 	} else {
-		if *jsonOutput {
+		if jsonOutput {
 			output, err := json.Marshal(matchedResource)
 			if err != nil {
 				errMap := map[string]error{"error": err}
@@ -63,7 +63,7 @@ func outputResults(matchedResource *resource.Resource, silent *bool, jsonOutput 
 	}
 }
 
-func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzzing *bool, orgSearch *bool, orgSearchXaccountRoleARN *string, orgSearchRoleName *string, orgSearchOrgUnitID *string, silent *bool, jsonOutput *bool) {
+func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, silent bool, jsonOutput bool) {
 	// cloud connections
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
@@ -72,15 +72,15 @@ func runCloudSearch(ipAddr *string, cloudSvc *string, ipFuzzing *bool, advIPFuzz
 	}
 
 	// search
-	log.Info("searching for IP ", *ipAddr, " in ", *cloudSvc, " service(s)")
-	searchCtlr := search.NewSearch(&ac, ipAddr)
-	matchingResource, err := searchCtlr.InitSearch(*cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID)
+	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " service(s)")
+	searchCtlr := search.NewSearch(&ac, &ipAddr)
+	matchingResource, err := searchCtlr.InitSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
 	// output
-	outputResults(matchingResource, silent, jsonOutput)
+	outputResults(*matchingResource, silent, jsonOutput)
 }
 
 func main() {
@@ -118,7 +118,7 @@ func main() {
 
 	initRollbar()
 
-	rollbar.WrapAndWait(runCloudSearch, ipAddr, cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, silent, jsonOutput)
+	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *silent, *jsonOutput)
 
 	rollbar.Close()
 }
