@@ -97,8 +97,8 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 
 	switch cloudSvc {
 	case "cloudfront":
-		pluginConn := cfp.NewCloudfrontPlugin(&search.ac)
-		tmpResource, err = pluginConn.SearchResources(&search.ipAddr)
+		pluginConn := cfp.NewCloudfrontPlugin(search.ac)
+		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
