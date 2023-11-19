@@ -18,13 +18,13 @@ type ELBv1Plugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewELBv1Plugin(awsConn *awsconnector.AWSConnector) ELBv1Plugin {
-	elbv1p := ELBv1Plugin{AwsConn: *awsConn}
+func NewELBv1Plugin(awsConn awsconnector.AWSConnector) ELBv1Plugin {
+	elbv1p := ELBv1Plugin{AwsConn: awsConn}
 
 	return elbv1p
 }
 
-func (elbv1p ELBv1Plugin) GetResources() (*[]types.LoadBalancerDescription, error) {
+func (elbv1p ELBv1Plugin) GetResources() ([]types.LoadBalancerDescription, error) {
 	var elbs []types.LoadBalancerDescription
 
 	elbClient := elasticloadbalancing.NewFromConfig(elbv1p.AwsConn.AwsConfig)
@@ -33,32 +33,32 @@ func (elbv1p ELBv1Plugin) GetResources() (*[]types.LoadBalancerDescription, erro
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return &elbs, err
+			return elbs, err
 		}
 
 		elbs = append(elbs, output.LoadBalancerDescriptions...)
 	}
 
-	return &elbs, nil
+	return elbs, nil
 }
 
-func (elbv1p ELBv1Plugin) SearchResources(tgtIP *string) (*generalResource.Resource, error) {
+func (elbv1p ELBv1Plugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var elbIPAddrs *[]net.IP
 	var matchingResource generalResource.Resource
 
 	elbResources, err := elbv1p.GetResources()
 	if err != nil {
-		return &matchingResource, err
+		return matchingResource, err
 	}
 
-	for _, elb := range *elbResources {
+	for _, elb := range elbResources {
 		elbIPAddrs, err = utils.LookupFQDN(elb.DNSName)
 		if err != nil {
-			return &matchingResource, err
+			return matchingResource, err
 		}
 
 		for _, ipAddr := range *elbIPAddrs {
-			if ipAddr.String() == *tgtIP {
+			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerName
 
 				log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID)
@@ -68,5 +68,5 @@ func (elbv1p ELBv1Plugin) SearchResources(tgtIP *string) (*generalResource.Resou
 		}
 	}
 
-	return &matchingResource, nil
+	return matchingResource, nil
 }

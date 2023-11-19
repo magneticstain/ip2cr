@@ -88,7 +88,6 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 
 func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
-	var tmpResource *generalResource.Resource
 	var err error
 
 	cloudSvc = strings.ToLower(cloudSvc)
@@ -103,28 +102,26 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 			return matchingResource, err
 		}
 	case "ec2":
-		pluginConn := ec2p.NewEC2Plugin(&search.ac)
-		tmpResource, err = pluginConn.SearchResources(&search.ipAddr)
+		pluginConn := ec2p.NewEC2Plugin(search.ac)
+		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv1": // classic ELBs
-		pluginConn := elbp.NewELBv1Plugin(&search.ac)
-		tmpResource, err = pluginConn.SearchResources(&search.ipAddr)
+		pluginConn := elbp.NewELBv1Plugin(search.ac)
+		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv2":
-		pluginConn := elbp.NewELBPlugin(&search.ac)
-		tmpResource, err = pluginConn.SearchResources(&search.ipAddr)
+		pluginConn := elbp.NewELBPlugin(search.ac)
+		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	default:
 		return matchingResource, errors.New("invalid cloud service provided for AWS search")
 	}
-
-	matchingResource = *tmpResource
 
 	return matchingResource, nil
 }

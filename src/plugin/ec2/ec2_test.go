@@ -11,7 +11,7 @@ import (
 func ec2pFactory() plugin.EC2Plugin {
 	ac, _ := awsconnector.New()
 
-	ec2p := plugin.NewEC2Plugin(&ac)
+	ec2p := plugin.NewEC2Plugin(ac)
 
 	return ec2p
 }
@@ -22,7 +22,7 @@ func TestGetResources(t *testing.T) {
 	ec2Resources, _ := ec2p.GetResources()
 
 	expectedType := "Resource"
-	for _, instance := range *ec2Resources {
+	for _, instance := range ec2Resources {
 		ec2Type := reflect.TypeOf(instance)
 		if ec2Type.Name() != expectedType {
 			t.Errorf("Fetching resources via EC2 Plugin failed; wanted %s type, received %s", expectedType, ec2Type.Name())
@@ -47,8 +47,8 @@ func TestSearchResources(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedInstance, _ := ec2p.SearchResources(&td.ipAddr)
-			matchedInstanceType := reflect.TypeOf(*matchedInstance)
+			matchedInstance, _ := ec2p.SearchResources(td.ipAddr)
+			matchedInstanceType := reflect.TypeOf(matchedInstance)
 
 			if matchedInstanceType.Name() != td.expectedType {
 				t.Errorf("EC2 search failed; expected %s after search, received %s", td.expectedType, matchedInstanceType.Name())
