@@ -45,16 +45,16 @@ func reconcileCloudSvcParam(cloudSvc string) []string {
 	return cloudSvcs
 }
 
-func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (*string, error) {
-	var fuzzedSvc *string
+func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (string, error) {
+	var fuzzedSvc string
 
-	fuzzedSvc, err := ipfuzzing.FuzzIP(&search.ipAddr, doAdvIPFuzzing)
+	fuzzedSvc, err := ipfuzzing.FuzzIP(search.ipAddr, doAdvIPFuzzing)
 	if err != nil {
 		return fuzzedSvc, err
-	} else if *fuzzedSvc == "" || *fuzzedSvc == "UNKNOWN" {
+	} else if fuzzedSvc == "" || fuzzedSvc == "UNKNOWN" {
 		log.Info("could not determine service via IP fuzzing")
 	} else {
-		log.Info("IP fuzzing determined the associated cloud service is: ", *fuzzedSvc)
+		log.Info("IP fuzzing determined the associated cloud service is: ", fuzzedSvc)
 	}
 
 	return fuzzedSvc, err
@@ -196,7 +196,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 			return matchingResource, err
 		}
 
-		normalizedSvcName := strings.ToLower(*fuzzedSvc)
+		normalizedSvcName := strings.ToLower(fuzzedSvc)
 
 		if normalizedSvcName != "unknown" {
 			cloudSvcs = []string{normalizedSvcName}

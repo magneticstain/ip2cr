@@ -65,8 +65,8 @@ func TestRunIPFuzzing(t *testing.T) {
 				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
-			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
-				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
+			if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
+				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
 			}
 		})
 	}
@@ -87,8 +87,8 @@ func TestRunIPFuzzing_AdvancedFuzzing(t *testing.T) {
 				t.Errorf("Advanced IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
-			if !slices.Contains[[]string, string](validSvcs, *fuzzedSvc) {
-				t.Errorf("Advanced IP fuzzing routine failed; unexpected service was returned: %s", *fuzzedSvc)
+			if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
+				t.Errorf("Advanced IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
 			}
 		})
 	}
