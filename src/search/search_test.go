@@ -16,10 +16,10 @@ type TestIPAddr struct {
 	ipAddr string
 }
 
-func searchFactory(ipAddr *string) search.Search {
+func searchFactory(ipAddr string) search.Search {
 	ac, _ := awsconnector.New()
 
-	search := search.NewSearch(&ac, ipAddr)
+	search := search.NewSearch(ac, ipAddr)
 
 	return search
 }
@@ -57,7 +57,7 @@ func TestRunIPFuzzing(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			fuzzedSvc, err := search.RunIPFuzzing(false)
@@ -79,7 +79,7 @@ func TestRunIPFuzzing_AdvancedFuzzing(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			fuzzedSvc, err := search.RunIPFuzzing(true)
@@ -108,7 +108,7 @@ func TestSearchAWS(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.SearchAWS(td.cloudSvc)
@@ -134,7 +134,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			_, err := search.SearchAWS(td.cloudSvc)
@@ -158,12 +158,12 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "", "")
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -185,12 +185,12 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", false, false, false, "", "", "")
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -205,12 +205,12 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", true, false, false, "", "", "")
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing enabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -225,12 +225,12 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", true, false, false, "", "", "")
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with advanced IP fuzzing disabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -245,12 +245,12 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", "")
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -299,12 +299,12 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 	for _, td := range tests {
 		testName := td.orgID
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID)
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -329,12 +329,12 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID)
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
@@ -360,12 +360,12 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 	for _, td := range tests {
 		testName := td.ipAddr
 
-		search := searchFactory(&td.ipAddr)
+		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
 			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID)
 
-			matchedResourceType := reflect.TypeOf(*res)
+			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())

@@ -73,14 +73,14 @@ func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing
 
 	// search
 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " service(s)")
-	searchCtlr := search.NewSearch(&ac, &ipAddr)
+	searchCtlr := search.NewSearch(ac, ipAddr)
 	matchingResource, err := searchCtlr.InitSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
 	// output
-	outputResults(*matchingResource, silent, jsonOutput)
+	outputResults(matchingResource, silent, jsonOutput)
 }
 
 func main() {
