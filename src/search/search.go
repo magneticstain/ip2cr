@@ -65,7 +65,7 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 
 	// assume xaccount role first if ARN is provided
 	if orgSearchXaccountRoleARN != "" {
-		arac, err := awsconnector.NewAWSConnectorAssumeRole(&orgSearchXaccountRoleARN, search.ac.AwsConfig)
+		arac, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.ac.AwsConfig)
 		if err != nil {
 			return acctIds, err
 		}
@@ -169,7 +169,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 	if acctID != "current" {
 		// replace connector with assumed role connector
 		acctRoleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
-		ac, err := awsconnector.NewAWSConnectorAssumeRole(&acctRoleArn, aws.Config{})
+		ac, err := awsconnector.NewAWSConnectorAssumeRole(acctRoleArn, aws.Config{})
 		if err != nil {
 			log.Error("error when assuming role for account search worker: ", err)
 			return

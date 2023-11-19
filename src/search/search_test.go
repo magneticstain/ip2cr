@@ -272,7 +272,7 @@ func TestInitSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
 		testName := td.orgXaccountRoleARN
 
 		t.Run(testName, func(t *testing.T) {
-			ac, _ := awsconnector.NewAWSConnectorAssumeRole(&td.orgXaccountRoleARN, aws.Config{})
+			ac, _ := awsconnector.NewAWSConnectorAssumeRole(td.orgXaccountRoleARN, aws.Config{})
 
 			acType := reflect.TypeOf(ac.AwsConfig)
 
