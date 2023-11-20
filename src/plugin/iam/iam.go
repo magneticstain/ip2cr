@@ -12,12 +12,6 @@ type IAMPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewIAMPlugin(awsConn *awsconnector.AWSConnector) IAMPlugin {
-	iamp := IAMPlugin{AwsConn: *awsConn}
-
-	return iamp
-}
-
 func (iamp IAMPlugin) GetResources() ([]string, error) {
 	var acctAliases []string
 

@@ -11,7 +11,7 @@ import (
 func cfpFactory() plugin.CloudfrontPlugin {
 	ac, _ := awsconnector.New()
 
-	cfp := plugin.NewCloudfrontPlugin(&ac)
+	cfp := plugin.CloudfrontPlugin{AwsConn: ac}
 
 	return cfp
 }
@@ -29,7 +29,7 @@ func TestNormalizeCFDistroFQDN(t *testing.T) {
 		testName := td.origFQDN
 
 		t.Run(testName, func(t *testing.T) {
-			normalizedFQDN := plugin.NormalizeCFDistroFQDN(&td.origFQDN)
+			normalizedFQDN := plugin.NormalizeCFDistroFQDN(td.origFQDN)
 
 			if normalizedFQDN != td.normalizedFQDN {
 				t.Errorf("CloudFront distribution domain normalization failed; expected %s, received %s", td.normalizedFQDN, normalizedFQDN)
@@ -44,7 +44,7 @@ func TestGetResources(t *testing.T) {
 	cfResources, _ := cfp.GetResources()
 
 	expectedType := "Resource"
-	for _, cfDistro := range *cfResources {
+	for _, cfDistro := range cfResources {
 		cfDistroType := reflect.TypeOf(cfDistro)
 		if cfDistroType.Name() != expectedType {
 			t.Errorf("Fetching resources via Cloudfront Plugin failed; wanted %s type, received %s", expectedType, cfDistroType.Name())
@@ -69,8 +69,8 @@ func TestSearchResources(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedDistro, _ := cfp.SearchResources(&td.ipAddr)
-			matchedDistroType := reflect.TypeOf(*matchedDistro)
+			matchedDistro, _ := cfp.SearchResources(td.ipAddr)
+			matchedDistroType := reflect.TypeOf(matchedDistro)
 
 			if matchedDistroType.Name() != td.expectedType {
 				t.Errorf("CloudFront distribution search failed; expected %s after search, received %s", td.expectedType, matchedDistroType.Name())

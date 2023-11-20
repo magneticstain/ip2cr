@@ -31,7 +31,7 @@ func TestNewAWSConnectorAssumeRole(t *testing.T) {
 		testName := td.roleArn
 
 		t.Run(testName, func(t *testing.T) {
-			ac, _ := awsconnector.NewAWSConnectorAssumeRole(&td.roleArn, aws.Config{})
+			ac, _ := awsconnector.NewAWSConnectorAssumeRole(td.roleArn, aws.Config{})
 
 			acType := reflect.TypeOf(ac.AwsConfig)
 

@@ -19,20 +19,14 @@ type CloudfrontPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewCloudfrontPlugin(awsConn *awsconnector.AWSConnector) CloudfrontPlugin {
-	cfp := CloudfrontPlugin{AwsConn: *awsConn}
-
-	return cfp
-}
-
-func NormalizeCFDistroFQDN(fqdn *string) string {
+func NormalizeCFDistroFQDN(fqdn string) string {
 	// CloudFront currently returns a `.` appended to the fqdn
 	// we'll need to get rid of it so that it can be lookup up properly
 
-	return strings.TrimSuffix(*fqdn, ".")
+	return strings.TrimSuffix(fqdn, ".")
 }
 
-func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error) {
+func (cfp CloudfrontPlugin) GetResources() ([]types.DistributionSummary, error) {
 	var distros []types.DistributionSummary
 
 	cfClient := cloudfront.NewFromConfig(cfp.AwsConn.AwsConfig)
@@ -41,34 +35,34 @@ func (cfp CloudfrontPlugin) GetResources() (*[]types.DistributionSummary, error)
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return &distros, err
+			return distros, err
 		}
 
 		distros = append(distros, output.DistributionList.Items...)
 	}
 
-	return &distros, nil
+	return distros, nil
 }
 
-func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*generalResource.Resource, error) {
+func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var cfDistroFQDN string
-	var cfIPAddrs *[]net.IP
+	var cfIPAddrs []net.IP
 	var matchingResource generalResource.Resource
 
 	cfResources, err := cfp.GetResources()
 	if err != nil {
-		return &matchingResource, err
+		return matchingResource, err
 	}
 
-	for _, cfDistro := range *cfResources {
-		cfDistroFQDN = NormalizeCFDistroFQDN(cfDistro.DomainName)
-		cfIPAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
+	for _, cfDistro := range cfResources {
+		cfDistroFQDN = NormalizeCFDistroFQDN(*cfDistro.DomainName)
+		cfIPAddrs, err = utils.LookupFQDN(cfDistroFQDN)
 		if err != nil {
-			return &matchingResource, err
+			return matchingResource, err
 		}
 
-		for _, ipAddr := range *cfIPAddrs {
-			if ipAddr.String() == *tgtIP {
+		for _, ipAddr := range cfIPAddrs {
+			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *cfDistro.ARN
 
 				log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
@@ -78,5 +72,5 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP *string) (*generalResource.Res
 		}
 	}
 
-	return &matchingResource, nil
+	return matchingResource, nil
 }

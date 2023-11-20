@@ -11,7 +11,7 @@ import (
 func elbpFactory() plugin.ELBPlugin {
 	ac, _ := awsconnector.New()
 
-	elbp := plugin.NewELBPlugin(&ac)
+	elbp := plugin.ELBPlugin{AwsConn: ac}
 
 	return elbp
 }
@@ -22,7 +22,7 @@ func TestGetResources(t *testing.T) {
 	elbResources, _ := elbp.GetResources()
 
 	expectedType := "Resource"
-	for _, elb := range *elbResources {
+	for _, elb := range elbResources {
 		elbType := reflect.TypeOf(elb)
 		if elbType.Name() != expectedType {
 			t.Errorf("Fetching resources via ELB Plugin failed; wanted %s type, received %s", expectedType, elbType.Name())
@@ -47,8 +47,8 @@ func TestSearchResources(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedELB, _ := elbp.SearchResources(&td.ipAddr)
-			matchedELBType := reflect.TypeOf(*matchedELB)
+			matchedELB, _ := elbp.SearchResources(td.ipAddr)
+			matchedELBType := reflect.TypeOf(matchedELB)
 
 			if matchedELBType.Name() != td.expectedType {
 				t.Errorf("ELB search failed; expected %s after search, received %s", td.expectedType, matchedELBType.Name())
@@ -60,7 +60,7 @@ func TestSearchResources(t *testing.T) {
 func elbv1pFactory() plugin.ELBv1Plugin {
 	ac, _ := awsconnector.New()
 
-	elbv1p := plugin.NewELBv1Plugin(&ac)
+	elbv1p := plugin.ELBv1Plugin{AwsConn: ac}
 
 	return elbv1p
 }
@@ -71,7 +71,7 @@ func TestGetResources_Elbv1(t *testing.T) {
 	elbResources, _ := elbv1p.GetResources()
 
 	expectedType := "Resource"
-	for _, elb := range *elbResources {
+	for _, elb := range elbResources {
 		elbType := reflect.TypeOf(elb)
 		if elbType.Name() != expectedType {
 			t.Errorf("Fetching resources via ELBv1 Plugin failed; wanted %s type, received %s", expectedType, elbType.Name())
@@ -96,8 +96,8 @@ func TestSearchResources_Elbv1(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedELB, _ := elbv1p.SearchResources(&td.ipAddr)
-			matchedELBType := reflect.TypeOf(*matchedELB)
+			matchedELB, _ := elbv1p.SearchResources(td.ipAddr)
+			matchedELBType := reflect.TypeOf(matchedELB)
 
 			if matchedELBType.Name() != td.expectedType {
 				t.Errorf("ELBv1 search failed; expected %s after search, received %s", td.expectedType, matchedELBType.Name())
