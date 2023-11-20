@@ -11,7 +11,7 @@ import (
 func iampFactory() plugin.IAMPlugin {
 	ac, _ := awsconnector.New()
 
-	iamp := plugin.NewIAMPlugin(&ac)
+	iamp := plugin.NewIAMPlugin(ac)
 
 	return iamp
 }

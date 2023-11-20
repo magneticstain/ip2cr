@@ -72,13 +72,13 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 		search.ac = arac
 	}
 
-	orgp := orgp.NewOrganizationsPlugin(&search.ac, &orgSearchOrgUnitID)
+	orgp := orgp.NewOrganizationsPlugin(search.ac, orgSearchOrgUnitID)
 	orgAccts, err := orgp.GetResources()
 	if err != nil {
 		return acctIds, err
 	}
 
-	for _, acct := range *orgAccts {
+	for _, acct := range orgAccts {
 		log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
 		acctIds = append(acctIds, *acct.Id)
 	}
@@ -133,7 +133,7 @@ func (search Search) doAccountSearch(cloudSvcs []string, acctID string) (general
 
 	if acctID != "current" {
 		// resolve account's aliases
-		iamp := iamp.NewIAMPlugin(&search.ac)
+		iamp := iamp.NewIAMPlugin(search.ac)
 		acctAliases, err = iamp.GetResources()
 		if err != nil {
 			return matchingResource, err

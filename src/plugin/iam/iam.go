@@ -12,8 +12,8 @@ type IAMPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewIAMPlugin(awsConn *awsconnector.AWSConnector) IAMPlugin {
-	iamp := IAMPlugin{AwsConn: *awsConn}
+func NewIAMPlugin(awsConn awsconnector.AWSConnector) IAMPlugin {
+	iamp := IAMPlugin{AwsConn: awsConn}
 
 	return iamp
 }

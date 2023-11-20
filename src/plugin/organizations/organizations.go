@@ -16,13 +16,13 @@ type OrganizationsPlugin struct {
 	OrgUnitID string
 }
 
-func NewOrganizationsPlugin(awsConn *awsconnector.AWSConnector, orgSearchOrgUnitID *string) OrganizationsPlugin {
-	orgp := OrganizationsPlugin{AwsConn: *awsConn, OrgUnitID: *orgSearchOrgUnitID}
+func NewOrganizationsPlugin(awsConn awsconnector.AWSConnector, orgSearchOrgUnitID string) OrganizationsPlugin {
+	orgp := OrganizationsPlugin{AwsConn: awsConn, OrgUnitID: orgSearchOrgUnitID}
 
 	return orgp
 }
 
-func listAllAccountsInOrganization(orgClient *organizations.Client) (*[]types.Account, error) {
+func listAllAccountsInOrganization(orgClient organizations.ListAccountsAPIClient) ([]types.Account, error) {
 	var orgAccts []types.Account
 
 	paginator := organizations.NewListAccountsPaginator(orgClient, &organizations.ListAccountsInput{})
@@ -30,16 +30,16 @@ func listAllAccountsInOrganization(orgClient *organizations.Client) (*[]types.Ac
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return &orgAccts, err
+			return orgAccts, err
 		}
 
 		orgAccts = append(orgAccts, output.Accounts...)
 	}
 
-	return &orgAccts, nil
+	return orgAccts, nil
 }
 
-func (orgp OrganizationsPlugin) listAllAccountsInOrganizationalUnit(orgClient *organizations.Client) (*[]types.Account, error) {
+func (orgp OrganizationsPlugin) listAllAccountsInOrganizationalUnit(orgClient organizations.ListAccountsForParentAPIClient) ([]types.Account, error) {
 	var orgAccts []types.Account
 
 	paginator := organizations.NewListAccountsForParentPaginator(orgClient, &organizations.ListAccountsForParentInput{
@@ -49,17 +49,17 @@ func (orgp OrganizationsPlugin) listAllAccountsInOrganizationalUnit(orgClient *o
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return &orgAccts, err
+			return orgAccts, err
 		}
 
 		orgAccts = append(orgAccts, output.Accounts...)
 	}
 
-	return &orgAccts, nil
+	return orgAccts, nil
 }
 
-func (orgp OrganizationsPlugin) GetResources() (*[]types.Account, error) {
-	var orgAccts *[]types.Account
+func (orgp OrganizationsPlugin) GetResources() ([]types.Account, error) {
+	var orgAccts []types.Account
 	var err error
 
 	orgClient := organizations.NewFromConfig(orgp.AwsConn.AwsConfig)

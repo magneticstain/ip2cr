@@ -43,7 +43,7 @@ func (elbv1p ELBv1Plugin) GetResources() ([]types.LoadBalancerDescription, error
 }
 
 func (elbv1p ELBv1Plugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
-	var elbIPAddrs *[]net.IP
+	var elbIPAddrs []net.IP
 	var matchingResource generalResource.Resource
 
 	elbResources, err := elbv1p.GetResources()
@@ -52,12 +52,12 @@ func (elbv1p ELBv1Plugin) SearchResources(tgtIP string) (generalResource.Resourc
 	}
 
 	for _, elb := range elbResources {
-		elbIPAddrs, err = utils.LookupFQDN(elb.DNSName)
+		elbIPAddrs, err = utils.LookupFQDN(*elb.DNSName)
 		if err != nil {
 			return matchingResource, err
 		}
 
-		for _, ipAddr := range *elbIPAddrs {
+		for _, ipAddr := range elbIPAddrs {
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerName
 

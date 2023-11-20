@@ -52,7 +52,7 @@ func (cfp CloudfrontPlugin) GetResources() ([]types.DistributionSummary, error) 
 
 func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var cfDistroFQDN string
-	var cfIPAddrs *[]net.IP
+	var cfIPAddrs []net.IP
 	var matchingResource generalResource.Resource
 
 	cfResources, err := cfp.GetResources()
@@ -62,12 +62,12 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resou
 
 	for _, cfDistro := range cfResources {
 		cfDistroFQDN = NormalizeCFDistroFQDN(*cfDistro.DomainName)
-		cfIPAddrs, err = utils.LookupFQDN(&cfDistroFQDN)
+		cfIPAddrs, err = utils.LookupFQDN(cfDistroFQDN)
 		if err != nil {
 			return matchingResource, err
 		}
 
-		for _, ipAddr := range *cfIPAddrs {
+		for _, ipAddr := range cfIPAddrs {
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *cfDistro.ARN
 
