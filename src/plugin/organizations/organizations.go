@@ -16,12 +16,6 @@ type OrganizationsPlugin struct {
 	OrgUnitID string
 }
 
-func NewOrganizationsPlugin(awsConn awsconnector.AWSConnector, orgSearchOrgUnitID string) OrganizationsPlugin {
-	orgp := OrganizationsPlugin{AwsConn: awsConn, OrgUnitID: orgSearchOrgUnitID}
-
-	return orgp
-}
-
 func listAllAccountsInOrganization(orgClient organizations.ListAccountsAPIClient) ([]types.Account, error) {
 	var orgAccts []types.Account
 

@@ -18,12 +18,6 @@ type ELBv1Plugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewELBv1Plugin(awsConn awsconnector.AWSConnector) ELBv1Plugin {
-	elbv1p := ELBv1Plugin{AwsConn: awsConn}
-
-	return elbv1p
-}
-
 func (elbv1p ELBv1Plugin) GetResources() ([]types.LoadBalancerDescription, error) {
 	var elbs []types.LoadBalancerDescription
 

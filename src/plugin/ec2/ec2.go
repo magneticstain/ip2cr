@@ -16,12 +16,6 @@ type EC2Plugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewEC2Plugin(awsConn awsconnector.AWSConnector) EC2Plugin {
-	ec2p := EC2Plugin{AwsConn: awsConn}
-
-	return ec2p
-}
-
 func (ec2p EC2Plugin) GetResources() ([]types.Reservation, error) {
 	var instances []types.Reservation
 

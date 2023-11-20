@@ -11,7 +11,7 @@ import (
 func cfpFactory() plugin.CloudfrontPlugin {
 	ac, _ := awsconnector.New()
 
-	cfp := plugin.NewCloudfrontPlugin(ac)
+	cfp := plugin.CloudfrontPlugin{AwsConn: ac}
 
 	return cfp
 }

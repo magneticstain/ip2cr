@@ -11,7 +11,7 @@ import (
 func elbpFactory() plugin.ELBPlugin {
 	ac, _ := awsconnector.New()
 
-	elbp := plugin.NewELBPlugin(ac)
+	elbp := plugin.ELBPlugin{AwsConn: ac}
 
 	return elbp
 }
@@ -60,7 +60,7 @@ func TestSearchResources(t *testing.T) {
 func elbv1pFactory() plugin.ELBv1Plugin {
 	ac, _ := awsconnector.New()
 
-	elbv1p := plugin.NewELBv1Plugin(ac)
+	elbv1p := plugin.ELBv1Plugin{AwsConn: ac}
 
 	return elbv1p
 }

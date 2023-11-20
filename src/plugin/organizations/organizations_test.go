@@ -12,7 +12,7 @@ func orgFactory() plugin.OrganizationsPlugin {
 	ac, _ := awsconnector.New()
 	OUID := ""
 
-	orgp := plugin.NewOrganizationsPlugin(ac, OUID)
+	orgp := plugin.OrganizationsPlugin{AwsConn: ac, OrgUnitID: OUID}
 
 	return orgp
 }

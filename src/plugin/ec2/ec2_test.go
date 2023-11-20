@@ -11,7 +11,7 @@ import (
 func ec2pFactory() plugin.EC2Plugin {
 	ac, _ := awsconnector.New()
 
-	ec2p := plugin.NewEC2Plugin(ac)
+	ec2p := plugin.EC2Plugin{AwsConn: ac}
 
 	return ec2p
 }

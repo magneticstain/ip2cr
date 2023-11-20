@@ -19,12 +19,6 @@ type CloudfrontPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewCloudfrontPlugin(awsConn awsconnector.AWSConnector) CloudfrontPlugin {
-	cfp := CloudfrontPlugin{AwsConn: awsConn}
-
-	return cfp
-}
-
 func NormalizeCFDistroFQDN(fqdn string) string {
 	// CloudFront currently returns a `.` appended to the fqdn
 	// we'll need to get rid of it so that it can be lookup up properly

@@ -20,14 +20,8 @@ import (
 )
 
 type Search struct {
-	ac     awsconnector.AWSConnector
-	ipAddr string
-}
-
-func NewSearch(ac awsconnector.AWSConnector, ipAddr string) Search {
-	search := Search{ac: ac, ipAddr: ipAddr}
-
-	return search
+	AWSConn awsconnector.AWSConnector
+	IpAddr  string
 }
 
 func reconcileCloudSvcParam(cloudSvc string) []string {
@@ -48,7 +42,7 @@ func reconcileCloudSvcParam(cloudSvc string) []string {
 func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (string, error) {
 	var fuzzedSvc string
 
-	fuzzedSvc, err := ipfuzzing.FuzzIP(search.ipAddr, doAdvIPFuzzing)
+	fuzzedSvc, err := ipfuzzing.FuzzIP(search.IpAddr, doAdvIPFuzzing)
 	if err != nil {
 		return fuzzedSvc, err
 	} else if fuzzedSvc == "" || fuzzedSvc == "UNKNOWN" {
@@ -65,14 +59,14 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 
 	// assume xaccount role first if ARN is provided
 	if orgSearchXaccountRoleARN != "" {
-		arac, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.ac.AwsConfig)
+		arac, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSConn.AwsConfig)
 		if err != nil {
 			return acctIds, err
 		}
-		search.ac = arac
+		search.AWSConn = arac
 	}
 
-	orgp := orgp.NewOrganizationsPlugin(search.ac, orgSearchOrgUnitID)
+	orgp := orgp.OrganizationsPlugin{AwsConn: search.AWSConn, OrgUnitID: orgSearchOrgUnitID}
 	orgAccts, err := orgp.GetResources()
 	if err != nil {
 		return acctIds, err
@@ -96,26 +90,26 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 
 	switch cloudSvc {
 	case "cloudfront":
-		pluginConn := cfp.NewCloudfrontPlugin(search.ac)
-		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
+		pluginConn := cfp.CloudfrontPlugin{AwsConn: search.AWSConn}
+		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "ec2":
-		pluginConn := ec2p.NewEC2Plugin(search.ac)
-		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
+		pluginConn := ec2p.EC2Plugin{AwsConn: search.AWSConn}
+		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv1": // classic ELBs
-		pluginConn := elbp.NewELBv1Plugin(search.ac)
-		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
+		pluginConn := elbp.ELBv1Plugin{AwsConn: search.AWSConn}
+		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv2":
-		pluginConn := elbp.NewELBPlugin(search.ac)
-		matchingResource, err = pluginConn.SearchResources(search.ipAddr)
+		pluginConn := elbp.ELBPlugin{AwsConn: search.AWSConn}
+		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
@@ -133,7 +127,7 @@ func (search Search) doAccountSearch(cloudSvcs []string, acctID string) (general
 
 	if acctID != "current" {
 		// resolve account's aliases
-		iamp := iamp.NewIAMPlugin(search.ac)
+		iamp := iamp.IAMPlugin{AwsConn: search.AWSConn}
 		acctAliases, err = iamp.GetResources()
 		if err != nil {
 			return matchingResource, err
@@ -172,7 +166,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 			return
 		}
 
-		search.ac = ac
+		search.AWSConn = ac
 	}
 
 	resultResource, err := search.doAccountSearch(cloudSvcs, acctID)

@@ -19,7 +19,7 @@ type TestIPAddr struct {
 func searchFactory(ipAddr string) search.Search {
 	ac, _ := awsconnector.New()
 
-	search := search.NewSearch(ac, ipAddr)
+	search := search.Search{AWSConn: ac, IpAddr: ipAddr}
 
 	return search
 }
