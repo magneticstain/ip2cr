@@ -42,9 +42,8 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - [X] IP service fuzzing (perform a reverse DNS lookup to identify the services to search, leading to faster results)  ( [Issue #39](https://github.com/magneticstain/ip-2-cloudresource/issues/39) )
 - [X] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip-2-cloudresource/issues/77) )
 - [X] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
+- [X] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
 - [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
-- [ ] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
-- [ ] Improve Unit Tests to Integrate With tf-ip2cr and Use Real Data ( [Issue #142](https://github.com/magneticstain/ip-2-cloudresource/issues/142) )
 
 ## Prerequisites
 
@@ -94,7 +93,7 @@ cd /opt/ip2cr/
 
 ## Usage
 
-After installing, `cd` to the app directory if not already there and run the `ip2cr` binary.
+After installing, run the `ip2cr` binary to see available parameters:
 
 ```bash
 > ./ip2cr --help
@@ -109,19 +108,23 @@ Usage of ./ip2cr:
     	Outputs results in JSON format; implies usage of --silent flag
   -org-search
     	Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)
+  -org-search-ou-id string
+    	The ID of the AWS Organizations Organizational Unit to target when performing a search
   -org-search-role-name string
     	The name of the role in each child account of an AWS Organization to assume when performing a search (default "ip2cr")
+  -org-search-xaccount-role-arn string
+    	The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account
   -silent
     	If enabled, only output the results
   -svc string
-    	Specific cloud service to search (default "all")
+    	Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: cloudfront , ec2 , elbv1 , elbv2 (default "all")
   -verbose
     	Outputs all logs, from debug level to critical
 ```
 
 ### Using IP2CR With MFA Role
 
-A large number of enterprises configure their IAM architecture such that users login to a central AWS account and then assume various IAM roles in other accounts as needed. It's [recommended by AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_configure-api-require.html) that these roles are configured to require the principal to be authenticated using MFA. This can present a problem when configuring AWS credentials using a profile that assumes a target role using MFA (denoted by the usage of the `mfa_serial` as part of the profile) as the AWS SDK is not configured to automatically prompt the user for MFA input.
+A large number of enterprises configure their IAM architecture such that users login to a central AWS account and then assume various IAM roles in other accounts as needed. It's [recommended by AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_configure-api-require.html) that these roles are configured to require the principal to be authenticated using MFA. This can present a problem when configuring AWS credentials using a profile that assumes a target role using MFA (denoted by the usage of the `mfa_serial` as part of the profile) as the AWS SDK does not support (automatically) prompting the user for MFA input.
 
 Instead, this will present itself as a fatal error within IP2CR, e.g.:
 
