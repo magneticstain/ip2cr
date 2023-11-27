@@ -36,13 +36,13 @@ func TestMapFQDNToSvc(t *testing.T) {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.fqdn)
 
 		t.Run(testName, func(t *testing.T) {
-			mappedSvc, err := ipfuzzing.MapFQDNToSvc(&td.fqdn)
+			mappedSvc, err := ipfuzzing.MapFQDNToSvc(td.fqdn)
 			if err != nil {
 				t.Errorf("unexpected error received when attempting to match %s service: %s", td.cloudSvc, err)
 			}
 
-			if *mappedSvc == "" || *mappedSvc != td.cloudSvc {
-				t.Errorf("failed to map FQDN to service; EXPECTED SVC: %s , MAPPED SVC: %s , FQDN: %s", td.cloudSvc, *mappedSvc, td.fqdn)
+			if mappedSvc == "" || mappedSvc != td.cloudSvc {
+				t.Errorf("failed to map FQDN to service; EXPECTED SVC: %s , MAPPED SVC: %s , FQDN: %s", td.cloudSvc, mappedSvc, td.fqdn)
 			}
 		})
 	}
@@ -60,13 +60,13 @@ func TestMapFQDNToSvc_InvalidSvcs(t *testing.T) {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.fqdn)
 
 		t.Run(testName, func(t *testing.T) {
-			mappedSvc, err := ipfuzzing.MapFQDNToSvc(&td.fqdn)
+			mappedSvc, err := ipfuzzing.MapFQDNToSvc(td.fqdn)
 			if err != nil {
 				t.Errorf("unexpected error received when attempting to match invalid service %s: %s", td.cloudSvc, err)
 			}
 
-			if *mappedSvc == td.cloudSvc {
-				t.Errorf("expected error when mapping FQDN to invalid service, but was successful; EXPECTED SVC: %s , MAPPED SVC: %s , FQDN: %s", td.cloudSvc, *mappedSvc, td.fqdn)
+			if mappedSvc == td.cloudSvc {
+				t.Errorf("expected error when mapping FQDN to invalid service, but was successful; EXPECTED SVC: %s , MAPPED SVC: %s , FQDN: %s", td.cloudSvc, mappedSvc, td.fqdn)
 			}
 		})
 	}
@@ -87,13 +87,13 @@ func TestRunAdvancedFuzzing(t *testing.T) {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := ipfuzzing.RunAdvancedFuzzing(&td.ipAddr)
+			fuzzedSvc, err := ipfuzzing.RunAdvancedFuzzing(td.ipAddr)
 			if err != nil {
 				t.Errorf("unexpected error received when attempting to fuzz %s service using advanced fuzzing: %s", td.cloudSvc, err)
 			}
 
-			if *fuzzedSvc != td.cloudSvc {
-				t.Errorf("failed to fuzz service using advanced IP fuzzing; EXPECTED SVC: %s , FUZZED SVC: %s , IP: %s", td.cloudSvc, *fuzzedSvc, td.ipAddr)
+			if fuzzedSvc != td.cloudSvc {
+				t.Errorf("failed to fuzz service using advanced IP fuzzing; EXPECTED SVC: %s , FUZZED SVC: %s , IP: %s", td.cloudSvc, fuzzedSvc, td.ipAddr)
 			}
 		})
 	}
@@ -111,7 +111,7 @@ func TestRunAdvancedFuzzing_InvalidIPs(t *testing.T) {
 		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			_, err := ipfuzzing.RunAdvancedFuzzing(&td.ipAddr)
+			_, err := ipfuzzing.RunAdvancedFuzzing(td.ipAddr)
 			if err == nil {
 				t.Errorf("expected error when performing advanced IP fuzzing, but didn't")
 			}
@@ -137,13 +137,13 @@ func TestFuzzIP(t *testing.T) {
 		validSvcs := GetValidCloudSvcs(true)
 
 		t.Run(testName, func(t *testing.T) {
-			svcName, err := ipfuzzing.FuzzIP(&td.ipAddr, td.useAdvFuzzing)
+			svcName, err := ipfuzzing.FuzzIP(td.ipAddr, td.useAdvFuzzing)
 			if err != nil {
 				t.Errorf("unexpected error received when attempting to fuzz %s IP using general fuzzing: %s", td.ipAddr, err)
 			}
 
-			if !slices.Contains[[]string, string](*validSvcs, *svcName) {
-				t.Errorf("unexpected service name when performing IP fuzzing tests; received %s", *svcName)
+			if !slices.Contains[[]string, string](*validSvcs, svcName) {
+				t.Errorf("unexpected service name when performing IP fuzzing tests; received %s", svcName)
 			}
 		})
 	}

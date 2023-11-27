@@ -14,14 +14,14 @@ type AWSConnector struct {
 }
 
 func New() (AWSConnector, error) {
-	cfg, err := ConnectToAWS(nil, aws.Config{})
+	cfg, err := ConnectToAWS("", aws.Config{})
 
 	ac := AWSConnector{AwsConfig: cfg}
 
 	return ac, err
 }
 
-func NewAWSConnectorAssumeRole(roleArn *string, baseConfig aws.Config) (AWSConnector, error) {
+func NewAWSConnectorAssumeRole(roleArn string, baseConfig aws.Config) (AWSConnector, error) {
 	cfg, err := ConnectToAWS(roleArn, baseConfig)
 
 	ac := AWSConnector{AwsConfig: cfg}
@@ -29,7 +29,7 @@ func NewAWSConnectorAssumeRole(roleArn *string, baseConfig aws.Config) (AWSConne
 	return ac, err
 }
 
-func ConnectToAWS(roleArn *string, baseConfig aws.Config) (aws.Config, error) {
+func ConnectToAWS(roleArn string, baseConfig aws.Config) (aws.Config, error) {
 	var cfg aws.Config
 	var err error
 
@@ -42,11 +42,11 @@ func ConnectToAWS(roleArn *string, baseConfig aws.Config) (aws.Config, error) {
 		}
 	}
 
-	if roleArn != nil {
+	if roleArn != "" {
 		// assume role and override cfg creds with sts creds
 		// REF: https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/credentials/stscreds
 		stsSvc := sts.NewFromConfig(cfg)
-		roleCreds := stscreds.NewAssumeRoleProvider(stsSvc, *roleArn)
+		roleCreds := stscreds.NewAssumeRoleProvider(stsSvc, roleArn)
 		cfg.Credentials = aws.NewCredentialsCache(roleCreds)
 	}
 

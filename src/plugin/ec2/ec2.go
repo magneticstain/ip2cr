@@ -16,13 +16,7 @@ type EC2Plugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func NewEC2Plugin(awsConn *awsconnector.AWSConnector) EC2Plugin {
-	ec2p := EC2Plugin{AwsConn: *awsConn}
-
-	return ec2p
-}
-
-func (ec2p EC2Plugin) GetResources() (*[]types.Reservation, error) {
+func (ec2p EC2Plugin) GetResources() ([]types.Reservation, error) {
 	var instances []types.Reservation
 
 	ec2Client := ec2.NewFromConfig(ec2p.AwsConn.AwsConfig)
@@ -31,31 +25,31 @@ func (ec2p EC2Plugin) GetResources() (*[]types.Reservation, error) {
 	for paginator.HasMorePages() {
 		output, err := paginator.NextPage(context.TODO())
 		if err != nil {
-			return &instances, err
+			return instances, err
 		}
 
 		instances = append(instances, output.Reservations...)
 	}
 
-	return &instances, nil
+	return instances, nil
 }
 
-func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*generalResource.Resource, error) {
+func (ec2p EC2Plugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 
 	ec2Resources, err := ec2p.GetResources()
 	if err != nil {
-		return &matchingResource, err
+		return matchingResource, err
 	}
 
-	var publicIPv4Addr, IPv6Addr *string
-	for _, ec2Reservation := range *ec2Resources {
+	var publicIPv4Addr, IPv6Addr string
+	for _, ec2Reservation := range ec2Resources {
 		// unpack instances from reservation
 		for _, instance := range ec2Reservation.Instances {
-			publicIPv4Addr = instance.PublicIpAddress
-			IPv6Addr = instance.Ipv6Address
+			publicIPv4Addr = *instance.PublicIpAddress
+			IPv6Addr = *instance.Ipv6Address
 
-			if *publicIPv4Addr == *tgtIP || *IPv6Addr == *tgtIP {
+			if publicIPv4Addr == tgtIP || IPv6Addr == tgtIP {
 				matchingResource.RID = *instance.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
 
 				log.Debug("IP found as EC2 instance -> ", matchingResource.RID)
@@ -65,5 +59,5 @@ func (ec2p EC2Plugin) SearchResources(tgtIP *string) (*generalResource.Resource,
 		}
 	}
 
-	return &matchingResource, nil
+	return matchingResource, nil
 }
