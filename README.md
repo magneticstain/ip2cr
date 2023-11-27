@@ -22,7 +22,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 
 ## Features
 
-- Built for speed and efficiency while only generating a small resource footprint
+- Built for speed and ease-of-use while only generating a small resource footprint
 - Supports finding IPs for:
   - CloudFront
   - ALBs & NLBs (and probably GLBs, but hasn't been tested yet)
