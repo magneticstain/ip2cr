@@ -12,7 +12,7 @@ func orgFactory() plugin.OrganizationsPlugin {
 	ac, _ := awsconnector.New()
 	OUID := ""
 
-	orgp := plugin.NewOrganizationsPlugin(&ac, &OUID)
+	orgp := plugin.OrganizationsPlugin{AwsConn: ac, OrgUnitID: OUID}
 
 	return orgp
 }
@@ -23,7 +23,7 @@ func TestGetResources(t *testing.T) {
 	orgResources, _ := orgp.GetResources()
 
 	expectedType := "Account"
-	for _, acct := range *orgResources {
+	for _, acct := range orgResources {
 		orgType := reflect.TypeOf(acct)
 		if orgType.Name() != expectedType {
 			t.Errorf("Fetching resources via AWS Organizations Plugin failed; wanted %s type, received %s", expectedType, orgType.Name())
@@ -54,7 +54,7 @@ func TestGetResources_TgtOUID(t *testing.T) {
 			orgResources, _ := orgp.GetResources()
 
 			expectedType := "Account"
-			for _, acct := range *orgResources {
+			for _, acct := range orgResources {
 				orgType := reflect.TypeOf(acct)
 				if orgType.Name() != expectedType {
 					t.Errorf("Fetching resources with specific Organizational Unit ID via AWS Organizations Plugin failed; wanted %s type, received %s", expectedType, orgType.Name())

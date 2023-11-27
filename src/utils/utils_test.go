@@ -20,7 +20,7 @@ func TestReverseDNSLookup(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.fqdn, td.ipAddr)
 		t.Run(testName, func(t *testing.T) {
-			fqdns, _ := utils.ReverseDNSLookup(&td.ipAddr)
+			fqdns, _ := utils.ReverseDNSLookup(td.ipAddr)
 
 			fqdnFound := false
 			for _, fqdn := range fqdns {
@@ -51,10 +51,10 @@ func TestLookupFQDN(t *testing.T) {
 	for _, td := range tests {
 		testName := fmt.Sprintf("%s_%s", td.fqdn, td.ipAddr)
 		t.Run(testName, func(t *testing.T) {
-			ipAddrs, _ := utils.LookupFQDN(&td.fqdn)
+			ipAddrs, _ := utils.LookupFQDN(td.fqdn)
 
 			ipFound := false
-			for _, ipAddr := range *ipAddrs {
+			for _, ipAddr := range ipAddrs {
 				if ipAddr.String() == td.ipAddr {
 					ipFound = true
 					break
