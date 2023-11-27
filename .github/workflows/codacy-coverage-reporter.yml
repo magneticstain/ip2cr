@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     name: codacy-coverage-reporter
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Generate Coverage Report
         run: go test -v -race -shuffle=on -coverprofile=coverage.txt ./...
