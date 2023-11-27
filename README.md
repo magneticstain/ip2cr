@@ -119,6 +119,27 @@ Usage of ./ip2cr:
     	Outputs all logs, from debug level to critical
 ```
 
+### Using IP2CR With MFA Role
+
+A large number of enterprises configure their IAM architecture such that users login to a central AWS account and then assume various IAM roles in other accounts as needed. It's [recommended by AWS](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_mfa_configure-api-require.html) that these roles are configured to require the principal to be authenticated using MFA. This can present a problem when configuring AWS credentials using a profile that assumes a target role using MFA (denoted by the usage of the `mfa_serial` as part of the profile) as the AWS SDK is not configured to automatically prompt the user for MFA input.
+
+Instead, this will present itself as a fatal error within IP2CR, e.g.:
+
+```
+INFO[0000] starting IP-2-CloudResource                  
+DEBU[0000] generating AWS connection                    
+FATA[0000] assume role with MFA enabled, but AssumeRoleTokenProvider session option not set.
+```
+
+#### Workaround
+
+To get around this, you will need to generate the STS credentials outside of IP2CR and set them as stated in AWS's documentation. There are several options for this; the two most common are included below:
+
+1. Use the AWS CLI to [generate STS credentials for the role](https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_use-resources.html#using-temp-creds-sdk-cli)
+2. Use [awsume](https://awsu.me/) or a similar tool to easily handle AWS credentials
+
+Once you have used your preferred method to generate and set STS credentials, rerun IP2CR and it should work as expected.
+
 ## Testing/Demo
 
 You can use the Terraform plans provided here to generate sample resources in AWS for testing.
