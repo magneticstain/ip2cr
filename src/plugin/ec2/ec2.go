@@ -46,8 +46,16 @@ func (ec2p EC2Plugin) SearchResources(tgtIP string) (generalResource.Resource, e
 	for _, ec2Reservation := range ec2Resources {
 		// unpack instances from reservation
 		for _, instance := range ec2Reservation.Instances {
-			publicIPv4Addr = *instance.PublicIpAddress
-			IPv6Addr = *instance.Ipv6Address
+			evalAddrPtr := func(addrPtr *string) string {
+				addr := ""
+				if addrPtr != nil {
+					addr = *addrPtr
+				}
+
+				return addr
+			}
+			publicIPv4Addr = evalAddrPtr(instance.PublicIpAddress)
+			IPv6Addr = evalAddrPtr(instance.Ipv6Address)
 
 			if publicIPv4Addr == tgtIP || IPv6Addr == tgtIP {
 				matchingResource.RID = *instance.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
