@@ -131,7 +131,7 @@ Instead, this will present itself as a fatal error within IP2CR, e.g.:
 ```
 INFO[0000] starting IP-2-CloudResource                  
 DEBU[0000] generating AWS connection                    
-FATA[0000] assume role with MFA enabled, but AssumeRoleTokenProvider session option not set. 
+FATA[0000] assume role with MFA enabled, but AssumeRoleTokenProvider session option not set.
 ```
 
 #### Workaround
