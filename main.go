@@ -13,16 +13,8 @@ import (
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
+	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
-
-func initRollbar() {
-	rollbar.SetToken("98a9cbd56b164657ab447d79eac9b258")
-	rollbar.SetCaptureIp(rollbar.CaptureIpAnonymize)
-	rollbar.SetServerHost("anonymous")
-	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
-	rollbar.SetCodeVersion("v1.0.7")
-	rollbar.SetEnvironment("development")
-}
 
 func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
@@ -116,7 +108,7 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	initRollbar()
+	utils.InitRollbar()
 
 	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *silent, *jsonOutput)
 
