@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
@@ -220,7 +221,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 
 	for _, acctID := range acctsToSearch {
 		wg.Add(1)
-		go search.runSearchWorker(matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
+		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
 	}
 
 	go func() {
