@@ -161,7 +161,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "", "")
+			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -188,7 +188,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, false, "", "", "")
+			res, _ := search.InitSearch("all", false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -208,7 +208,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "", "")
+			res, _ := search.InitSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -228,7 +228,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "", "")
+			res, _ := search.InitSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -248,7 +248,7 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", "")
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -302,7 +302,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID)
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -332,7 +332,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID)
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -363,7 +363,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID)
+			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
