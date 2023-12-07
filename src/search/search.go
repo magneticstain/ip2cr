@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
@@ -57,18 +58,22 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (string, error) {
 
 func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccountRoleARN string) ([]string, error) {
 	var acctIds []string
+	var err error
 
 	// assume xaccount role first if ARN is provided
+	var arac awsconnector.AWSConnector
 	if orgSearchXaccountRoleARN != "" {
-		arac, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSConn.AwsConfig)
+		arac, err = awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSConn.AwsConfig)
 		if err != nil {
 			return acctIds, err
 		}
-		search.AWSConn = arac
+	} else {
+		arac = search.AWSConn
 	}
 
-	orgp := orgp.OrganizationsPlugin{AwsConn: search.AWSConn, OrgUnitID: orgSearchOrgUnitID}
-	orgAccts, err := orgp.GetResources()
+	var orgAccts []types.Account
+	orgp := orgp.OrganizationsPlugin{AwsConn: arac, OrgUnitID: orgSearchOrgUnitID}
+	orgAccts, err = orgp.GetResources()
 	if err != nil {
 		return acctIds, err
 	}
