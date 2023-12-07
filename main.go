@@ -16,7 +16,7 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
-func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bool) {
+func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
 
 	if !silent {
@@ -29,6 +29,17 @@ func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bo
 			}
 
 			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
+
+			if networkMapping {
+				var networkMapGraph string
+
+				for _, networkResource := range matchedResource.NetworkMap {
+					networkMapGraph += fmt.Sprintf("%s -> ", networkResource)
+				}
+				networkMapGraph += matchedResource.RID
+
+				log.Info("network map: [ ", networkMapGraph, " ]")
+			}
 		} else {
 			log.Info("resource not found :( better luck next time!")
 		}
@@ -72,7 +83,7 @@ func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing
 	}
 
 	// output
-	outputResults(matchingResource, silent, jsonOutput)
+	outputResults(matchingResource, networkMapping, silent, jsonOutput)
 }
 
 func main() {
