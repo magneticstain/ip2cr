@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	log "github.com/sirupsen/logrus"
@@ -16,6 +17,30 @@ import (
 
 type ELBPlugin struct {
 	AwsConn awsconnector.AWSConnector
+}
+
+func (elbp ELBPlugin) fetchElbTgtData(ElbArn string) ([]ELBTarget, error) {
+	// fetches ELB listner ARN, Tgt Grp ARN, and Tgt IDs
+	var elbTgts []ELBTarget
+
+	return elbTgts, nil
+}
+
+func addElbAZDataToNetworkMap(matchingResource *generalResource.Resource, AZData []types.AvailabilityZone) {
+	var AZSlug, AZDataSet string
+
+	AZDataSet += "["
+	for i, AZ := range AZData {
+		if i != 0 {
+			AZDataSet += ", "
+		}
+		AZSlug = fmt.Sprintf("%s (%s)", *AZ.SubnetId, *AZ.ZoneName)
+
+		AZDataSet += AZSlug
+	}
+	AZDataSet += "]"
+
+	matchingResource.NetworkMap = append(matchingResource.NetworkMap, AZDataSet)
 }
 
 func (elbp ELBPlugin) GetResources() ([]types.LoadBalancer, error) {
@@ -39,6 +64,7 @@ func (elbp ELBPlugin) GetResources() ([]types.LoadBalancer, error) {
 func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var elbIPAddrs []net.IP
 	var matchingResource generalResource.Resource
+	// var elbTgts []ELBTarget
 
 	elbResources, err := elbp.GetResources()
 	if err != nil {
@@ -55,7 +81,18 @@ func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, e
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerArn
 
-				log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID)
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
+
+				// elbTgts, err = elbp.fetchElbTgtData(*elb.LoadBalancerArn)
+				// if err != nil {
+				// 	return matchingResource, err
+				// }
+
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.VpcId)
+
+				addElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
+
+				log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 
 				break
 			}
