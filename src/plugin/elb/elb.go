@@ -19,13 +19,6 @@ type ELBPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func (elbp ELBPlugin) fetchElbTgtData(ElbArn string) ([]ELBTarget, error) {
-	// fetches ELB listner ARN, Tgt Grp ARN, and Tgt IDs
-	var elbTgts []ELBTarget
-
-	return elbTgts, nil
-}
-
 func addElbAZDataToNetworkMap(matchingResource *generalResource.Resource, AZData []types.AvailabilityZone) {
 	var AZSlug, AZDataSet string
 
@@ -81,14 +74,7 @@ func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, e
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerArn
 
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
-
-				// elbTgts, err = elbp.fetchElbTgtData(*elb.LoadBalancerArn)
-				// if err != nil {
-				// 	return matchingResource, err
-				// }
-
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.VpcId)
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId, *elb.VpcId)
 
 				addElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
 
