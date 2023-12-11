@@ -30,5 +30,7 @@ func LookupFQDN(fqdn string) ([]net.IP, error) {
 }
 
 func FormatStrSliceAsCSV(strs []string) string {
-	return strings.Join(strs, ",")
+	formattedStr := "[" + strings.Join(strs, ",") + "]"
+
+	return formattedStr
 }

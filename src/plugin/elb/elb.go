@@ -20,20 +20,16 @@ type ELBPlugin struct {
 }
 
 func addElbAZDataToNetworkMap(matchingResource *generalResource.Resource, AZData []types.AvailabilityZone) {
-	var AZSlug, AZDataSet string
+	var AZSlug string
+	var AZDataSet []string
 
-	AZDataSet += "["
-	for i, AZ := range AZData {
-		if i != 0 {
-			AZDataSet += ", "
-		}
+	for _, AZ := range AZData {
 		AZSlug = fmt.Sprintf("%s (%s)", *AZ.SubnetId, *AZ.ZoneName)
 
-		AZDataSet += AZSlug
+		AZDataSet = append(AZDataSet, AZSlug)
 	}
-	AZDataSet += "]"
 
-	matchingResource.NetworkMap = append(matchingResource.NetworkMap, AZDataSet)
+	matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(AZDataSet))
 }
 
 func (elbp ELBPlugin) GetResources() ([]types.LoadBalancer, error) {
