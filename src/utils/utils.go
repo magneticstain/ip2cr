@@ -2,6 +2,7 @@ package utils
 
 import (
 	"net"
+	"strings"
 
 	"github.com/rollbar/rollbar-go"
 )
@@ -26,4 +27,8 @@ func LookupFQDN(fqdn string) ([]net.IP, error) {
 	ipAddrs, err := net.LookupIP(fqdn)
 
 	return ipAddrs, err
+}
+
+func FormatStrSliceAsCSV(strs []string) string {
+	return strings.Join(strs, ",")
 }
