@@ -33,10 +33,16 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 			if networkMapping {
 				var networkMapGraph string
 
-				for _, networkResource := range matchedResource.NetworkMap {
-					networkMapGraph += fmt.Sprintf("%s -> ", networkResource)
+				var networkResourceElmnt string
+				networkMapResourceCnt := len(matchedResource.NetworkMap)
+				for i, networkResource := range matchedResource.NetworkMap {
+					networkResourceElmnt = "%s"
+					if i != networkMapResourceCnt-1 {
+						networkResourceElmnt += " -> "
+					}
+
+					networkMapGraph += fmt.Sprintf(networkResourceElmnt, networkResource)
 				}
-				networkMapGraph += matchedResource.RID
 
 				log.Info("network map: [ ", networkMapGraph, " ]")
 			}

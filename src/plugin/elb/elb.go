@@ -19,6 +19,59 @@ type ELBPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
+func (elbp ELBPlugin) fetchElbListeners(elbArn string) ([]types.Listener, error) {
+	var listeners []types.Listener
+
+	elb_client := elasticloadbalancingv2.NewFromConfig(elbp.AwsConn.AwsConfig)
+	paginator := elasticloadbalancingv2.NewDescribeListenersPaginator(elb_client, &elasticloadbalancingv2.DescribeListenersInput{
+		LoadBalancerArn: &elbArn,
+	})
+
+	for paginator.HasMorePages() {
+		output, err := paginator.NextPage(context.TODO())
+		if err != nil {
+			return listeners, err
+		}
+
+		listeners = append(listeners, output.Listeners...)
+	}
+
+	return listeners, nil
+}
+
+func (elbp ELBPlugin) getElbTgts(elbListeners []types.Listener) ([]ELBTarget, error) {
+	var elbTgt ELBTarget
+	var elbTgts []ELBTarget
+
+	elb_client := elasticloadbalancingv2.NewFromConfig(elbp.AwsConn.AwsConfig)
+	for _, listener := range elbListeners {
+		elbTgt = ELBTarget{
+			ListenerArn: *listener.ListenerArn,
+		}
+
+		for _, listnerAction := range listener.DefaultActions {
+			elbTgt.TgtGrpArn = *listnerAction.TargetGroupArn
+
+			resp, err := elb_client.DescribeTargetHealth(context.TODO(), &elasticloadbalancingv2.DescribeTargetHealthInput{
+				TargetGroupArn: &elbTgt.TgtGrpArn,
+			})
+			if err != nil {
+				return elbTgts, err
+			}
+
+			for _, targetHealth := range resp.TargetHealthDescriptions {
+				if targetHealth.Target.Id != nil {
+					elbTgt.TgtIds = append(elbTgt.TgtIds, *targetHealth.Target.Id)
+				}
+			}
+		}
+
+		elbTgts = append(elbTgts, elbTgt)
+	}
+
+	return elbTgts, nil
+}
+
 func addElbAZDataToNetworkMap(matchingResource *generalResource.Resource, AZData []types.AvailabilityZone) {
 	var AZSlug string
 	var AZDataSet []string
@@ -53,7 +106,8 @@ func (elbp ELBPlugin) GetResources() ([]types.LoadBalancer, error) {
 func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var elbIPAddrs []net.IP
 	var matchingResource generalResource.Resource
-	// var elbTgts []ELBTarget
+	var elbListners []types.Listener
+	var elbTgts []ELBTarget
 
 	elbResources, err := elbp.GetResources()
 	if err != nil {
@@ -70,9 +124,25 @@ func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, e
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerArn
 
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId, *elb.VpcId)
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
 
 				addElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
+
+				elbListners, err = elbp.fetchElbListeners(*elb.LoadBalancerArn)
+				if err != nil {
+					return matchingResource, err
+				}
+				elbTgts, err = elbp.getElbTgts(elbListners)
+				if err != nil {
+					return matchingResource, err
+				}
+
+				var tgtSlug []string
+				for _, tgt := range elbTgts {
+					tgtSlug = append(tgtSlug, tgt.ListenerArn, tgt.TgtGrpArn)
+					tgtSlug = append(tgtSlug, tgt.TgtIds...)
+				}
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, tgtSlug...)
 
 				log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 

@@ -177,7 +177,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 
 	resultResource, err := search.doAccountSearch(cloudSvcs, acctID)
 	if err != nil {
-		log.Error("error when running search withing account search worker: ", err)
+		log.Error("error when running search within account search worker: ", err)
 	} else if resultResource.RID != "" {
 		matchingResourceBuffer <- resultResource
 		return
