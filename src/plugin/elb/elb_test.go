@@ -45,6 +45,33 @@ func TestGetElbListeners(t *testing.T) {
 	}
 }
 
+func TestGetElbTargets(t *testing.T) {
+	elbp := elbpFactory()
+
+	var tests = []struct {
+		testName, expectedType string
+	}{
+		{"validElbTgtArn", "ELBTarget"},
+	}
+
+	var elbListeners []types.Listener
+	for _, td := range tests {
+		testName := td.testName
+
+		t.Run(testName, func(t *testing.T) {
+			elbTargets, _ := elbp.GetElbTgts(elbListeners)
+
+			for _, tgt := range elbTargets {
+				elbTgtType := reflect.TypeOf(tgt).Name()
+
+				if elbTgtType != td.expectedType {
+					t.Errorf("ELB target fetch failed; expected %s after search, received %s", td.expectedType, elbTgtType)
+				}
+			}
+		})
+	}
+}
+
 func TestGetResources(t *testing.T) {
 	elbp := elbpFactory()
 
