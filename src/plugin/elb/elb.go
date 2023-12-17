@@ -19,7 +19,7 @@ type ELBPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
-func (elbp ELBPlugin) fetchElbListeners(elbArn string) ([]types.Listener, error) {
+func (elbp ELBPlugin) GetElbListeners(elbArn string) ([]types.Listener, error) {
 	var listeners []types.Listener
 
 	elb_client := elasticloadbalancingv2.NewFromConfig(elbp.AwsConn.AwsConfig)
@@ -39,7 +39,7 @@ func (elbp ELBPlugin) fetchElbListeners(elbArn string) ([]types.Listener, error)
 	return listeners, nil
 }
 
-func (elbp ELBPlugin) getElbTgts(elbListeners []types.Listener) ([]ELBTarget, error) {
+func (elbp ELBPlugin) GetElbTgts(elbListeners []types.Listener) ([]ELBTarget, error) {
 	var elbTgt ELBTarget
 	var elbTgts []ELBTarget
 
@@ -72,7 +72,7 @@ func (elbp ELBPlugin) getElbTgts(elbListeners []types.Listener) ([]ELBTarget, er
 	return elbTgts, nil
 }
 
-func addElbAZDataToNetworkMap(matchingResource *generalResource.Resource, AZData []types.AvailabilityZone) {
+func AddElbAZDataToNetworkMap(matchingResource *generalResource.Resource, AZData []types.AvailabilityZone) {
 	var AZSlug string
 	var AZDataSet []string
 
@@ -126,13 +126,13 @@ func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, e
 
 				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
 
-				addElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
+				AddElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
 
-				elbListners, err = elbp.fetchElbListeners(*elb.LoadBalancerArn)
+				elbListners, err = elbp.GetElbListeners(*elb.LoadBalancerArn)
 				if err != nil {
 					return matchingResource, err
 				}
-				elbTgts, err = elbp.getElbTgts(elbListners)
+				elbTgts, err = elbp.GetElbTgts(elbListners)
 				if err != nil {
 					return matchingResource, err
 				}
