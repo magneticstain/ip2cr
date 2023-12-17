@@ -19,6 +19,19 @@ type CloudfrontPlugin struct {
 	AwsConn awsconnector.AWSConnector
 }
 
+func processCloudfrontOrigins(originSet []types.Origin) []CloudfrontOrigin {
+	var origins []CloudfrontOrigin
+
+	for _, cfOrigin := range originSet {
+		origins = append(origins, CloudfrontOrigin{
+			OriginId:   *cfOrigin.Id,
+			DomainName: *cfOrigin.DomainName,
+		})
+	}
+
+	return origins
+}
+
 func NormalizeCFDistroFQDN(fqdn string) string {
 	// CloudFront currently returns a `.` appended to the fqdn
 	// we'll need to get rid of it so that it can be lookup up properly
@@ -47,7 +60,9 @@ func (cfp CloudfrontPlugin) GetResources() ([]types.DistributionSummary, error) 
 func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
 	var cfDistroFQDN string
 	var cfIPAddrs []net.IP
+	var cfDistroOriginSet []CloudfrontOrigin
 	var matchingResource generalResource.Resource
+	var originIdSet, originDomainNameSet []string
 
 	cfResources, err := cfp.GetResources()
 	if err != nil {
@@ -61,11 +76,22 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resou
 			return matchingResource, err
 		}
 
+		cfDistroOriginSet = processCloudfrontOrigins(cfDistro.Origins.Items)
+
 		for _, ipAddr := range cfIPAddrs {
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *cfDistro.ARN
 
-				log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID)
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *cfDistro.DomainName, *cfDistro.Id)
+
+				for _, normalizedOrigin := range cfDistroOriginSet {
+					originIdSet = append(originIdSet, normalizedOrigin.OriginId)
+					originDomainNameSet = append(originDomainNameSet, normalizedOrigin.DomainName)
+				}
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(originIdSet))
+				matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(originDomainNameSet))
+
+				log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 
 				break
 			}
