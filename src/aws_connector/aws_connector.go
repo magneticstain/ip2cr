@@ -42,6 +42,10 @@ func ConnectToAWS(roleArn string, baseConfig aws.Config) (aws.Config, error) {
 		}
 	}
 
+	// there doesn't appear to be an easy way to set a custom user-agent for aws.Config in v2
+	// however, the App ID is apparently always added to the user-agent ( see issue #295 )
+	cfg.AppID = "ip-2-cloudresource"
+
 	if roleArn != "" {
 		// assume role and override cfg creds with sts creds
 		// REF: https://pkg.go.dev/github.com/aws/aws-sdk-go-v2/credentials/stscreds
