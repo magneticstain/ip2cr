@@ -4,6 +4,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 	plugin "github.com/magneticstain/ip-2-cloudresource/src/plugin/elb"
 )
@@ -16,12 +17,67 @@ func elbpFactory() plugin.ELBPlugin {
 	return elbp
 }
 
+func TestGetElbListeners(t *testing.T) {
+	elbp := elbpFactory()
+
+	var tests = []struct {
+		testName, elbArn, expectedType string
+	}{
+		{"validElbArn", "arn:aws:elasticloadbalancing:us-east-1:509915386432:loadbalancer/app/IP2CR-Testing-ALB/e482622e74065ea", "Listener"},
+	}
+
+	var elbListeners []types.Listener
+	var elbListenersType string
+	for _, td := range tests {
+		testName := td.testName
+
+		t.Run(testName, func(t *testing.T) {
+			elbListeners, _ = elbp.GetElbListeners(td.elbArn)
+
+			for _, listener := range elbListeners {
+				elbListenersType = reflect.TypeOf(listener).Name()
+
+				if elbListenersType != td.expectedType {
+					t.Errorf("ELB listener fetch failed; expected %s after search, received %s", td.expectedType, elbListenersType)
+				}
+			}
+		})
+	}
+}
+
+func TestGetElbTargets(t *testing.T) {
+	elbp := elbpFactory()
+
+	var tests = []struct {
+		testName, expectedType string
+	}{
+		{"validElbTgtArn", "ELBTarget"},
+	}
+
+	var elbListeners []types.Listener
+	for _, td := range tests {
+		testName := td.testName
+
+		t.Run(testName, func(t *testing.T) {
+			elbTargets, _ := elbp.GetElbTgts(elbListeners)
+
+			for _, tgt := range elbTargets {
+				elbTgtType := reflect.TypeOf(tgt).Name()
+
+				if elbTgtType != td.expectedType {
+					t.Errorf("ELB target fetch failed; expected %s after search, received %s", td.expectedType, elbTgtType)
+				}
+			}
+		})
+	}
+}
+
 func TestGetResources(t *testing.T) {
 	elbp := elbpFactory()
 
 	elbResources, _ := elbp.GetResources()
 
-	expectedType := "Resource"
+	expectedType := "LoadBalancer"
 	for _, elb := range elbResources {
 		elbType := reflect.TypeOf(elb)
 		if elbType.Name() != expectedType {
@@ -70,7 +126,7 @@ func TestGetResources_Elbv1(t *testing.T) {
 
 	elbResources, _ := elbv1p.GetResources()
 
-	expectedType := "Resource"
+	expectedType := "LoadBalancerDescription"
 	for _, elb := range elbResources {
 		elbType := reflect.TypeOf(elb)
 		if elbType.Name() != expectedType {

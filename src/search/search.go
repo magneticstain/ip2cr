@@ -177,14 +177,14 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 
 	resultResource, err := search.doAccountSearch(cloudSvcs, acctID)
 	if err != nil {
-		log.Error("error when running search withing account search worker: ", err)
+		log.Error("error when running search within account search worker: ", err)
 	} else if resultResource.RID != "" {
 		matchingResourceBuffer <- resultResource
 		return
 	}
 }
 
-func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string) (generalResource.Resource, error) {
+func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var err error
 
