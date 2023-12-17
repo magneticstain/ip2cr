@@ -21,11 +21,11 @@ func TestGetResources(t *testing.T) {
 
 	iamResources, _ := iamp.GetResources()
 
-	expectedType := "slice"
+	expectedType := "string"
 	for _, alias := range iamResources {
-		iamType := reflect.TypeOf(alias)
-		if iamType.Name() != expectedType {
-			t.Errorf("Fetching resources via IAM Plugin failed; wanted %s type, received %s", expectedType, iamType.Name())
+		iamAliasType := reflect.TypeOf(alias)
+		if iamAliasType.Name() != expectedType {
+			t.Errorf("Fetching account alias via IAM Plugin failed; wanted %s type, received %s", expectedType, iamAliasType.Name())
 		}
 	}
 }

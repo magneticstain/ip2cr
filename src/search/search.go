@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
+	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
@@ -56,18 +58,22 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (string, error) {
 
 func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccountRoleARN string) ([]string, error) {
 	var acctIds []string
+	var err error
 
 	// assume xaccount role first if ARN is provided
+	var arac awsconnector.AWSConnector
 	if orgSearchXaccountRoleARN != "" {
-		arac, err := awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSConn.AwsConfig)
+		arac, err = awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSConn.AwsConfig)
 		if err != nil {
 			return acctIds, err
 		}
-		search.AWSConn = arac
+	} else {
+		arac = search.AWSConn
 	}
 
-	orgp := orgp.OrganizationsPlugin{AwsConn: search.AWSConn, OrgUnitID: orgSearchOrgUnitID}
-	orgAccts, err := orgp.GetResources()
+	var orgAccts []types.Account
+	orgp := orgp.OrganizationsPlugin{AwsConn: arac, OrgUnitID: orgSearchOrgUnitID}
+	orgAccts, err = orgp.GetResources()
 	if err != nil {
 		return acctIds, err
 	}
@@ -171,14 +177,14 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 
 	resultResource, err := search.doAccountSearch(cloudSvcs, acctID)
 	if err != nil {
-		log.Error("error when running search withing account search worker: ", err)
+		log.Error("error when running search within account search worker: ", err)
 	} else if resultResource.RID != "" {
 		matchingResourceBuffer <- resultResource
 		return
 	}
 }
 
-func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string) (generalResource.Resource, error) {
+func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var err error
 
@@ -220,7 +226,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 
 	for _, acctID := range acctsToSearch {
 		wg.Add(1)
-		go search.runSearchWorker(matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
+		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
 	}
 
 	go func() {

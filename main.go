@@ -13,18 +13,10 @@ import (
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/src/resource"
 	"github.com/magneticstain/ip-2-cloudresource/src/search"
+	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
-func initRollbar() {
-	rollbar.SetToken("98a9cbd56b164657ab447d79eac9b258")
-	rollbar.SetCaptureIp(rollbar.CaptureIpAnonymize)
-	rollbar.SetServerHost("anonymous")
-	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
-	rollbar.SetCodeVersion("v1.0.6")
-	rollbar.SetEnvironment("production")
-}
-
-func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bool) {
+func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
 
 	if !silent {
@@ -37,6 +29,23 @@ func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bo
 			}
 
 			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
+
+			if networkMapping {
+				var networkMapGraph string
+
+				var networkResourceElmnt string
+				networkMapResourceCnt := len(matchedResource.NetworkMap)
+				for i, networkResource := range matchedResource.NetworkMap {
+					networkResourceElmnt = "%s"
+					if i != networkMapResourceCnt-1 {
+						networkResourceElmnt += " -> "
+					}
+
+					networkMapGraph += fmt.Sprintf(networkResourceElmnt, networkResource)
+				}
+
+				log.Info("network map: [ ", networkMapGraph, " ]")
+			}
 		} else {
 			log.Info("resource not found :( better luck next time!")
 		}
@@ -63,7 +72,7 @@ func outputResults(matchedResource resource.Resource, silent bool, jsonOutput bo
 	}
 }
 
-func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, silent bool, jsonOutput bool) {
+func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool, silent bool, jsonOutput bool) {
 	// cloud connections
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
@@ -74,13 +83,13 @@ func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing
 	// search
 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " service(s)")
 	searchCtlr := search.Search{AWSConn: ac, IpAddr: ipAddr}
-	matchingResource, err := searchCtlr.InitSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID)
+	matchingResource, err := searchCtlr.InitSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
 	if err != nil {
 		log.Fatal("failed to run search :: [ ERR: ", err, " ]")
 	}
 
 	// output
-	outputResults(matchingResource, silent, jsonOutput)
+	outputResults(matchingResource, networkMapping, silent, jsonOutput)
 }
 
 func main() {
@@ -94,6 +103,7 @@ func main() {
 	orgSearchXaccountRoleARN := flag.String("org-search-xaccount-role-arn", "", "The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account")
 	orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search")
 	orgSearchOrgUnitID := flag.String("org-search-ou-id", "", "The ID of the AWS Organizations Organizational Unit to target when performing a search")
+	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource, if found (default: false)")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 	flag.Parse()
@@ -116,9 +126,9 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	initRollbar()
+	utils.InitRollbar()
 
-	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *silent, *jsonOutput)
+	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silent, *jsonOutput)
 
 	rollbar.Close()
 }
