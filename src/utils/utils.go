@@ -12,8 +12,8 @@ func InitRollbar() {
 	rollbar.SetCaptureIp(rollbar.CaptureIpAnonymize)
 	rollbar.SetServerHost("anonymous")
 	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
-	rollbar.SetCodeVersion("v1.0.7")
-	rollbar.SetEnvironment("development")
+	rollbar.SetCodeVersion("v1.1.0")
+	rollbar.SetEnvironment("production")
 }
 
 func ReverseDNSLookup(ipAddr string) ([]string, error) {
