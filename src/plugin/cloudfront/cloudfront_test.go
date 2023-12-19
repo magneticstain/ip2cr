@@ -43,7 +43,7 @@ func TestGetResources(t *testing.T) {
 
 	cfResources, _ := cfp.GetResources()
 
-	expectedType := "Resource"
+	expectedType := "DistributionSummary"
 	for _, cfDistro := range cfResources {
 		cfDistroType := reflect.TypeOf(cfDistro)
 		if cfDistroType.Name() != expectedType {

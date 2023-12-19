@@ -21,7 +21,7 @@ func TestGetResources(t *testing.T) {
 
 	ec2Resources, _ := ec2p.GetResources()
 
-	expectedType := "Resource"
+	expectedType := "Reservation"
 	for _, instance := range ec2Resources {
 		ec2Type := reflect.TypeOf(instance)
 		if ec2Type.Name() != expectedType {

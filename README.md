@@ -106,6 +106,8 @@ Usage of ./ip2cr:
     	IP address to search for (default "127.0.0.1")
   -json
     	Outputs results in JSON format; implies usage of --silent flag
+  -network-mapping
+    	If enabled, generate a network map associated with the identified resource, if found (default: false)
   -org-search
     	Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)
   -org-search-ou-id string
