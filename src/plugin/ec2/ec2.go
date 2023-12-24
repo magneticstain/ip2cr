@@ -13,7 +13,8 @@ import (
 )
 
 type EC2Plugin struct {
-	AwsConn awsconnector.AWSConnector
+	AwsConn        awsconnector.AWSConnector
+	NetworkMapping bool
 }
 
 func (ec2p EC2Plugin) GetResources() ([]types.Reservation, error) {
@@ -60,7 +61,9 @@ func (ec2p EC2Plugin) SearchResources(tgtIP string) (generalResource.Resource, e
 			if publicIPv4Addr == tgtIP || IPv6Addr == tgtIP {
 				matchingResource.RID = *instance.InstanceId // for some reason, the EC2 Instance object doesn't contain the ARN of the instance :/
 
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *instance.VpcId, *instance.SubnetId, *instance.InstanceId)
+				if ec2p.NetworkMapping {
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *instance.VpcId, *instance.SubnetId, *instance.InstanceId)
+				}
 
 				log.Debug("IP found as EC2 instance -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 

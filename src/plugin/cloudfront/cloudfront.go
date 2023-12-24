@@ -16,7 +16,8 @@ import (
 )
 
 type CloudfrontPlugin struct {
-	AwsConn awsconnector.AWSConnector
+	AwsConn        awsconnector.AWSConnector
+	NetworkMapping bool
 }
 
 func processCloudfrontOrigins(originSet []types.Origin) []CloudfrontOrigin {
@@ -82,14 +83,16 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resou
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *cfDistro.ARN
 
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *cfDistro.DomainName, *cfDistro.Id)
+				if cfp.NetworkMapping {
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *cfDistro.DomainName, *cfDistro.Id)
 
-				for _, normalizedOrigin := range cfDistroOriginSet {
-					originIdSet = append(originIdSet, normalizedOrigin.OriginId)
-					originDomainNameSet = append(originDomainNameSet, normalizedOrigin.DomainName)
+					for _, normalizedOrigin := range cfDistroOriginSet {
+						originIdSet = append(originIdSet, normalizedOrigin.OriginId)
+						originDomainNameSet = append(originDomainNameSet, normalizedOrigin.DomainName)
+					}
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(originIdSet))
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(originDomainNameSet))
 				}
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(originIdSet))
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, utils.FormatStrSliceAsCSV(originDomainNameSet))
 
 				log.Debug("IP found as CloudFront distribution -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 
