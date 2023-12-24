@@ -79,8 +79,12 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 	}
 
 	for _, acct := range orgAccts {
-		log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
-		acctIds = append(acctIds, *acct.Id)
+		if acct.Status == "ACTIVE" {
+			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ")")
+			acctIds = append(acctIds, *acct.Id)
+		} else {
+			log.Debug("org account found, but not active: ", *acct.Id, " (", *acct.Name, ")")
+		}
 	}
 
 	return acctIds, nil
