@@ -125,25 +125,27 @@ func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, e
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerArn
 
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
+				if elbp.NetworkMapping {
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
 
-				AddElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
+					AddElbAZDataToNetworkMap(&matchingResource, elb.AvailabilityZones)
 
-				elbListners, err = elbp.GetElbListeners(*elb.LoadBalancerArn)
-				if err != nil {
-					return matchingResource, err
-				}
-				elbTgts, err = elbp.GetElbTgts(elbListners)
-				if err != nil {
-					return matchingResource, err
-				}
+					elbListners, err = elbp.GetElbListeners(*elb.LoadBalancerArn)
+					if err != nil {
+						return matchingResource, err
+					}
+					elbTgts, err = elbp.GetElbTgts(elbListners)
+					if err != nil {
+						return matchingResource, err
+					}
 
-				var tgtSlug []string
-				for _, tgt := range elbTgts {
-					tgtSlug = append(tgtSlug, tgt.ListenerArn, tgt.TgtGrpArn)
-					tgtSlug = append(tgtSlug, tgt.TgtIds...)
+					var tgtSlug []string
+					for _, tgt := range elbTgts {
+						tgtSlug = append(tgtSlug, tgt.ListenerArn, tgt.TgtGrpArn)
+						tgtSlug = append(tgtSlug, tgt.TgtIds...)
+					}
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, tgtSlug...)
 				}
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, tgtSlug...)
 
 				log.Debug("IP found as Elastic Load Balancer -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 

@@ -56,7 +56,9 @@ func (elbv1p ELBv1Plugin) SearchResources(tgtIP string) (generalResource.Resourc
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerName
 
-				matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneNameID, *elb.VPCId, utils.FormatStrSliceAsCSV(elb.AvailabilityZones), utils.FormatStrSliceAsCSV(elb.Subnets))
+				if elbv1p.NetworkMapping {
+					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneNameID, *elb.VPCId, utils.FormatStrSliceAsCSV(elb.AvailabilityZones), utils.FormatStrSliceAsCSV(elb.Subnets))
+				}
 
 				log.Debug("IP found as Classic Elastic Load Balancer -> ", matchingResource.RID, " with network info ", matchingResource.NetworkMap)
 
