@@ -16,7 +16,8 @@ import (
 )
 
 type ELBPlugin struct {
-	AwsConn awsconnector.AWSConnector
+	AwsConn        awsconnector.AWSConnector
+	NetworkMapping bool
 }
 
 func (elbp ELBPlugin) GetElbListeners(elbArn string) ([]types.Listener, error) {

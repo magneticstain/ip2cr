@@ -13,7 +13,8 @@ import (
 )
 
 type EC2Plugin struct {
-	AwsConn awsconnector.AWSConnector
+	AwsConn        awsconnector.AWSConnector
+	NetworkMapping bool
 }
 
 func (ec2p EC2Plugin) GetResources() ([]types.Reservation, error) {

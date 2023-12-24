@@ -15,7 +15,8 @@ import (
 )
 
 type ELBv1Plugin struct {
-	AwsConn awsconnector.AWSConnector
+	AwsConn        awsconnector.AWSConnector
+	NetworkMapping bool
 }
 
 func (elbv1p ELBv1Plugin) GetResources() ([]types.LoadBalancerDescription, error) {

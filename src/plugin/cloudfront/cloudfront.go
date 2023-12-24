@@ -16,7 +16,8 @@ import (
 )
 
 type CloudfrontPlugin struct {
-	AwsConn awsconnector.AWSConnector
+	AwsConn        awsconnector.AWSConnector
+	NetworkMapping bool
 }
 
 func processCloudfrontOrigins(originSet []types.Origin) []CloudfrontOrigin {
