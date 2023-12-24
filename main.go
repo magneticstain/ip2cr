@@ -16,6 +16,8 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/src/utils"
 )
 
+const APP_VER = "v1.1.1"
+
 func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
 
@@ -106,7 +108,13 @@ func main() {
 	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource, if found (default: false)")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
+	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
 	flag.Parse()
+
+	if *version {
+		fmt.Println("ip-2-cloudresource", APP_VER)
+		return
+	}
 
 	if *jsonOutput {
 		*silent = true
@@ -126,7 +134,7 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	utils.InitRollbar()
+	utils.InitRollbar(APP_VER)
 
 	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silent, *jsonOutput)
 
