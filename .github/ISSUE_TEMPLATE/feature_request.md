@@ -3,17 +3,17 @@ name: Feature request
 about: Suggest an idea for this project
 title: ''
 labels: enhancement
-assignees: ''
+assignees: 'magneticstain'
 
 ---
 
-**Is your feature request related to a problem? Please describe.**
-A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
+**Feature Summary**
+A clear and concise description of what you want to be changed.
 
-**Describe the solution you'd like**
-A clear and concise description of what you want to happen.
+** Motivations / Use Cases For Feature**
+What benefit does the feature provide? Why change it? What happens if we don't change it?
 
-**Describe alternatives you've considered**
+**Alternatives Considered**
 A clear and concise description of any alternative solutions or features you've considered.
 
 **Additional context**
