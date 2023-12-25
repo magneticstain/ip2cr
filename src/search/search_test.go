@@ -111,7 +111,7 @@ func TestSearchAWS(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.SearchAWS(td.cloudSvc)
+			res, _ := search.SearchAWS(td.cloudSvc, false)
 
 			resType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -137,7 +137,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			_, err := search.SearchAWS(td.cloudSvc)
+			_, err := search.SearchAWS(td.cloudSvc, false)
 			if err == nil {
 				t.Errorf("Error was expected, but not seen, when performing general search; using %s for unknown cloud service key", td.cloudSvc)
 			}

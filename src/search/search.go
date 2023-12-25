@@ -79,14 +79,18 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 	}
 
 	for _, acct := range orgAccts {
-		log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ") [ ", acct.Status, " ]")
-		acctIds = append(acctIds, *acct.Id)
+		if acct.Status == "ACTIVE" {
+			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ")")
+			acctIds = append(acctIds, *acct.Id)
+		} else {
+			log.Debug("org account found, but not active: ", *acct.Id, " (", *acct.Name, ")")
+		}
 	}
 
 	return acctIds, nil
 }
 
-func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error) {
+func (search Search) SearchAWS(cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var err error
 
@@ -96,25 +100,25 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 
 	switch cloudSvc {
 	case "cloudfront":
-		pluginConn := cfp.CloudfrontPlugin{AwsConn: search.AWSConn}
+		pluginConn := cfp.CloudfrontPlugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "ec2":
-		pluginConn := ec2p.EC2Plugin{AwsConn: search.AWSConn}
+		pluginConn := ec2p.EC2Plugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv1": // classic ELBs
-		pluginConn := elbp.ELBv1Plugin{AwsConn: search.AWSConn}
+		pluginConn := elbp.ELBv1Plugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv2":
-		pluginConn := elbp.ELBPlugin{AwsConn: search.AWSConn}
+		pluginConn := elbp.ELBPlugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
@@ -126,7 +130,7 @@ func (search Search) SearchAWS(cloudSvc string) (generalResource.Resource, error
 	return matchingResource, nil
 }
 
-func (search Search) doAccountSearch(cloudSvcs []string, acctID string) (generalResource.Resource, error) {
+func (search Search) doAccountSearch(cloudSvcs []string, acctID string, doNetMapping bool) (generalResource.Resource, error) {
 	var acctAliases []string
 	var matchingResource generalResource.Resource
 	var err error
@@ -145,7 +149,7 @@ func (search Search) doAccountSearch(cloudSvcs []string, acctID string) (general
 	}
 
 	for _, svc := range cloudSvcs {
-		matchingResource, err = search.SearchAWS(svc)
+		matchingResource, err = search.SearchAWS(svc, doNetMapping)
 
 		if err != nil {
 			return matchingResource, err
@@ -160,7 +164,7 @@ func (search Search) doAccountSearch(cloudSvcs []string, acctID string) (general
 	return matchingResource, nil
 }
 
-func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, cloudSvcs []string, orgSearchRoleName string, wg *sync.WaitGroup) {
+func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, cloudSvcs []string, orgSearchRoleName string, doNetMapping bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if acctID != "current" {
@@ -175,7 +179,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 		search.AWSConn = ac
 	}
 
-	resultResource, err := search.doAccountSearch(cloudSvcs, acctID)
+	resultResource, err := search.doAccountSearch(cloudSvcs, acctID, doNetMapping)
 	if err != nil {
 		log.Error("error when running search within account search worker: ", err)
 	} else if resultResource.RID != "" {
@@ -226,7 +230,7 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 
 	for _, acctID := range acctsToSearch {
 		wg.Add(1)
-		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, &wg)
+		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, doNetMapping, &wg)
 	}
 
 	go func() {
