@@ -10,10 +10,10 @@ import (
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/resource"
-	"github.com/magneticstain/ip-2-cloudresource/src/search"
-	"github.com/magneticstain/ip-2-cloudresource/src/utils"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/resource"
+	"github.com/magneticstain/ip-2-cloudresource/search"
+	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
 const APP_VER = "v1.2.0"
