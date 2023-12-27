@@ -31,6 +31,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - Support for searching through accounts within an AWS Organization
 - IPv6 support
 - JSON output to easily integrate with scripts
+- Ability to map the network path taken from the internet to the identified resource
 
 ### Roadmap
 
@@ -62,7 +63,7 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ### Homebrew
 
-The easiest way to install IP2CR is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
+The easiest way to install IP2CR if you're using Mac OS is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
 
 ```bash
 brew tap magneticstain/ip2cr
