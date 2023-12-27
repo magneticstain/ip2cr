@@ -10,7 +10,7 @@ assignees: 'magneticstain'
 **Feature Summary**
 A clear and concise description of what you want to be changed.
 
-** Motivations / Use Cases For Feature**
+**Motivations / Use Cases For Feature**
 What benefit does the feature provide? Why change it? What happens if we don't change it?
 
 **Alternatives Considered**
