@@ -205,7 +205,7 @@ ip2cr -ipaddr=1.2.3.4 -json
 
 #### Speed Run
 
-To run IP2CR as fast as possible (single account), disable IP fuzzing (both basic and advanced) and specify the cloud service for IP2CR to search:
+If you're looking to run IP2CR as fast as possible (single account), disable IP fuzzing (both basic and advanced) and specify the cloud service for IP2CR to search:
 
 ```bash
 ip2cr -ipaddr=1.2.3.4 -ip-fuzzing=false -adv-ip-fuzzing=false -svc=ec2
@@ -219,6 +219,6 @@ You can use the Terraform plans provided here to generate sample resources in AW
 
 ## Support, Feature Requests, and General Community Discussion
 
-The `Discusions` module of this repository has been setup as a place to get support, request new features, and facilitate any general discorse related to IP2CR.
+The `Discussions` module of this repository has been setup as a place to get support, discuss new features, and facilitate any general discorse related to IP2CR.
 
 If you are having an issue when using IP2CR, or just need general help, you should start here as opposed to creating an Issue. Any Issues created for support purposes will be closed.
