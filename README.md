@@ -31,6 +31,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - Support for searching through accounts within an AWS Organization
 - IPv6 support
 - JSON output to easily integrate with scripts
+- Ability to map the network path taken from the internet to the identified resource
 
 ### Roadmap
 
