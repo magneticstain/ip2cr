@@ -63,7 +63,7 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ### Homebrew
 
-The easiest way to install IP2CR is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
+The easiest way to install IP2CR if you're using Mac OS is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
 
 ```bash
 brew tap magneticstain/ip2cr
