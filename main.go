@@ -105,7 +105,7 @@ func main() {
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical (default: false)")
 
 	// base
-	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for (default: 127.0.0.1)")
+	ipAddr := flag.String("ipaddr", "", "IP address to search for (default: 127.0.0.1)")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]  (default: all)")
 
 	// FEATURE FLAGS
