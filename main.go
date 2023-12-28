@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/rollbar/rollbar-go"
@@ -122,6 +123,11 @@ func main() {
 	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found (default: false)")
 
 	flag.Parse()
+
+	if *ipAddr == "" {
+		log.Error("IP address is required")
+		os.Exit(1)
+	}
 
 	if *version {
 		fmt.Println("ip-2-cloudresource", APP_VER)
