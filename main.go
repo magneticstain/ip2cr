@@ -5,18 +5,19 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/src/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/src/resource"
-	"github.com/magneticstain/ip-2-cloudresource/src/search"
-	"github.com/magneticstain/ip-2-cloudresource/src/utils"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/resource"
+	"github.com/magneticstain/ip-2-cloudresource/search"
+	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
-const APP_VER = "v1.1.1"
+const APP_VER = "v1.2.0"
 
 func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
@@ -104,7 +105,7 @@ func main() {
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical (default: false)")
 
 	// base
-	ipAddr := flag.String("ipaddr", "127.0.0.1", "IP address to search for (default: 127.0.0.1)")
+	ipAddr := flag.String("ipaddr", "", "IP address to search for (default: 127.0.0.1)")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]  (default: all)")
 
 	// FEATURE FLAGS
@@ -122,6 +123,11 @@ func main() {
 	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found (default: false)")
 
 	flag.Parse()
+
+	if *ipAddr == "" {
+		log.Error("IP address is required")
+		os.Exit(1)
+	}
 
 	if *version {
 		fmt.Println("ip-2-cloudresource", APP_VER)
