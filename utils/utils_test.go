@@ -13,7 +13,7 @@ func TestReverseDNSLookup(t *testing.T) {
 		expectedVerdict bool
 	}{
 		{"1.1.1.1", "one.one.one.one.", true},
-		{"8.8.8.8", "dns.google.", true},
+		{"74.82.42.42", "ordns.he.net.", true},
 		{"1.1.1.1", "google.com.", false},
 	}
 
@@ -23,15 +23,17 @@ func TestReverseDNSLookup(t *testing.T) {
 			fqdns, _ := utils.ReverseDNSLookup(td.ipAddr)
 
 			fqdnFound := false
+			var receivedFqdn string
 			for _, fqdn := range fqdns {
 				if fqdn == td.fqdn {
 					fqdnFound = true
+					receivedFqdn = fqdn
 					break
 				}
 			}
 
 			if fqdnFound != td.expectedVerdict {
-				t.Errorf("reverse IP lookup failed; expected %s to be %t FQDN for %s", td.fqdn, td.expectedVerdict, td.ipAddr)
+				t.Errorf("reverse IP lookup failed; expected %s to be %t FQDN for %s, received %s", td.fqdn, td.expectedVerdict, td.ipAddr, receivedFqdn)
 			}
 		})
 	}
