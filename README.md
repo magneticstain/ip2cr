@@ -7,7 +7,7 @@
 [![Codacy Badge - Quality](https://app.codacy.com/project/badge/Grade/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge - Coverage](https://app.codacy.com/project/badge/Coverage/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
-![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v1.1.1)
+![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v1.2.0)
 ![GitHub issues](https://img.shields.io/github/issues/magneticstain/ip-2-cloudresource)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/magneticstain/ip-2-cloudresource)
 ![GitHub all releases](https://img.shields.io/github/downloads/magneticstain/ip-2-cloudresource/total)
@@ -31,6 +31,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - Support for searching through accounts within an AWS Organization
 - IPv6 support
 - JSON output to easily integrate with scripts
+- Ability to map the network path taken from the internet to the identified resource
 
 ### Roadmap
 
@@ -43,7 +44,7 @@ I created this project mainly to learn Go. It should be fine for a cloud admin r
 - [X] Support for installing using Homebrew ( [Issue #77](https://github.com/magneticstain/ip-2-cloudresource/issues/77) )
 - [X] AWS Organizations support ( [Issue #38](https://github.com/magneticstain/ip-2-cloudresource/issues/38) )
 - [X] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
-- [ ] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
+- [X] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
 
 ## Prerequisites
 
@@ -62,7 +63,7 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ### Homebrew
 
-The easiest way to install IP2CR is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
+The easiest way to install IP2CR if you're using Mac OS is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
 
 ```bash
 brew tap magneticstain/ip2cr
@@ -145,6 +146,72 @@ To get around this, you will need to generate the STS credentials outside of IP2
 
 Once you have used your preferred method to generate and set STS credentials, rerun IP2CR and it should work as expected.
 
+### Use Case Recommendations & Parameter Guide
+
+#### Basic Usage
+
+```bash
+ip2cr -ipaddr=1.2.3.4
+```
+
+#### Single AWS Account or AWS Organizations Search?
+
+If you're searching a single account with a small - medium amount of IP addresses, it's recommended to disable IP fuzzing as the overhead results in a longer search time than simply searching through all IPs.
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -ip-fuzzing=false -adv-ip-fuzzing=false
+```
+
+If you're performing a search across multiple accounts in your AWS Organization, you can enable the feature by adding the `-org-search` flag:
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -org-search
+```
+
+If using a cross-account role name other than the default, ensure that is specified as well:
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -org-search -org-search-role-name=ip2cr-xaccount-role
+```
+
+If you need to assume a target role to read AWS Organizations metadata, you can add another parameter with the target role ARN:
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -org-search -org-search-role-name=ip2cr-xaccount-role -org-search-role-name=arn:aws:iam::123456789012:role/org-manage
+```
+
+If you know which AWS Organizations OU contains the account the target IP is in, you can specify it by adding the `-org-search-ou-id` parameter:
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -org-search -org-search-role-name=ip2cr-xaccount-role -org-search-role-name=arn:aws:iam::123456789012:role/org-manage -org-search-ou-id=ou-abcd-12345
+```
+
+For more information on this feature, see the [AWS Organizations Support Guide](https://github.com/magneticstain/ip-2-cloudresource/wiki/AWS-Organizations-Support-Guide).
+
+#### IPv4 or IPv6 Address?
+
+If searching for an IPv6 address, you should disable advanced IP fuzzing. It uses reverse DNS lookups to perform hostname analysis, which [doesn't really work the same in IPv6 land as it does with IPv4 addresses](https://en.wikipedia.org/wiki/Reverse_DNS_lookup#IPv6_reverse_resolution):
+
+```bash
+ip2cr -ipaddr=2001:0db8:85a3:0000:0000:8a2e:0370:7334 -adv-ip-fuzzing=false
+```
+
+#### Programmatic Usage?
+
+For programmatic usage of IP2Cr, you may benefit from using the `-json` flag to toggle JSON-formatted output:
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -json
+```
+
+#### Speed Run
+
+If you're looking to run IP2CR as fast as possible (single account), disable IP fuzzing (both basic and advanced) and specify the cloud service for IP2CR to search:
+
+```bash
+ip2cr -ipaddr=1.2.3.4 -ip-fuzzing=false -adv-ip-fuzzing=false -svc=ec2
+```
+
 ## Testing/Demo
 
 You can use the Terraform plans provided here to generate sample resources in AWS for testing.
@@ -153,6 +220,6 @@ You can use the Terraform plans provided here to generate sample resources in AW
 
 ## Support, Feature Requests, and General Community Discussion
 
-The `Discusions` module of this repository has been setup as a place to get support, request new features, and facilitate any general discorse related to IP2CR.
+The `Discussions` module of this repository has been setup as a place to get support, discuss new features, and facilitate any general discorse related to IP2CR.
 
 If you are having an issue when using IP2CR, or just need general help, you should start here as opposed to creating an Issue. Any Issues created for support purposes will be closed.
