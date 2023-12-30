@@ -12,6 +12,10 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+
+    outputs:
+      hashes: ${{ steps.hash.outputs.hashes }}
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -24,6 +28,7 @@ jobs:
           go-version: stable
           
       - uses: goreleaser/goreleaser-action@v5
+        id: run-goreleaser
         with:
           distribution: goreleaser
           version: latest
@@ -31,3 +36,30 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           HOMEBREW_GITHUB_TOKEN: ${{ secrets.HOMEBREW_GITHUB_TOKEN }}
+      
+      - name: Generate SLSA subject
+        id: hash
+        env:
+          ARTIFACTS: "${{ steps.run-goreleaser.outputs.artifacts }}"
+        run: |
+          set -euo pipefail
+
+          hashes=$(echo $ARTIFACTS | jq --raw-output '.[] | {name, "digest": (.extra.Digest // .extra.Checksum)} | select(.digest) | {digest} + {name} | join("  ") | sub("^sha256:";"")' | base64 -w0)
+
+          if test "$hashes" = ""; then # goreleaser < v1.13.0
+            checksum_file=$(echo "$ARTIFACTS" | jq -r '.[] | select (.type=="Checksum") | .path')
+            hashes=$(cat $checksum_file | base64 -w0)
+          fi
+
+          echo "hashes=$hashes" >> $GITHUB_OUTPUT
+
+  provenance:
+    needs: [goreleaser]
+    permissions:
+      actions: read # To read the workflow path.
+      id-token: write # To sign the provenance.
+      contents: write # To add assets to a release.
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v1.9.0
+    with:
+      base64-subjects: "${{ needs.goreleaser.outputs.hashes }}"
+      upload-assets: true # upload to a new release
