@@ -124,14 +124,14 @@ func main() {
 
 	flag.Parse()
 
-	if *ipAddr == "" {
-		log.Error("IP address is required")
-		os.Exit(1)
-	}
-
 	if *version {
 		fmt.Println("ip-2-cloudresource", APP_VER)
 		return
+	}
+
+	if *ipAddr == "" {
+		log.Error("IP address is required")
+		os.Exit(1)
 	}
 
 	if *jsonOutput {
