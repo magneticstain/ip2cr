@@ -8,6 +8,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/pkg/profile"
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
@@ -96,6 +97,8 @@ func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing
 }
 
 func main() {
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath("."), profile.NoShutdownHook).Stop()
+
 	// CLI param parsing
 	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
 
