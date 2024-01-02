@@ -97,14 +97,13 @@ func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing
 }
 
 func main() {
-	defer profile.Start(profile.BlockProfile, profile.ProfilePath(".")).Stop()
-	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// defer profile.Start(profile.BlockProfile, profile.ProfilePath(".")).Stop()
+	defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.ClockProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.GoroutineProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.MutexProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.ThreadcreationProfile, profile.ProfilePath(".")).Stop()
-	// defer profile.Start(profile.TraceProfile, profile.ProfilePath(".")).Stop()
 
 	// CLI param parsing
 	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
