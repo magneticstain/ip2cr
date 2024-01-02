@@ -10,6 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.26.6
 	github.com/aws/aws-sdk-go-v2/service/iam v1.28.6
 	github.com/aws/aws-sdk-go-v2/service/organizations v1.23.5
+	github.com/pkg/profile v1.7.0
 	github.com/rollbar/rollbar-go v1.4.5
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/exp v0.0.0-20230817173708-d852ddb80c63
@@ -17,12 +18,9 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go-v2/service/internal/accept-encoding v1.10.4 // indirect
-	github.com/chzyer/readline v1.5.1 // indirect
 	github.com/felixge/fgprof v0.9.3 // indirect
 	github.com/google/pprof v0.0.0-20231229205709-960ae82b1e42 // indirect
-	github.com/ianlancetaylor/demangle v0.0.0-20231023195312-e2daf7ba7156 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
-	github.com/pkg/profile v1.7.0 // indirect
 	github.com/stretchr/testify v1.8.4 // indirect
 )
 
