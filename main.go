@@ -8,13 +8,11 @@ import (
 	"os"
 	"strings"
 
-	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/resource"
 	"github.com/magneticstain/ip-2-cloudresource/search"
-	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
 const APP_VER = "v1.2.0"
@@ -152,9 +150,11 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	utils.InitRollbar(APP_VER)
+	// utils.InitRollbar(APP_VER)
 
-	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
+	// rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 
-	rollbar.Close()
+	// rollbar.Close()
+
+	runCloudSearch(*ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 }
