@@ -7,15 +7,14 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/pkg/profile"
-	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/resource"
 	"github.com/magneticstain/ip-2-cloudresource/search"
-	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
 const APP_VER = "v1.2.0"
@@ -105,6 +104,13 @@ func main() {
 	// defer profile.Start(profile.MutexProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.ThreadcreationProfile, profile.ProfilePath(".")).Stop()
 
+	// f, err := os.Create("cpu.pprof")
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// pprof.StartCPUProfile(f)
+	// defer pprof.StopCPUProfile()
+
 	// CLI param parsing
 	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
 
@@ -161,9 +167,15 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	utils.InitRollbar(APP_VER)
+	for {
+		// utils.InitRollbar(APP_VER)
 
-	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
+		// rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 
-	rollbar.Close()
+		// rollbar.Close()
+
+		runCloudSearch(*ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
+
+		time.Sleep(1)
+	}
 }
