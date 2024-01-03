@@ -5,12 +5,14 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"net/http"
 	"os"
 	"strings"
 	"time"
 
-	"github.com/pkg/profile"
 	log "github.com/sirupsen/logrus"
+
+	_ "net/http/pprof"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/resource"
@@ -97,7 +99,7 @@ func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing
 
 func main() {
 	// defer profile.Start(profile.BlockProfile, profile.ProfilePath(".")).Stop()
-	defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
+	// defer profile.Start(profile.CPUProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.ClockProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.GoroutineProfile, profile.ProfilePath(".")).Stop()
 	// defer profile.Start(profile.MemProfile, profile.ProfilePath(".")).Stop()
@@ -110,6 +112,11 @@ func main() {
 	// }
 	// pprof.StartCPUProfile(f)
 	// defer pprof.StopCPUProfile()
+
+	// we need a webserver to get the pprof webserver
+	go func() {
+		log.Println(http.ListenAndServe("localhost:12345", nil))
+	}()
 
 	// CLI param parsing
 	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
@@ -176,6 +183,6 @@ func main() {
 
 		runCloudSearch(*ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 
-		time.Sleep(1)
+		time.Sleep(15)
 	}
 }
