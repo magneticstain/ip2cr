@@ -17,7 +17,7 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
-const APP_VER = "v1.2.0"
+const APP_VER = "v1.3.0"
 
 func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
@@ -124,14 +124,14 @@ func main() {
 
 	flag.Parse()
 
-	if *ipAddr == "" {
-		log.Error("IP address is required")
-		os.Exit(1)
-	}
-
 	if *version {
 		fmt.Println("ip-2-cloudresource", APP_VER)
 		return
+	}
+
+	if *ipAddr == "" {
+		log.Error("IP address is required")
+		os.Exit(1)
 	}
 
 	if *jsonOutput {
