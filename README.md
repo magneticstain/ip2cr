@@ -17,6 +17,7 @@
 IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
 
 ![IP2CR Demo](https://raw.githubusercontent.com/magneticstain/ip-2-cloudresource/main/assets/demo.gif)
+[MP4](https://raw.githubusercontent.com/magneticstain/ip-2-cloudresource/main/assets/demo.mp4)
 
 ## Features
 
