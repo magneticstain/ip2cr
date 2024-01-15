@@ -44,6 +44,11 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 - [X] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
 - [X] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
 
+#### 2024
+
+- [ ] GCP Support ( [Issue #361](https://github.com/magneticstain/ip-2-cloudresource/issues/361) )
+- [ ] Azure Support ( [Issue #362](https://github.com/magneticstain/ip-2-cloudresource/issues/362) )
+
 ## Prerequisites
 
 ### OS

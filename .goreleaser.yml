@@ -35,9 +35,9 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^deploy: '
-      - '^minor: '
-      - '^test: '
+      - '^[Dd]eploy: '
+      - '^[Mm]inor: '
+      - '^[Tt]est: '
       - '^Merge '
 release:
   github:
