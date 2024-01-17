@@ -65,6 +65,16 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ## Install
 
+### Docker
+
+The most portable way to install and run IP2CR is by using Docker. Check out the `main` branch of this repo, build the IP2CR image, and run it.
+
+```bash
+git clone https://github.com/magneticstain/ip-2-cloudresource.git
+docker build -t ip2cr .
+docker run --name=ip-2-cloudresource ip2cr
+```
+
 ### Homebrew
 
 The easiest way to install IP2CR if you're using Mac OS is to use [Homebrew](https://brew.sh). With homebrew installed, run the following to install IP2CR:
