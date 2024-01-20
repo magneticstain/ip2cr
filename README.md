@@ -67,12 +67,32 @@ IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stab
 
 ### Docker
 
-The most portable way to install and run IP2CR is by using Docker. Check out the `main` branch of this repo, build the IP2CR image, and run it.
+The most portable way to install and run IP2CR is by using Docker.
+
+#### Via Container Registry
+
+The easiest way to run IP2CR in Docker is by using the public containers hosted on container registries. IP2CR images are available on both Docker Hub and GitHub Container Registry. See the commands below for how to run IP2CR using each registry.
+
+##### Docker Hub
+
+```bash
+docker run --rm --name=ip-2-cloudresource magneticstain/ip-2-cloudresource
+```
+
+##### Github Container Registry
+
+```bash
+docker run --rm --name=ip-2-cloudresource ghcr.io/magneticstain/ip-2-cloudresource
+```
+
+#### Via Local Build
+
+In the case that container registries are unavailable, there's also the option to build the image locally. To do that, check out the `main` branch of this repo, build the IP2CR image, and run it.
 
 ```bash
 git clone https://github.com/magneticstain/ip-2-cloudresource.git
-docker build -t ip2cr .
-docker run --rm --name=ip-2-cloudresource ip2cr
+docker build -t ip-2-cloudresource .
+docker run --rm --name=ip-2-cloudresource ip-2-cloudresource
 ```
 
 ### Homebrew
