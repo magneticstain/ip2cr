@@ -46,7 +46,7 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 
 #### 2024
 
-- [ ] Docker Support ( [Issue #367](https://github.com/magneticstain/ip-2-cloudresource/issues/367) )
+- [X] Docker Support ( [Issue #367](https://github.com/magneticstain/ip-2-cloudresource/issues/367) )
 - [ ] GCP Support ( [Issue #361](https://github.com/magneticstain/ip-2-cloudresource/issues/361) )
 - [ ] Azure Support ( [Issue #362](https://github.com/magneticstain/ip-2-cloudresource/issues/362) )
 
@@ -64,6 +64,16 @@ Windows should probably work, but I'm not able to test it at this time.
 IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stable](https://go.dev/dl/#stable).
 
 ## Install
+
+### Docker
+
+The most portable way to install and run IP2CR is by using Docker. Check out the `main` branch of this repo, build the IP2CR image, and run it.
+
+```bash
+git clone https://github.com/magneticstain/ip-2-cloudresource.git
+docker build -t ip2cr .
+docker run --rm --name=ip-2-cloudresource ip2cr
+```
 
 ### Homebrew
 
