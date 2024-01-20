@@ -1,4 +1,6 @@
-# ip-2-cloudresource
+![IP2CR Logo](./assets/logo-transparent.png)
+
+---
 
 [![Build and Test - Main Branch](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml)
 [![Build and Test - Release Branches](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml)
@@ -7,7 +9,7 @@
 [![Codacy Badge - Quality](https://app.codacy.com/project/badge/Grade/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge - Coverage](https://app.codacy.com/project/badge/Coverage/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
-![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v1.3.0)
+![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v1.4.0)
 ![GitHub issues](https://img.shields.io/github/issues/magneticstain/ip-2-cloudresource)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/magneticstain/ip-2-cloudresource)
 ![GitHub all releases](https://img.shields.io/github/downloads/magneticstain/ip-2-cloudresource/total)
@@ -16,7 +18,7 @@
 
 IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
 
-![IP2CR Demo](https://raw.githubusercontent.com/magneticstain/ip-2-cloudresource/main/assets/demo.gif)
+![IP2CR Demo](./assets/demo.gif)
 
 ## Features
 
@@ -44,6 +46,12 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 - [X] Add Support For Concurrent Account-Based Resource Searches When Running With AWS Org Support ( [Issue #141](https://github.com/magneticstain/ip-2-cloudresource/issues/141) )
 - [X] Network path calculation ( [Issue #44](https://github.com/magneticstain/ip-2-cloudresource/issues/44) )
 
+#### 2024
+
+- [X] Docker Support ( [Issue #367](https://github.com/magneticstain/ip-2-cloudresource/issues/367) )
+- [ ] GCP Support ( [Issue #361](https://github.com/magneticstain/ip-2-cloudresource/issues/361) )
+- [ ] Azure Support ( [Issue #362](https://github.com/magneticstain/ip-2-cloudresource/issues/362) )
+
 ## Prerequisites
 
 ### OS
@@ -58,6 +66,36 @@ Windows should probably work, but I'm not able to test it at this time.
 IP2CR supports running on n-1 minor versions of Golang, aka [stable and old-stable](https://go.dev/dl/#stable).
 
 ## Install
+
+### Docker
+
+The most portable way to install and run IP2CR is by using Docker.
+
+#### Via Container Registry
+
+The easiest way to run IP2CR in Docker is by using the public containers hosted on container registries. IP2CR images are available on both Docker Hub and GitHub Container Registry. See the commands below for how to run IP2CR using each registry.
+
+##### Docker Hub
+
+```bash
+docker run --rm --name=ip-2-cloudresource magneticstain/ip-2-cloudresource
+```
+
+##### Github Container Registry
+
+```bash
+docker run --rm --name=ip-2-cloudresource ghcr.io/magneticstain/ip-2-cloudresource
+```
+
+#### Via Local Build
+
+In the case that container registries are unavailable, there's also the option to build the image locally. To do that, check out the `main` branch of this repo, build the IP2CR image, and run it.
+
+```bash
+git clone https://github.com/magneticstain/ip-2-cloudresource.git
+docker build -t ip-2-cloudresource .
+docker run --rm --name=ip-2-cloudresource ip-2-cloudresource
+```
 
 ### Homebrew
 
@@ -95,8 +133,8 @@ cd /opt/ip2cr/
 After installing, run the `ip2cr` binary to see available parameters:
 
 ```bash
-> ./ip2cr --help
-Usage of ./ip2cr:
+> ip2cr --help
+Usage of ip2cr:
   -adv-ip-fuzzing
     	Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses) (default true)
   -ip-fuzzing
