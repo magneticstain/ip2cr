@@ -1,4 +1,6 @@
-# ip-2-cloudresource
+![IP2CR Logo](./assets/logo-transparent.png)
+
+---
 
 [![Build and Test - Main Branch](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_main.yml)
 [![Build and Test - Release Branches](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml/badge.svg)](https://github.com/magneticstain/ip-2-cloudresource/actions/workflows/build_release.yml)
@@ -16,7 +18,7 @@
 
 IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
 
-![IP2CR Demo](https://raw.githubusercontent.com/magneticstain/ip-2-cloudresource/main/assets/demo.gif)
+![IP2CR Demo](./assets/demo.gif)
 
 ## Features
 
@@ -131,8 +133,8 @@ cd /opt/ip2cr/
 After installing, run the `ip2cr` binary to see available parameters:
 
 ```bash
-> ./ip2cr --help
-Usage of ./ip2cr:
+> ip2cr --help
+Usage of ip2cr:
   -adv-ip-fuzzing
     	Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses) (default true)
   -ip-fuzzing
