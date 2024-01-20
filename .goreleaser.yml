@@ -35,8 +35,10 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - '^[Dd]eploy: '
+      - '^[Mm]inor: '
+      - '^[Tt]est: '
+      - '^Merge '
 release:
   github:
     owner: magneticstain
@@ -65,6 +67,3 @@ brews:
       name: homebrew-ip2cr
 
       token: "{{ .Env.HOMEBREW_GITHUB_TOKEN }}"
-
-      # pull_request:
-      #   enabled: true
