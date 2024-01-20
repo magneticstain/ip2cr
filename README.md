@@ -46,7 +46,7 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 
 #### 2024
 
-- [ ] Docker Support ( [Issue #367](https://github.com/magneticstain/ip-2-cloudresource/issues/367) )
+- [X] Docker Support ( [Issue #367](https://github.com/magneticstain/ip-2-cloudresource/issues/367) )
 - [ ] GCP Support ( [Issue #361](https://github.com/magneticstain/ip-2-cloudresource/issues/361) )
 - [ ] Azure Support ( [Issue #362](https://github.com/magneticstain/ip-2-cloudresource/issues/362) )
 
