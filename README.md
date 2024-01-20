@@ -72,7 +72,7 @@ The most portable way to install and run IP2CR is by using Docker. Check out the
 ```bash
 git clone https://github.com/magneticstain/ip-2-cloudresource.git
 docker build -t ip2cr .
-docker run --name=ip-2-cloudresource ip2cr
+docker run --rm --name=ip-2-cloudresource ip2cr
 ```
 
 ### Homebrew
