@@ -167,7 +167,7 @@ A large number of enterprises configure their IAM architecture such that users l
 
 Instead, this will present itself as a fatal error within IP2CR, e.g.:
 
-```
+```text
 INFO[0000] starting IP-2-CloudResource                  
 DEBU[0000] generating AWS connection                    
 FATA[0000] assume role with MFA enabled, but AssumeRoleTokenProvider session option not set.
