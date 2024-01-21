@@ -17,6 +17,7 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
+const APP_ENV = "development"
 const APP_VER = "v1.4.5"
 
 func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
@@ -152,7 +153,7 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	utils.InitRollbar(APP_VER)
+	utils.InitRollbar(APP_ENV, APP_VER)
 
 	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 

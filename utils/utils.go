@@ -7,13 +7,13 @@ import (
 	"github.com/rollbar/rollbar-go"
 )
 
-func InitRollbar(appVer string) {
+func InitRollbar(appEnv, appVer string) {
 	rollbar.SetToken("98a9cbd56b164657ab447d79eac9b258")
 	rollbar.SetCaptureIp(rollbar.CaptureIpAnonymize)
 	rollbar.SetServerHost("anonymous")
 	rollbar.SetServerRoot("github.com/magneticstain/ip-2-cloudresource")
+	rollbar.SetEnvironment(appEnv)
 	rollbar.SetCodeVersion(appVer)
-	rollbar.SetEnvironment("development")
 }
 
 func ReverseDNSLookup(ipAddr string) ([]string, error) {
