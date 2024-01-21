@@ -30,18 +30,26 @@ jobs:
         with:
           go-version: stable
 
-      - name: Log in to Docker Hub
-        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      # NOTE: disabled until login-action supports logging into multiple registries
+      # Workaround suggested in github issue is used below
+      # See: https://github.com/docker/login-action/issues/72
+      # - name: Log in to Docker Hub
+      #   uses: docker/login-action@v3
+      #   with:
+      #     username: ${{ secrets.DOCKER_USERNAME }}
+      #     password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+      # - name: Log in to GitHub Container Registry
+      #   uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
+      #   with:
+      #     registry: ghcr.io
+      #     username: ${{ github.actor }}
+      #     password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Login to container registries
+        run: |
+          echo '${{ github.token }}' | docker login ghcr.io -u gha --password-stdin
+          echo '${{ secrets.DOCKER_PASSWORD }}' | docker login docker.io -u '${{ secrets.DOCKER_USERNAME }}' --password-stdin
           
       - uses: goreleaser/goreleaser-action@v5
         id: run-goreleaser
