@@ -1,0 +1,10 @@
+# syntax=docker/dockerfile:1
+
+FROM alpine:3.19
+
+WORKDIR /app
+
+COPY ip2cr ./
+
+ENTRYPOINT [ "./ip2cr" ]
+CMD [ "--help" ]

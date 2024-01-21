@@ -69,8 +69,10 @@ brews:
       name: homebrew-ip2cr
 
       token: "{{ .Env.HOMEBREW_GITHUB_TOKEN }}"
+
 dockers:
-  - image_templates:
+  -
+    image_templates:
       # Docker Hub
       - "docker.io/magneticstain/{{.ProjectName}}:latest"
       - "docker.io/magneticstain/{{.ProjectName}}:v{{ .Major }}"
@@ -81,3 +83,5 @@ dockers:
       - "ghcr.io/magneticstain/{{.ProjectName}}:v{{ .Major }}"
       - "ghcr.io/magneticstain/{{.ProjectName}}:v{{ .Major }}.{{ .Minor }}"
       - "ghcr.io/magneticstain/{{.ProjectName}}:{{ .Tag }}"
+
+    dockerfile: "Dockerfile-release"
