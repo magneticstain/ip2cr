@@ -6,15 +6,12 @@ on:
     tags:
       - 'v*'
 
-permissions:
-  contents: write
-
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     permissions:
-      packages: write
-      contents: read
+      contents: write  # needed to create GH Release
+      packages: write  # needed to push GHCR image
 
     outputs:
       hashes: ${{ steps.hash.outputs.hashes }}
