@@ -1,6 +1,7 @@
 before:
   hooks:
     - go mod tidy
+
 builds:
   - binary: ip2cr
     env:
@@ -39,6 +40,7 @@ changelog:
       - '^[Mm]inor: '
       - '^[Tt]est: '
       - '^Merge '
+
 release:
   github:
     owner: magneticstain
@@ -67,3 +69,15 @@ brews:
       name: homebrew-ip2cr
 
       token: "{{ .Env.HOMEBREW_GITHUB_TOKEN }}"
+dockers:
+  - image_templates:
+      # Docker Hub
+      - "docker.io/magneticstain/{{.ProjectName}}:latest"
+      - "docker.io/magneticstain/{{.ProjectName}}:v{{ .Major }}"
+      - "docker.io/magneticstain/{{.ProjectName}}:v{{ .Major }}.{{ .Minor }}"
+      - "docker.io/magneticstain/{{.ProjectName}}:{{ .Tag }}"
+      # GitHub Container Registry
+      - "ghcr.io/magneticstain/{{.ProjectName}}:latest"
+      - "ghcr.io/magneticstain/{{.ProjectName}}:v{{ .Major }}"
+      - "ghcr.io/magneticstain/{{.ProjectName}}:v{{ .Major }}.{{ .Minor }}"
+      - "ghcr.io/magneticstain/{{.ProjectName}}:{{ .Tag }}"
