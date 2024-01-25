@@ -17,7 +17,7 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
-const APP_VER = "v1.4.5"
+const APP_VER = "v1.4.6"
 
 func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
@@ -31,7 +31,7 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 				acctStr = fmt.Sprintf("account [ %s ( %s ) ]", matchedResource.AccountID, acctAliasFmted)
 			}
 
-			log.Info("resource found -> [ ", matchedResource.RID, " ] in ", acctStr)
+			log.Info("resource found -> [ ", matchedResource.RID, " ] within ", matchedResource.CloudSvc, " service running in ", acctStr)
 
 			if networkMapping {
 				var networkMapGraph string
