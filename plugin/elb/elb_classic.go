@@ -55,6 +55,7 @@ func (elbv1p ELBv1Plugin) SearchResources(tgtIP string) (generalResource.Resourc
 		for _, ipAddr := range elbIPAddrs {
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerName
+				matchingResource.CloudSvc = "elbv1"
 
 				if elbv1p.NetworkMapping {
 					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneNameID, *elb.VPCId, utils.FormatStrSliceAsCSV(elb.AvailabilityZones), utils.FormatStrSliceAsCSV(elb.Subnets))
