@@ -152,7 +152,7 @@ func main() {
 
 	log.Info("starting IP-2-CloudResource")
 
-	utils.InitRollbar(APP_VER)
+	utils.InitRollbar(APP_ENV, APP_VER)
 
 	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 
