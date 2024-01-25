@@ -82,6 +82,7 @@ func (cfp CloudfrontPlugin) SearchResources(tgtIP string) (generalResource.Resou
 		for _, ipAddr := range cfIPAddrs {
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *cfDistro.ARN
+				matchingResource.CloudSvc = "cloudfront"
 
 				if cfp.NetworkMapping {
 					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *cfDistro.DomainName, *cfDistro.Id)

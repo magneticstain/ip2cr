@@ -124,6 +124,7 @@ func (elbp ELBPlugin) SearchResources(tgtIP string) (generalResource.Resource, e
 		for _, ipAddr := range elbIPAddrs {
 			if ipAddr.String() == tgtIP {
 				matchingResource.RID = *elb.LoadBalancerArn
+				matchingResource.CloudSvc = "elbv2"
 
 				if elbp.NetworkMapping {
 					matchingResource.NetworkMap = append(matchingResource.NetworkMap, *elb.DNSName, *elb.CanonicalHostedZoneId)
