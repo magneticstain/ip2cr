@@ -1,7 +1,7 @@
 # REFS:
 # https://github.com/actions/starter-workflows/blob/main/ci/go.yml
 # https://github.com/mvdan/github-actions-golang
-# 
+
 
 name: Build and Test - Issue 372
 
