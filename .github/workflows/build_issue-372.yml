@@ -1,7 +1,7 @@
 # REFS:
 # https://github.com/actions/starter-workflows/blob/main/ci/go.yml
 # https://github.com/mvdan/github-actions-golang
-# 
+
 
 name: Build and Test - Issue 372
 
@@ -50,7 +50,7 @@ jobs:
         uses: golangci/golangci-lint-action@v3.7.0
 
       - name: Test
-        run: go test -v -race -shuffle=on -coverprofile=coverage.txt ./...
+        run: go test -v -race -shuffle=on -coverprofile coverage.out ./...
 
       - name: Go Benchmark
         run: go test -v -shuffle=on -run=- -bench=. -benchtime=1x ./...
@@ -59,5 +59,5 @@ jobs:
         uses: codacy/codacy-coverage-reporter-action@v1
         with:
           project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
-          coverage-reports: ./coverage.txt
+          coverage-reports: ./coverage.out
           force-coverage-parser: go
