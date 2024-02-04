@@ -64,7 +64,7 @@ func TestLookupFQDN(t *testing.T) {
 			}
 
 			if ipFound != td.expectedVerdict {
-				t.Errorf("FQDN lookup failed; expected %s to be %t IP address for %s; received %s", td.ipAddr, td.expectedVerdict, td.fqdn, ipAddrs[0])
+				t.Errorf("FQDN lookup failed; expected %s to be %t IP address for %s; received %v", td.ipAddr, td.expectedVerdict, td.fqdn, ipAddrs)
 			}
 		})
 	}
