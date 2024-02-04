@@ -101,9 +101,9 @@ func main() {
 	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
 
 	// output
-	silentOutput := flag.Bool("silent", false, "If enabled, only output the results (default: false)")
-	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag (default: false)")
-	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical (default: false)")
+	silentOutput := flag.Bool("silent", false, "If enabled, only output the results")
+	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
+	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 
 	// base
 	ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
@@ -111,17 +111,17 @@ func main() {
 
 	// FEATURE FLAGS
 	// IP fuzzing
-	ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts due to overhead outweighing value)  (default: true)")
-	advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses) (default: true)")
+	ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts due to overhead outweighing value)")
+	advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
 
 	// org search
-	orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account) (default: false)")
-	orgSearchXaccountRoleARN := flag.String("org-search-xaccount-role-arn", "", "The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account (default: '')")
-	orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search (default: ip2cr)")
-	orgSearchOrgUnitID := flag.String("org-search-ou-id", "", "The ID of the AWS Organizations Organizational Unit to target when performing a search (default: '')")
+	orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)")
+	orgSearchXaccountRoleARN := flag.String("org-search-xaccount-role-arn", "", "The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account")
+	orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search")
+	orgSearchOrgUnitID := flag.String("org-search-ou-id", "", "The ID of the AWS Organizations Organizational Unit to target when performing a search")
 
 	// network mapping
-	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found (default: false)")
+	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found")
 
 	flag.Parse()
 
