@@ -107,7 +107,7 @@ func main() {
 
 	// base
 	ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
-	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]  (default: all)")
+	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]")
 
 	// FEATURE FLAGS
 	// IP fuzzing
