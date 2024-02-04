@@ -1,3 +1,7 @@
+//go:build !windows
+
+// for some reason, windows github actions runners don't resolve FQDNs to IPv6
+
 package utils_test
 
 import (
