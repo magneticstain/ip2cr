@@ -17,8 +17,8 @@ import (
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
-const APP_ENV = "production"
-const APP_VER = "v1.4.7"
+const APP_ENV = "development"
+const APP_VER = "v2.0.0"
 
 func outputResults(matchedResource resource.Resource, networkMapping bool, silent bool, jsonOutput bool) {
 	acctAliasFmted := strings.Join(matchedResource.AccountAliases, ", ")
