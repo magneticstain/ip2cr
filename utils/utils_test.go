@@ -1,7 +1,3 @@
-//go:build !windows
-
-// for some reason, windows github actions runners don't resolve FQDNs to IPv6
-
 package utils_test
 
 import (
@@ -68,7 +64,7 @@ func TestLookupFQDN(t *testing.T) {
 			}
 
 			if ipFound != td.expectedVerdict {
-				t.Errorf("FQDN lookup failed; expected %s to be %t IP address for %s; received %v", td.ipAddr, td.expectedVerdict, td.fqdn, ipAddrs)
+				t.Errorf("FQDN lookup failed; expected %s to be %t IP address for %s", td.ipAddr, td.expectedVerdict, td.fqdn)
 			}
 		})
 	}
