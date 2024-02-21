@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/aws/resource"
 	"github.com/magneticstain/ip-2-cloudresource/aws/search"
+	"github.com/magneticstain/ip-2-cloudresource/resource"
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 

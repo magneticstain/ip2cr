@@ -17,8 +17,8 @@ import (
 	elbp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/elb"
 	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
 	orgp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/organizations"
-	generalResource "github.com/magneticstain/ip-2-cloudresource/aws/resource"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
 type Search struct {

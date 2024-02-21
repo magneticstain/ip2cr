@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2/types"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
-	generalResource "github.com/magneticstain/ip-2-cloudresource/aws/resource"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
 type EC2Plugin struct {
