@@ -76,7 +76,7 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 	}
 }
 
-func runCloudSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool, silent bool, jsonOutput bool) {
+func runCloudSearch(platform string, ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool, silent bool, jsonOutput bool) {
 	// cloud connections
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
@@ -106,6 +106,7 @@ func main() {
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 
 	// base
+	platform := flag.String("platform", "aws", "Platform to target for IP search (e.g. aws, gcp, etc)")
 	ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]")
 
@@ -155,7 +156,7 @@ func main() {
 
 	utils.InitRollbar(APP_ENV, APP_VER)
 
-	rollbar.WrapAndWait(runCloudSearch, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
+	rollbar.WrapAndWait(runCloudSearch, *platform, *ipAddr, *cloudSvc, *ipFuzzing, *advIPFuzzing, *orgSearch, *orgSearchXaccountRoleARN, *orgSearchRoleName, *orgSearchOrgUnitID, *networkMapping, *silentOutput, *jsonOutput)
 
 	rollbar.Close()
 }
