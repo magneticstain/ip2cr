@@ -58,7 +58,8 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 
 - Linux
 - MacOS
-- Windows
+
+Windows should probably work, but I'm not able to test it at this time.
 
 ### Go
 
