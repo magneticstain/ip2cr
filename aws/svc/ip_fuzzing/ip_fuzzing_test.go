@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/exp/slices" // Update to the stable `slices` package once 1.12 becomes oldstable ( Issue #112 )
 
-	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/svc/ip_fuzzing"
+	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
 )
 
 func GetValidCloudSvcs(includeUnknownSvc bool) *[]string {

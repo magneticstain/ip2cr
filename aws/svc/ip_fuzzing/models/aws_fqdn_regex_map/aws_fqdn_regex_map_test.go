@@ -3,7 +3,7 @@ package awsfqdnregexmap_test
 import (
 	"testing"
 
-	awsfqdnregexmap "github.com/magneticstain/ip-2-cloudresource/svc/ip_fuzzing/models/aws_fqdn_regex_map"
+	awsfqdnregexmap "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing/models/aws_fqdn_regex_map"
 )
 
 func TestGetRegexMap(t *testing.T) {

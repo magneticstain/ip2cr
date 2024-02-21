@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	plugin "github.com/magneticstain/ip-2-cloudresource/plugin/cloudfront"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	plugin "github.com/magneticstain/ip-2-cloudresource/aws/plugin/cloudfront"
 )
 
 func cfpFactory() plugin.CloudfrontPlugin {

@@ -7,8 +7,8 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/search"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	"github.com/magneticstain/ip-2-cloudresource/aws/search"
 	"golang.org/x/exp/slices"
 )
 

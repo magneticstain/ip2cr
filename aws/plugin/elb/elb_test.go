@@ -5,8 +5,8 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2/types"
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	plugin "github.com/magneticstain/ip-2-cloudresource/plugin/elb"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	plugin "github.com/magneticstain/ip-2-cloudresource/aws/plugin/elb"
 )
 
 func elbpFactory() plugin.ELBPlugin {

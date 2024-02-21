@@ -11,14 +11,14 @@ import (
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	cfp "github.com/magneticstain/ip-2-cloudresource/plugin/cloudfront"
-	ec2p "github.com/magneticstain/ip-2-cloudresource/plugin/ec2"
-	elbp "github.com/magneticstain/ip-2-cloudresource/plugin/elb"
-	iamp "github.com/magneticstain/ip-2-cloudresource/plugin/iam"
-	orgp "github.com/magneticstain/ip-2-cloudresource/plugin/organizations"
-	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
-	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/svc/ip_fuzzing"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	cfp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/cloudfront"
+	ec2p "github.com/magneticstain/ip-2-cloudresource/aws/plugin/ec2"
+	elbp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/elb"
+	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
+	orgp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/organizations"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/aws/resource"
+	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
 )
 
 type Search struct {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/service/iam"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 )
 
 type IAMPlugin struct {

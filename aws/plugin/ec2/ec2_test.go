@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	plugin "github.com/magneticstain/ip-2-cloudresource/plugin/ec2"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	plugin "github.com/magneticstain/ip-2-cloudresource/aws/plugin/ec2"
 )
 
 func ec2pFactory() plugin.EC2Plugin {

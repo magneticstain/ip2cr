@@ -7,7 +7,7 @@ import (
 	"net"
 	"net/http"
 
-	awsipprefix "github.com/magneticstain/ip-2-cloudresource/svc/ip_fuzzing/models/aws_ip_prefix"
+	awsipprefix "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing/models/aws_ip_prefix"
 )
 
 const awsIPRangeURL string = "https://ip-ranges.amazonaws.com/ip-ranges.json"

@@ -4,8 +4,8 @@ import (
 	"reflect"
 	"testing"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	plugin "github.com/magneticstain/ip-2-cloudresource/plugin/organizations"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	plugin "github.com/magneticstain/ip-2-cloudresource/aws/plugin/organizations"
 )
 
 func orgFactory() plugin.OrganizationsPlugin {

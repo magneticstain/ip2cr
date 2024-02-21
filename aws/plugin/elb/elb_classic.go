@@ -9,8 +9,8 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing"
 	"github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing/types"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
-	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	generalResource "github.com/magneticstain/ip-2-cloudresource/aws/resource"
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 

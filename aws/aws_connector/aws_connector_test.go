@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 )
 
 func TestConnectToAWS(t *testing.T) {
