@@ -1,5 +1,7 @@
 # Security Policy
 
+This document serves to outline the security policies in place for the IP-2-CloudResource project.
+
 ## Supported Versions
 
 See below for a list of versions and their current support status for security patches.
