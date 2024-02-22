@@ -22,11 +22,13 @@ import (
 )
 
 type Search struct {
-	AWSConn awsconnector.AWSConnector
-	IpAddr  string
+	AWSConn         awsconnector.AWSConnector
+	CloudSvcs       []string
+	IpAddr          string
+	MatchedResource generalResource.Resource
 }
 
-func reconcileCloudSvcParam(cloudSvc string) []string {
+func ReconcileCloudSvcParam(cloudSvc string) []string {
 	var cloudSvcs []string
 
 	if cloudSvc == "all" {
@@ -41,19 +43,30 @@ func reconcileCloudSvcParam(cloudSvc string) []string {
 	return cloudSvcs
 }
 
-func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) (string, error) {
+func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) ([]string, error) {
+	var svcSet []string
 	var fuzzedSvc string
+	var err error
 
-	fuzzedSvc, err := ipfuzzing.FuzzIP(search.IpAddr, doAdvIPFuzzing)
+	fuzzedSvc, err = ipfuzzing.FuzzIP(search.IpAddr, doAdvIPFuzzing)
 	if err != nil {
-		return fuzzedSvc, err
-	} else if fuzzedSvc == "" || fuzzedSvc == "UNKNOWN" {
-		log.Info("could not determine service via IP fuzzing")
-	} else {
-		log.Info("IP fuzzing determined the associated cloud service is: ", fuzzedSvc)
+		return svcSet, err
 	}
 
-	return fuzzedSvc, err
+	if fuzzedSvc == "" || fuzzedSvc == "unknown" {
+		log.Info("could not determine service via IP fuzzing")
+		return svcSet, err
+	}
+
+	log.Info("IP fuzzing determined the associated cloud service is: ", fuzzedSvc)
+	svcSet = append(svcSet, fuzzedSvc)
+
+	// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
+	if fuzzedSvc == "ec2" {
+		svcSet = append(search.CloudSvcs, "elbv1", "elbv2")
+	}
+
+	return svcSet, err
 }
 
 func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccountRoleARN string) ([]string, error) {
@@ -90,7 +103,7 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 	return acctIds, nil
 }
 
-func (search Search) SearchAWS(cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
+func (search Search) SearchAWSSvc(cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var err error
 
@@ -130,7 +143,7 @@ func (search Search) SearchAWS(cloudSvc string, doNetMapping bool) (generalResou
 	return matchingResource, nil
 }
 
-func (search Search) doAccountSearch(cloudSvcs []string, acctID string, doNetMapping bool) (generalResource.Resource, error) {
+func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (generalResource.Resource, error) {
 	var acctAliases []string
 	var matchingResource generalResource.Resource
 	var err error
@@ -148,8 +161,8 @@ func (search Search) doAccountSearch(cloudSvcs []string, acctID string, doNetMap
 		log.Info("starting AWS resource search in principal account")
 	}
 
-	for _, svc := range cloudSvcs {
-		matchingResource, err = search.SearchAWS(svc, doNetMapping)
+	for _, svc := range search.CloudSvcs {
+		matchingResource, err = search.SearchAWSSvc(svc, doNetMapping)
 
 		if err != nil {
 			return matchingResource, err
@@ -164,7 +177,7 @@ func (search Search) doAccountSearch(cloudSvcs []string, acctID string, doNetMap
 	return matchingResource, nil
 }
 
-func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, cloudSvcs []string, orgSearchRoleName string, doNetMapping bool, wg *sync.WaitGroup) {
+func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, orgSearchRoleName string, doNetMapping bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if acctID != "current" {
@@ -179,7 +192,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 		search.AWSConn = ac
 	}
 
-	resultResource, err := search.doAccountSearch(cloudSvcs, acctID, doNetMapping)
+	resultResource, err := search.doAccountLevelSearch(acctID, doNetMapping)
 	if err != nil {
 		log.Error("error when running search within account search worker: ", err)
 	} else if resultResource.RID != "" {
@@ -188,49 +201,15 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 	}
 }
 
-func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (generalResource.Resource, error) {
-	var matchingResource generalResource.Resource
-	var err error
-
-	cloudSvcs := reconcileCloudSvcParam(cloudSvc)
-
-	if doIPFuzzing || doAdvIPFuzzing {
-		fuzzedSvc, err := search.RunIPFuzzing(doAdvIPFuzzing)
-		if err != nil {
-			return matchingResource, err
-		}
-
-		normalizedSvcName := strings.ToLower(fuzzedSvc)
-
-		if normalizedSvcName != "unknown" {
-			cloudSvcs = []string{normalizedSvcName}
-
-			// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
-			if normalizedSvcName == "ec2" {
-				cloudSvcs = []string{normalizedSvcName, "elbv1", "elbv2"}
-			}
-		}
-	}
-
-	var acctsToSearch []string
-	if doOrgSearch {
-		log.Info("starting org account enumeration")
-
-		acctsToSearch, err = search.fetchOrgAcctIds(orgSearchOrgUnitID, orgSearchXaccountRoleARN)
-		if err != nil {
-			return matchingResource, err
-		}
-	} else {
-		acctsToSearch = append(acctsToSearch, "current")
-	}
-
+func (search Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleName string, doNetMapping bool) bool {
 	log.Info("beginning resource gathering")
+
 	matchingResourceBuffer := make(chan generalResource.Resource, 1)
 	var wg sync.WaitGroup
 
 	for _, acctID := range acctsToSearch {
 		wg.Add(1)
-		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, cloudSvcs, orgSearchRoleName, doNetMapping, &wg)
+		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, orgSearchRoleName, doNetMapping, &wg)
 	}
 
 	go func() {
@@ -240,8 +219,39 @@ func (search Search) InitSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzin
 
 	resultResource, found := <-matchingResourceBuffer
 	if found {
-		matchingResource = resultResource
+		search.MatchedResource = resultResource
 	}
 
-	return matchingResource, nil
+	return found
+}
+
+func (search Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (bool, error) {
+	var resourceFound bool
+	var err error
+
+	// TODO: move this to init function
+	search.CloudSvcs = ReconcileCloudSvcParam(cloudSvc)
+
+	if doIPFuzzing || doAdvIPFuzzing {
+		search.CloudSvcs, err = search.RunIPFuzzing(doAdvIPFuzzing)
+		if err != nil {
+			return resourceFound, err
+		}
+	}
+
+	var acctsToSearch []string
+	if doOrgSearch {
+		log.Info("starting org account enumeration")
+
+		acctsToSearch, err = search.fetchOrgAcctIds(orgSearchOrgUnitID, orgSearchXaccountRoleARN)
+		if err != nil {
+			return resourceFound, err
+		}
+	} else {
+		acctsToSearch = append(acctsToSearch, "current")
+	}
+
+	resourceFound = search.StartSearchWorkers(acctsToSearch, orgSearchRoleName, doNetMapping)
+
+	return resourceFound, nil
 }

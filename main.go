@@ -12,9 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
-	awssearch "github.com/magneticstain/ip-2-cloudresource/aws/search"
-	gcpsearch "github.com/magneticstain/ip-2-cloudresource/gcp/search"
 	"github.com/magneticstain/ip-2-cloudresource/resource"
+	platformsearch "github.com/magneticstain/ip-2-cloudresource/search"
 	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
@@ -77,27 +76,29 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 	}
 }
 
-func runAwsSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool) (resource.Resource, error) {
+func runAwsSearch(ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool) resource.Resource {
 	log.Debug("generating AWS connection")
 	ac, err := awsconnector.New()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	searchCtlr := awssearch.Search{AWSConn: ac, IpAddr: ipAddr}
+	searchCtlr := platformsearch.Search{AWSConn: ac, IpAddr: ipAddr}
 
 	// search
 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " AWS service(s)")
-	return searchCtlr.InitSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
+	searchCtlr.StartSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
+
+	return searchCtlr.MatchedResource
 }
 
-func runGcpSearch(ipAddr, cloudSvc string) (resource.Resource, error) {
-	searchCtlr := gcpsearch.Search{IpAddr: ipAddr}
+// func runGcpSearch(ipAddr, cloudSvc string) (resource.Resource, error) {
+// 	searchCtlr := gcpsearch.Search{IpAddr: ipAddr}
 
-	// search
-	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " GCP service(s)")
-	return searchCtlr.InitSearch(cloudSvc)
-}
+// 	// search
+// 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " GCP service(s)")
+// 	return searchCtlr.InitSearch(cloudSvc)
+// }
 
 func runCloudSearch(platform string, ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool, silent bool, jsonOutput bool) {
 	var matchingResource resource.Resource
@@ -108,9 +109,9 @@ func runCloudSearch(platform string, ipAddr string, cloudSvc string, ipFuzzing b
 	// cloud connections
 	switch platform {
 	case "aws":
-		matchingResource, err = runAwsSearch(ipAddr, cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
+		matchingResource = runAwsSearch(ipAddr, cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
 	case "gcp":
-		matchingResource, err = runGcpSearch(ipAddr, cloudSvc)
+		// matchingResource, err = runGcpSearch(ipAddr, cloudSvc)
 	default:
 		log.Error("invalid or unsupported platform provided ( ", platform, " )")
 		os.Exit(1)

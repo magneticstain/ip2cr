@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/aws"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
-	"github.com/magneticstain/ip-2-cloudresource/aws/search"
+	"github.com/magneticstain/ip-2-cloudresource/search"
 	"golang.org/x/exp/slices"
 )
 
@@ -60,13 +60,15 @@ func TestRunIPFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIPFuzzing(false)
+			fuzzedSvcSet, err := search.RunIPFuzzing(false)
 			if err != nil {
 				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
-			if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
-				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+			for _, fuzzedSvc := range fuzzedSvcSet {
+				if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
+					t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+				}
 			}
 		})
 	}
@@ -82,13 +84,15 @@ func TestRunIPFuzzing_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIPFuzzing(true)
+			fuzzedSvcSet, err := search.RunIPFuzzing(true)
 			if err != nil {
-				t.Errorf("Advanced IP fuzzing routine unexpectedly failed; error: %s", err)
+				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
-			if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
-				t.Errorf("Advanced IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+			for _, fuzzedSvc := range fuzzedSvcSet {
+				if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
+					t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+				}
 			}
 		})
 	}
@@ -111,7 +115,7 @@ func TestSearchAWS(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.SearchAWS(td.cloudSvc, false)
+			res, _ := search.SearchAWSSvc(td.cloudSvc, false)
 
 			resType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -137,7 +141,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			_, err := search.SearchAWS(td.cloudSvc, false)
+			_, err := search.SearchAWSSvc(td.cloudSvc, false)
 			if err == nil {
 				t.Errorf("Error was expected, but not seen, when performing general search; using %s for unknown cloud service key", td.cloudSvc)
 			}
@@ -161,7 +165,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "", "", false)
+			res, _ := search.StartSearch(td.cloudSvc, false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -188,7 +192,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, false, "", "", "", false)
+			res, _ := search.StartSearch("all", false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -208,7 +212,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "", "", false)
+			res, _ := search.StartSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -228,7 +232,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "", "", false)
+			res, _ := search.StartSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -248,7 +252,7 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", "", false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -302,7 +306,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID, false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -332,7 +336,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
@@ -363,7 +367,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
 			expectedType := "Resource"
