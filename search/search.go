@@ -26,6 +26,7 @@ type Search struct {
 	CloudSvcs       []string
 	IpAddr          string
 	MatchedResource generalResource.Resource
+	Platform        string
 }
 
 func ReconcileCloudSvcParam(cloudSvc string) []string {
@@ -148,7 +149,7 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 	var matchingResource generalResource.Resource
 	var err error
 
-	if acctID != "current" {
+	if acctID != "current" && search.Platform == "aws" {
 		// resolve account's aliases
 		iamp := iamp.IAMPlugin{AwsConn: search.AWSConn}
 		acctAliases, err = iamp.GetResources()
@@ -156,13 +157,19 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 			return matchingResource, err
 		}
 
-		log.Info("starting AWS resource search in account: ", acctID, " ", acctAliases)
+		log.Info("starting resource search in AWS account: ", acctID, " ", acctAliases)
 	} else {
-		log.Info("starting AWS resource search in principal account")
+		log.Info("starting resource search in principal account")
 	}
 
 	for _, svc := range search.CloudSvcs {
-		matchingResource, err = search.SearchAWSSvc(svc, doNetMapping)
+		switch search.Platform {
+		case "aws":
+			matchingResource, err = search.SearchAWSSvc(svc, doNetMapping)
+		default:
+			errorMsg := fmt.Sprintf("%s is not a supported platform for searching", search.Platform)
+			return matchingResource, errors.New(errorMsg)
+		}
 
 		if err != nil {
 			return matchingResource, err
@@ -180,7 +187,7 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, orgSearchRoleName string, doNetMapping bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if acctID != "current" {
+	if acctID != "current" && search.Platform == "aws" {
 		// replace connector with assumed role connector
 		acctRoleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
 		ac, err := awsconnector.NewAWSConnectorAssumeRole(acctRoleArn, aws.Config{})

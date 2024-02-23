@@ -118,7 +118,7 @@ func TestSearchAWS(t *testing.T) {
 			res, _ := search.SearchAWSSvc(td.cloudSvc, false)
 
 			resType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if resType.Name() != expectedType {
 				t.Errorf("AWS resource search failed; expected %s after search, received %s", expectedType, resType.Name())
 			}
@@ -149,7 +149,7 @@ func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
 	}
 }
 
-func TestInitSearch_CloudSvcs(t *testing.T) {
+func TestStartSearch_CloudSvcs(t *testing.T) {
 	var tests = []struct {
 		ipAddr, cloudSvc string
 	}{
@@ -168,7 +168,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 			res, _ := search.StartSearch(td.cloudSvc, false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -176,7 +176,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 	}
 }
 
-func TestInitSearch_NoFuzzing(t *testing.T) {
+func TestStartSearch_NoFuzzing(t *testing.T) {
 	var tests = []struct {
 		ipAddr string
 	}{
@@ -195,7 +195,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 			res, _ := search.StartSearch("all", false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -203,7 +203,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 	}
 }
 
-func TestInitSearch_BasicFuzzing(t *testing.T) {
+func TestStartSearch_BasicFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -215,7 +215,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 			res, _ := search.StartSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing enabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -223,7 +223,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 	}
 }
 
-func TestInitSearch_AdvancedFuzzing(t *testing.T) {
+func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -235,7 +235,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 			res, _ := search.StartSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with advanced IP fuzzing disabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -243,7 +243,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -255,7 +255,7 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -263,7 +263,7 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
 	var tests = []struct {
 		orgXaccountRoleARN string
 	}{
@@ -287,7 +287,7 @@ func TestInitSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 	// REF: https://docs.aws.amazon.com/organizations/latest/APIReference/API_Organization.html#organizations-Type-Organization-Id
 
 	var tests = []struct {
@@ -309,7 +309,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -317,7 +317,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 	// REF: https://docs.aws.amazon.com/organizations/latest/APIReference/API_OrganizationalUnit.html#organizations-Type-OrganizationalUnit-Id
 
 	var tests = []struct {
@@ -339,7 +339,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -347,7 +347,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 	var tests = []struct {
 		OUID, ipAddr string
 	}{
@@ -370,7 +370,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
