@@ -7,6 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
+	awscontroller "github.com/magneticstain/ip-2-cloudresource/aws"
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/search"
 	"golang.org/x/exp/slices"
@@ -17,9 +18,9 @@ type TestIPAddr struct {
 }
 
 func searchFactory(ipAddr string) search.Search {
-	ac, _ := awsconnector.New()
+	ac, _ := awscontroller.New()
 
-	search := search.Search{AWSConn: ac, IpAddr: ipAddr}
+	search := search.Search{AWSCtrlr: ac, IpAddr: ipAddr}
 
 	return search
 }

@@ -12,7 +12,6 @@ import (
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	"github.com/magneticstain/ip-2-cloudresource/resource"
 	platformsearch "github.com/magneticstain/ip-2-cloudresource/search"
 	"github.com/magneticstain/ip-2-cloudresource/utils"
@@ -86,8 +85,12 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 
 func runCloudSearch(platform string, ipAddr string, cloudSvc string, ipFuzzing bool, advIPFuzzing bool, orgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, networkMapping bool, silent bool, jsonOutput bool) {
 	var matchingResource resource.Resource
-	var ac awsconnector.AWSConnector
 	var err error
+
+	// ac, err := awscontroller.New()
+	// if err != nil {
+	// 	log.Fatal("error when connecting to AWS: ", err)
+	// }
 
 	platform = strings.ToLower(platform)
 	supportedPlatforms := getSupportedPlatforms()
@@ -96,16 +99,10 @@ func runCloudSearch(platform string, ipAddr string, cloudSvc string, ipFuzzing b
 		return
 	}
 
-	if platform == "aws" {
-		log.Debug("generating AWS connection")
-		ac, err = awsconnector.New()
-		if err != nil {
-			log.Fatal(err)
-			return
-		}
+	searchCtlr := platformsearch.Search{
+		Platform: platform,
+		IpAddr:   ipAddr,
 	}
-
-	searchCtlr := platformsearch.Search{Platform: platform, AWSConn: ac, IpAddr: ipAddr}
 
 	// search
 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " ", strings.ToUpper(platform), " service(s)")

@@ -11,6 +11,7 @@ import (
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
+	awscontroller "github.com/magneticstain/ip-2-cloudresource/aws"
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	cfp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/cloudfront"
 	ec2p "github.com/magneticstain/ip-2-cloudresource/aws/plugin/ec2"
@@ -22,11 +23,26 @@ import (
 )
 
 type Search struct {
-	AWSConn         awsconnector.AWSConnector
+	AWSCtrlr        awscontroller.AWSController
 	CloudSvcs       []string
 	IpAddr          string
 	MatchedResource generalResource.Resource
 	Platform        string
+}
+
+func (search *Search) connectToPlatform() (bool, error) {
+	// generate a connection to the specified platform via plugin
+	switch search.Platform {
+	case "aws":
+		ac, err := awscontroller.New()
+		if err != nil {
+			return false, err
+		}
+
+		search.AWSCtrlr = ac
+	}
+
+	return true, nil
 }
 
 func ReconcileCloudSvcParam(cloudSvc string) []string {
@@ -77,12 +93,12 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 	// assume xaccount role first if ARN is provided
 	var arac awsconnector.AWSConnector
 	if orgSearchXaccountRoleARN != "" {
-		arac, err = awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSConn.AwsConfig)
+		arac, err = awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSCtrlr.PrincipalAWSConn.AwsConfig)
 		if err != nil {
 			return acctIds, err
 		}
 	} else {
-		arac = search.AWSConn
+		arac = search.AWSCtrlr.PrincipalAWSConn
 	}
 
 	var orgAccts []types.Account
@@ -114,25 +130,25 @@ func (search Search) SearchAWSSvc(cloudSvc string, doNetMapping bool) (generalRe
 
 	switch cloudSvc {
 	case "cloudfront":
-		pluginConn := cfp.CloudfrontPlugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
+		pluginConn := cfp.CloudfrontPlugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "ec2":
-		pluginConn := ec2p.EC2Plugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
+		pluginConn := ec2p.EC2Plugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv1": // classic ELBs
-		pluginConn := elbp.ELBv1Plugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
+		pluginConn := elbp.ELBv1Plugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
 		}
 	case "elbv2":
-		pluginConn := elbp.ELBPlugin{AwsConn: search.AWSConn, NetworkMapping: doNetMapping}
+		pluginConn := elbp.ELBPlugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
 		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
 		if err != nil {
 			return matchingResource, err
@@ -151,7 +167,7 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 
 	if acctID != "current" && search.Platform == "aws" {
 		// resolve account's aliases
-		iamp := iamp.IAMPlugin{AwsConn: search.AWSConn}
+		iamp := iamp.IAMPlugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn}
 		acctAliases, err = iamp.GetResources()
 		if err != nil {
 			return matchingResource, err
@@ -196,7 +212,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 			return
 		}
 
-		search.AWSConn = ac
+		search.AWSCtrlr.PrincipalAWSConn = ac
 	}
 
 	resultResource, err := search.doAccountLevelSearch(acctID, doNetMapping)
@@ -235,6 +251,11 @@ func (search Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleNam
 func (search Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (bool, error) {
 	var resourceFound bool
 	var err error
+
+	_, err = search.connectToPlatform()
+	if err != nil {
+		log.Fatal("error when connecting to ", search.Platform, ": ", err)
+	}
 
 	// TODO: move this to init function
 	search.CloudSvcs = ReconcileCloudSvcParam(cloudSvc)
