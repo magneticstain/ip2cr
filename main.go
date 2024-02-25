@@ -87,11 +87,6 @@ func runCloudSearch(platform string, ipAddr string, cloudSvc string, ipFuzzing b
 	var matchingResource resource.Resource
 	var err error
 
-	// ac, err := awscontroller.New()
-	// if err != nil {
-	// 	log.Fatal("error when connecting to AWS: ", err)
-	// }
-
 	platform = strings.ToLower(platform)
 	supportedPlatforms := getSupportedPlatforms()
 	if !slices.Contains(supportedPlatforms, platform) {

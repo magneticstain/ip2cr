@@ -2,7 +2,6 @@ package aws
 
 import (
 	"errors"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,13 +24,11 @@ func New() (AWSController, error) {
 	return awsCtrlr, err
 }
 
-func (awsCtrlr AWSController) SearchAWSSvc(ipAddr, cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
+func (awsCtrlr *AWSController) SearchAWSSvc(ipAddr, cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
 	var matchingResource generalResource.Resource
 	var err error
 
-	cloudSvc = strings.ToLower(cloudSvc)
-
-	log.Debug("searching ", cloudSvc, " in AWS")
+	log.Debug("searching ", cloudSvc, " in AWS controller")
 
 	switch cloudSvc {
 	case "cloudfront":

@@ -13,9 +13,6 @@ import (
 
 	awscontroller "github.com/magneticstain/ip-2-cloudresource/aws"
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
-	cfp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/cloudfront"
-	ec2p "github.com/magneticstain/ip-2-cloudresource/aws/plugin/ec2"
-	elbp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/elb"
 	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
 	orgp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/organizations"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
@@ -70,6 +67,9 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) ([]string, error) {
 		return svcSet, err
 	}
 
+	// normalize service name to lowercase
+	fuzzedSvc = strings.ToLower(fuzzedSvc)
+
 	if fuzzedSvc == "" || fuzzedSvc == "unknown" {
 		log.Info("could not determine service via IP fuzzing")
 		return svcSet, err
@@ -120,46 +120,6 @@ func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccoun
 	return acctIds, nil
 }
 
-func (search Search) SearchAWSSvc(cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
-	var matchingResource generalResource.Resource
-	var err error
-
-	cloudSvc = strings.ToLower(cloudSvc)
-
-	log.Debug("searching ", cloudSvc, " in AWS")
-
-	switch cloudSvc {
-	case "cloudfront":
-		pluginConn := cfp.CloudfrontPlugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
-		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
-		if err != nil {
-			return matchingResource, err
-		}
-	case "ec2":
-		pluginConn := ec2p.EC2Plugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
-		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
-		if err != nil {
-			return matchingResource, err
-		}
-	case "elbv1": // classic ELBs
-		pluginConn := elbp.ELBv1Plugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
-		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
-		if err != nil {
-			return matchingResource, err
-		}
-	case "elbv2":
-		pluginConn := elbp.ELBPlugin{AwsConn: search.AWSCtrlr.PrincipalAWSConn, NetworkMapping: doNetMapping}
-		matchingResource, err = pluginConn.SearchResources(search.IpAddr)
-		if err != nil {
-			return matchingResource, err
-		}
-	default:
-		return matchingResource, errors.New("invalid cloud service provided for AWS search")
-	}
-
-	return matchingResource, nil
-}
-
 func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (generalResource.Resource, error) {
 	var acctAliases []string
 	var matchingResource generalResource.Resource
@@ -181,7 +141,7 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 	for _, svc := range search.CloudSvcs {
 		switch search.Platform {
 		case "aws":
-			matchingResource, err = search.SearchAWSSvc(svc, doNetMapping)
+			matchingResource, err = search.AWSCtrlr.SearchAWSSvc(search.IpAddr, svc, doNetMapping)
 		default:
 			errorMsg := fmt.Sprintf("%s is not a supported platform for searching", search.Platform)
 			return matchingResource, errors.New(errorMsg)
