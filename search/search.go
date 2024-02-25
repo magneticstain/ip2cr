@@ -7,14 +7,12 @@ import (
 	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
 	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	awscontroller "github.com/magneticstain/ip-2-cloudresource/aws"
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
-	orgp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/organizations"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
@@ -84,40 +82,6 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) ([]string, error) {
 	}
 
 	return svcSet, err
-}
-
-func (search Search) fetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccountRoleARN string) ([]string, error) {
-	var acctIds []string
-	var err error
-
-	// assume xaccount role first if ARN is provided
-	var arac awsconnector.AWSConnector
-	if orgSearchXaccountRoleARN != "" {
-		arac, err = awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, search.AWSCtrlr.PrincipalAWSConn.AwsConfig)
-		if err != nil {
-			return acctIds, err
-		}
-	} else {
-		arac = search.AWSCtrlr.PrincipalAWSConn
-	}
-
-	var orgAccts []types.Account
-	orgp := orgp.OrganizationsPlugin{AwsConn: arac, OrgUnitID: orgSearchOrgUnitID}
-	orgAccts, err = orgp.GetResources()
-	if err != nil {
-		return acctIds, err
-	}
-
-	for _, acct := range orgAccts {
-		if acct.Status == "ACTIVE" {
-			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ")")
-			acctIds = append(acctIds, *acct.Id)
-		} else {
-			log.Debug("org account found, but not active: ", *acct.Id, " (", *acct.Name, ")")
-		}
-	}
-
-	return acctIds, nil
 }
 
 func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (generalResource.Resource, error) {
@@ -231,7 +195,7 @@ func (search Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzi
 	if doOrgSearch {
 		log.Info("starting org account enumeration")
 
-		acctsToSearch, err = search.fetchOrgAcctIds(orgSearchOrgUnitID, orgSearchXaccountRoleARN)
+		acctsToSearch, err = search.AWSCtrlr.FetchOrgAcctIds(orgSearchOrgUnitID, orgSearchXaccountRoleARN)
 		if err != nil {
 			return resourceFound, err
 		}

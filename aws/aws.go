@@ -3,12 +3,14 @@ package aws
 import (
 	"errors"
 
+	"github.com/aws/aws-sdk-go-v2/service/organizations/types"
 	log "github.com/sirupsen/logrus"
 
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	cfp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/cloudfront"
 	ec2p "github.com/magneticstain/ip-2-cloudresource/aws/plugin/ec2"
 	elbp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/elb"
+	orgp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/organizations"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
@@ -22,6 +24,40 @@ func New() (AWSController, error) {
 	awsCtrlr := AWSController{PrincipalAWSConn: awsConn}
 
 	return awsCtrlr, err
+}
+
+func (awsCtrlr AWSController) FetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccountRoleARN string) ([]string, error) {
+	var acctIds []string
+	var err error
+
+	// assume xaccount role first if ARN is provided
+	var arac awsconnector.AWSConnector
+	if orgSearchXaccountRoleARN != "" {
+		arac, err = awsconnector.NewAWSConnectorAssumeRole(orgSearchXaccountRoleARN, awsCtrlr.PrincipalAWSConn.AwsConfig)
+		if err != nil {
+			return acctIds, err
+		}
+	} else {
+		arac = awsCtrlr.PrincipalAWSConn
+	}
+
+	var orgAccts []types.Account
+	orgp := orgp.OrganizationsPlugin{AwsConn: arac, OrgUnitID: orgSearchOrgUnitID}
+	orgAccts, err = orgp.GetResources()
+	if err != nil {
+		return acctIds, err
+	}
+
+	for _, acct := range orgAccts {
+		if acct.Status == "ACTIVE" {
+			log.Debug("org account found: ", *acct.Id, " (", *acct.Name, ")")
+			acctIds = append(acctIds, *acct.Id)
+		} else {
+			log.Debug("org account found, but not active: ", *acct.Id, " (", *acct.Name, ")")
+		}
+	}
+
+	return acctIds, nil
 }
 
 func (awsCtrlr *AWSController) SearchAWSSvc(ipAddr, cloudSvc string, doNetMapping bool) (generalResource.Resource, error) {
