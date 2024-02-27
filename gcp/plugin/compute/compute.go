@@ -2,6 +2,7 @@ package compute
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
@@ -15,6 +16,24 @@ import (
 
 type ComputePlugin struct {
 	ProjectID string
+}
+
+func GetPublicIPAddrsFromInstance(computeInstance *gcpcomputepbapi.Instance) ([]string, []string) {
+	var publicIPv4Addrs, publicIPv6Addrs []string
+
+	for _, networkIface := range computeInstance.GetNetworkInterfaces() {
+		for _, accessConfig := range networkIface.AccessConfigs {
+			if accessConfig.NatIP != nil {
+				publicIPv4Addrs = append(publicIPv4Addrs, *accessConfig.NatIP)
+			}
+
+			if accessConfig.ExternalIpv6 != nil {
+				publicIPv6Addrs = append(publicIPv6Addrs, *accessConfig.ExternalIpv6)
+			}
+		}
+	}
+
+	return publicIPv4Addrs, publicIPv6Addrs
 }
 
 func (comp ComputePlugin) GetResources() ([]ComputeResource, error) {
@@ -53,14 +72,18 @@ func (comp ComputePlugin) GetResources() ([]ComputeResource, error) {
 			instanceId := strconv.FormatUint(instance.GetId(), 10)
 			instanceName := instance.GetName()
 			instanceStatus := instance.GetStatus()
+			publicIPv4Addrs, publicIPv6Addrs := GetPublicIPAddrsFromInstance(instance)
 
 			log.Debug("compute instance found - ID: ", instanceId, ", Name: ", instanceName, ", Status: ", instanceStatus)
 
 			currentResource := ComputeResource{
-				Id:     instanceId,
-				Name:   instanceName,
-				Status: instanceStatus,
+				Id:              instanceId,
+				Name:            instanceName,
+				Status:          instanceStatus,
+				PublicIPv4Addrs: publicIPv4Addrs,
+				PublicIPv6Addrs: publicIPv6Addrs,
 			}
+
 			computeResources = append(
 				computeResources,
 				currentResource,
@@ -71,16 +94,39 @@ func (comp ComputePlugin) GetResources() ([]ComputeResource, error) {
 	return computeResources, nil
 }
 
-func (comp ComputePlugin) SearchResources(tgtIP string) (generalResource.Resource, error) {
-	// var computeResources gcpcomputeapi.InstancesScopedListPairIterator
-	var matchingResource generalResource.Resource
-
+func (comp ComputePlugin) SearchResources(tgtIP string, matchingResource *generalResource.Resource) (generalResource.Resource, error) {
 	log.Debug("fetching and searching compute resources")
 
-	_, err := comp.GetResources()
+	fetchedResources, err := comp.GetResources()
 	if err != nil {
-		return matchingResource, err
+		return *matchingResource, err
 	}
 
-	return matchingResource, nil
+	for _, computeResource := range fetchedResources {
+		for _, ipv4Addr := range computeResource.PublicIPv4Addrs {
+			if ipv4Addr == tgtIP {
+				matchingResource.RID = fmt.Sprintf("%s/%s", computeResource.Id, computeResource.Name)
+				matchingResource.CloudSvc = "compute"
+
+				break
+			}
+		}
+
+		for _, ipv6Addr := range computeResource.PublicIPv6Addrs {
+			if ipv6Addr == tgtIP {
+				matchingResource.RID = computeResource.Id
+				matchingResource.CloudSvc = "compute"
+
+				break
+			}
+		}
+
+		if matchingResource.RID != "" {
+			log.Debug("IP found as Compute VM -> ", matchingResource.RID)
+
+			break
+		}
+	}
+
+	return *matchingResource, nil
 }

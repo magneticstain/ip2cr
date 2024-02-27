@@ -84,7 +84,6 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 }
 
 func runCloudSearch(platform, projectID, ipAddr, cloudSvc, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID string, ipFuzzing, advIPFuzzing, orgSearch, networkMapping, silent, jsonOutput bool) {
-	var matchingResource resource.Resource
 	var err error
 
 	platform = strings.ToLower(platform)
@@ -108,7 +107,7 @@ func runCloudSearch(platform, projectID, ipAddr, cloudSvc, orgSearchXaccountRole
 		return
 	}
 
-	outputResults(matchingResource, networkMapping, silent, jsonOutput)
+	outputResults(searchCtlr.MatchedResource, networkMapping, silent, jsonOutput)
 }
 
 func main() {

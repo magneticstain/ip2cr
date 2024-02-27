@@ -113,7 +113,7 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 		case "aws":
 			matchingResource, err = search.AWSCtrlr.SearchAWSSvc(search.IpAddr, svc, doNetMapping)
 		case "gcp":
-			matchingResource, err = search.GCPCtrlr.SearchGCPSvc(search.ProjectID, search.IpAddr, svc)
+			_, err = search.GCPCtrlr.SearchGCPSvc(search.ProjectID, search.IpAddr, svc, &matchingResource)
 		default:
 			errorMsg := fmt.Sprintf("%s is not a supported platform for searching", search.Platform)
 			return matchingResource, errors.New(errorMsg)
@@ -156,7 +156,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 	}
 }
 
-func (search Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleName string, doNetMapping bool) bool {
+func (search *Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleName string, doNetMapping bool) bool {
 	log.Info("beginning resource gathering")
 
 	matchingResourceBuffer := make(chan generalResource.Resource, 1)
@@ -180,7 +180,7 @@ func (search Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleNam
 	return found
 }
 
-func (search Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (bool, error) {
+func (search *Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzing bool, doOrgSearch bool, orgSearchXaccountRoleARN string, orgSearchRoleName string, orgSearchOrgUnitID string, doNetMapping bool) (bool, error) {
 	var resourceFound bool
 	var err error
 

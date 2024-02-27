@@ -18,8 +18,7 @@ func GetSupportedSvcs() []string {
 	}
 }
 
-func (gcpctrlr GCPController) SearchGCPSvc(projectID, ipAddr, cloudSvc string) (generalResource.Resource, error) {
-	var matchingResource generalResource.Resource
+func (gcpctrlr *GCPController) SearchGCPSvc(projectID, ipAddr, cloudSvc string, matchingResource *generalResource.Resource) (generalResource.Resource, error) {
 	var err error
 
 	log.Debug("searching ", cloudSvc, " in GCP controller")
@@ -29,15 +28,15 @@ func (gcpctrlr GCPController) SearchGCPSvc(projectID, ipAddr, cloudSvc string) (
 		comp := compute.ComputePlugin{
 			ProjectID: projectID,
 		}
-		matchingResource, err = comp.SearchResources(ipAddr)
+		_, err = comp.SearchResources(ipAddr, matchingResource)
 		if err != nil {
-			return matchingResource, err
+			return *matchingResource, err
 		}
 	default:
 		msg := fmt.Sprintf("unknown GCP service provided: '%s'", cloudSvc)
 
-		return matchingResource, errors.New(msg)
+		return *matchingResource, errors.New(msg)
 	}
 
-	return matchingResource, nil
+	return *matchingResource, nil
 }
