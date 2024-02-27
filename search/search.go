@@ -84,7 +84,7 @@ func (search Search) RunIPFuzzing(doAdvIPFuzzing bool) ([]string, error) {
 
 	// all ELBs act within EC2 infrastructure, so we will need to add the elb services as well if that's the case
 	if fuzzedSvc == "ec2" {
-		svcSet = append(search.CloudSvcs, "elbv1", "elbv2")
+		svcSet = append(svcSet, "elbv1", "elbv2")
 	}
 
 	return svcSet, err
@@ -105,7 +105,7 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 
 		log.Info("starting resource search in AWS account: ", acctID, " ", acctAliases)
 	} else {
-		log.Info("starting resource search in principal account")
+		log.Info("starting resource search in current account")
 	}
 
 	for _, svc := range search.CloudSvcs {
