@@ -26,6 +26,15 @@ func New() (AWSController, error) {
 	return awsCtrlr, err
 }
 
+func GetSupportedSvcs() []string {
+	return []string{
+		"cloudfront",
+		"ec2",
+		"elbv1",
+		"elbv2",
+	}
+}
+
 func (awsCtrlr AWSController) FetchOrgAcctIds(orgSearchOrgUnitID string, orgSearchXaccountRoleARN string) ([]string, error) {
 	var acctIds []string
 	var err error

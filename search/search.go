@@ -14,15 +14,16 @@ import (
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
+	gcpcontroller "github.com/magneticstain/ip-2-cloudresource/gcp"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
 type Search struct {
-	AWSCtrlr        awscontroller.AWSController
-	CloudSvcs       []string
-	IpAddr          string
-	MatchedResource generalResource.Resource
-	Platform        string
+	AWSCtrlr                    awscontroller.AWSController
+	CloudSvcs                   []string
+	GCPCtrlr                    gcpcontroller.GCPController
+	MatchedResource             generalResource.Resource
+	IpAddr, Platform, ProjectID string
 }
 
 func (search *Search) connectToPlatform() (bool, error) {
@@ -40,11 +41,16 @@ func (search *Search) connectToPlatform() (bool, error) {
 	return true, nil
 }
 
-func ReconcileCloudSvcParam(cloudSvc string) []string {
+func (search Search) ReconcileCloudSvcParam(cloudSvc string) []string {
 	var cloudSvcs []string
 
 	if cloudSvc == "all" {
-		cloudSvcs = []string{"cloudfront", "ec2", "elbv1", "elbv2"}
+		switch search.Platform {
+		case "aws":
+			cloudSvcs = awscontroller.GetSupportedSvcs()
+		case "gcp":
+			cloudSvcs = gcpcontroller.GetSupportedSvcs()
+		}
 	} else if strings.Contains(cloudSvc, ",") {
 		// csv provided, split the values into a slice
 		cloudSvcs = strings.Split(cloudSvc, ",")
@@ -106,6 +112,8 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 		switch search.Platform {
 		case "aws":
 			matchingResource, err = search.AWSCtrlr.SearchAWSSvc(search.IpAddr, svc, doNetMapping)
+		case "gcp":
+			matchingResource, err = search.GCPCtrlr.SearchGCPSvc(search.ProjectID, search.IpAddr, svc)
 		default:
 			errorMsg := fmt.Sprintf("%s is not a supported platform for searching", search.Platform)
 			return matchingResource, errors.New(errorMsg)
@@ -182,7 +190,7 @@ func (search Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzzi
 	}
 
 	// TODO: move this to init function
-	search.CloudSvcs = ReconcileCloudSvcParam(cloudSvc)
+	search.CloudSvcs = search.ReconcileCloudSvcParam(cloudSvc)
 
 	if doIPFuzzing || doAdvIPFuzzing {
 		search.CloudSvcs, err = search.RunIPFuzzing(doAdvIPFuzzing)
