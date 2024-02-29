@@ -51,6 +51,8 @@ func ipFuzzingCloudSvcsFactory() []string {
 	cloudSvcs := []string{
 		"cloudfront",
 		"ec2",
+		"elbv1",
+		"elbv2",
 		"unknown",
 	}
 
