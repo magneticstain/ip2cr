@@ -1,6 +1,7 @@
 package search_test
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 
@@ -8,6 +9,7 @@ import (
 
 	awscontroller "github.com/magneticstain/ip-2-cloudresource/aws"
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	gcpcontroller "github.com/magneticstain/ip-2-cloudresource/gcp"
 	"github.com/magneticstain/ip-2-cloudresource/search"
 	"golang.org/x/exp/slices"
 )
@@ -18,8 +20,13 @@ type TestIPAddr struct {
 
 func searchFactory(ipAddr string) search.Search {
 	ac, _ := awscontroller.New()
+	gcpc := gcpcontroller.GCPController{}
 
-	search := search.Search{AWSCtrlr: ac, IpAddr: ipAddr}
+	search := search.Search{
+		AWSCtrlr: ac,
+		GCPCtrlr: gcpc,
+		IpAddr:   ipAddr,
+	}
 
 	return search
 }
@@ -42,12 +49,133 @@ func ipFactory() []TestIPAddr {
 
 func ipFuzzingCloudSvcsFactory() []string {
 	cloudSvcs := []string{
-		"CLOUDFRONT",
-		"EC2",
-		"UNKNOWN",
+		"cloudfront",
+		"ec2",
+		"unknown",
 	}
 
 	return cloudSvcs
+}
+
+func TestReconcileCloudSvcParam_AllSvcs(t *testing.T) {
+	var tests = []struct {
+		platform, cloudSvc  string
+		expectedCloudSvcSet []string
+	}{
+		{"aws", "all", []string{
+			"cloudfront",
+			"ec2",
+			"elbv1",
+			"elbv2",
+		}},
+		{"gcp", "all", []string{
+			"compute",
+		}},
+	}
+
+	for _, td := range tests {
+		testName := fmt.Sprintf("%s_%s", td.platform, td.cloudSvc)
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+			search.Platform = td.platform
+			res := search.ReconcileCloudSvcParam(td.cloudSvc)
+
+			for _, svc := range res {
+				if !slices.Contains(td.expectedCloudSvcSet, svc) {
+					t.Errorf("Cloud service reconciliation failed due to unexpected service; returned: %s", svc)
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileCloudSvcParam_InvalidSvcs(t *testing.T) {
+	var tests = []struct {
+		platform, cloudSvc  string
+		expectedCloudSvcSet []string
+	}{
+		{"gcp", "all", []string{
+			"cloudfront",
+			"ec2",
+			"elbv1",
+			"elbv2",
+		}},
+		{"aws", "all", []string{
+			"compute",
+		}},
+	}
+
+	for _, td := range tests {
+		testName := fmt.Sprintf("%s_%s", td.platform, td.cloudSvc)
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+			search.Platform = td.platform
+			res := search.ReconcileCloudSvcParam(td.cloudSvc)
+
+			for _, svc := range res {
+				if slices.Contains(td.expectedCloudSvcSet, svc) {
+					t.Errorf("Cloud service reconciliation failed due to unexpected service; returned: %s", svc)
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileCloudSvcParam_CsvSvcs(t *testing.T) {
+	var tests = []struct {
+		svcCsv              string
+		expectedCloudSvcSet []string
+	}{
+		{"ec2,elbv1,elbv2", []string{
+			"ec2",
+			"elbv1",
+			"elbv2",
+		}},
+	}
+
+	for _, td := range tests {
+		testName := td.svcCsv
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+
+			res := search.ReconcileCloudSvcParam(td.svcCsv)
+
+			for i, svc := range res {
+				if svc != td.expectedCloudSvcSet[i] {
+					t.Errorf("Invalid service returned from service reconciliation via CSV slug; expected: %s, returned: %s", td.expectedCloudSvcSet[i], svc)
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileCloudSvcParam_SingleSvc(t *testing.T) {
+	var tests = []struct {
+		cloudSvc string
+	}{
+		{"ec2"},
+	}
+
+	for _, td := range tests {
+		testName := td.cloudSvc
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+
+			res := search.ReconcileCloudSvcParam(td.cloudSvc)
+
+			if res[0] != td.cloudSvc {
+				t.Errorf("Invalid service returned from service reconciliation of singular service; expected: %s, returned: %s", td.cloudSvc, res[0])
+			}
+		})
+	}
 }
 
 func TestRunIPFuzzing(t *testing.T) {

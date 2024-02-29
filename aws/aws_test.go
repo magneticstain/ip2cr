@@ -14,7 +14,34 @@ func awsControllerFactory() awscontroller.AWSController {
 	return ac
 }
 
-func TestSearchAWS(t *testing.T) {
+func TestFetchOrgAcctIds(t *testing.T) {
+	var tests = []struct {
+		orgSearchOrgUnitID, orgSearchXaccountRoleARN string
+	}{
+		{"abcde", "arn:aws:iam::123456789012:role/valid_role"},
+		{"ou-", "arn:aws:bad::123456:role/invalid_role"},
+		{"ou-a", "arn:aws:bad::123456:role/invalid_role"},
+		{"ou-1234567890abcde", "arn:aws:iam::123456789012:role/valid_role"},
+		{"ou-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "arn:aws:iam::123456789012:role/valid_role"},
+		{"ou-zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", "arn:aws:iam::123456789012:role/valid_role"},
+	}
+
+	for _, td := range tests {
+		testName := td.orgSearchOrgUnitID
+
+		ac := awsControllerFactory()
+
+		t.Run(testName, func(t *testing.T) {
+			res, _ := ac.FetchOrgAcctIds(td.orgSearchOrgUnitID, td.orgSearchXaccountRoleARN)
+
+			if len(res) != 0 {
+				t.Errorf("AWS Orgs account ID fetch failed; expected 0 results from fetch, received %d", len(res))
+			}
+		})
+	}
+}
+
+func TestSearchAWSSvc(t *testing.T) {
 	var tests = []struct {
 		cloudSvc, ipAddr string
 	}{
@@ -34,7 +61,7 @@ func TestSearchAWS(t *testing.T) {
 			res, _ := ac.SearchAWSSvc(td.ipAddr, td.cloudSvc, false)
 
 			resType := reflect.TypeOf(res)
-			expectedType := "bool"
+			expectedType := "Resource"
 			if resType.Name() != expectedType {
 				t.Errorf("AWS resource search failed; expected %s after search, received %s", expectedType, resType.Name())
 			}
@@ -42,7 +69,7 @@ func TestSearchAWS(t *testing.T) {
 	}
 }
 
-func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
+func TestSearchAWSSvc_UnknownCloudSvc(t *testing.T) {
 	var tests = []struct {
 		cloudSvc, ipAddr string
 	}{
