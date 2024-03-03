@@ -20,6 +20,7 @@ func TestSearchGCPSvc(t *testing.T) {
 		cloudSvc, ipAddr string
 	}{
 		{"compute", "1.1.1.1"},
+		{"load_balancing", "1.1.1.1"},
 	}
 
 	for _, td := range tests {
