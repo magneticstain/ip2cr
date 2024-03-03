@@ -29,6 +29,20 @@ func LookupFQDN(fqdn string) ([]net.IP, error) {
 	return ipAddrs, err
 }
 
+func DetermineIpAddrVersion(ipAddr string) int {
+	var ipVer int
+
+	parsedIPAddr := net.ParseIP(ipAddr)
+	parsedIPAddrV4 := parsedIPAddr.To4()
+	if parsedIPAddrV4 != nil {
+		ipVer = 4
+	} else {
+		ipVer = 6
+	}
+
+	return ipVer
+}
+
 func FormatStrSliceAsCSV(strs []string) string {
 	formattedStr := "[" + strings.Join(strs, ",") + "]"
 
