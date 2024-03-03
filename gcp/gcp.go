@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/magneticstain/ip-2-cloudresource/gcp/plugin/compute"
+	"github.com/magneticstain/ip-2-cloudresource/gcp/plugin/load_balancing"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
@@ -15,6 +16,7 @@ type GCPController struct{}
 func GetSupportedSvcs() []string {
 	return []string{
 		"compute",
+		"load_balancing",
 	}
 }
 
@@ -29,6 +31,14 @@ func (gcpctrlr *GCPController) SearchGCPSvc(projectID, ipAddr, cloudSvc string, 
 			ProjectID: projectID,
 		}
 		_, err = comp.SearchResources(ipAddr, matchingResource)
+		if err != nil {
+			return *matchingResource, err
+		}
+	case "load_balancing":
+		lbp := load_balancing.LoadBalancingPlugin{
+			ProjectID: projectID,
+		}
+		_, err = lbp.SearchResources(ipAddr, matchingResource)
 		if err != nil {
 			return *matchingResource, err
 		}

@@ -72,6 +72,7 @@ func TestReconcileCloudSvcParam_AllSvcs(t *testing.T) {
 		}},
 		{"gcp", "all", []string{
 			"compute",
+			"load_balancing",
 		}},
 	}
 

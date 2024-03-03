@@ -18,6 +18,33 @@ type ComputePlugin struct {
 	ProjectID string
 }
 
+func CheckComputeIP(computeResource, matchingResource *generalResource.Resource, tgtIp string, ipVer int) (*generalResource.Resource, bool) {
+	var ipSet []string
+	var found bool
+
+	log.Debug("checking target IP [ ", tgtIp, "] against IPv", ipVer, " resource address set")
+
+	switch ipVer {
+	case 4:
+		ipSet = computeResource.PublicIPv4Addrs
+	case 6:
+		ipSet = computeResource.PublicIPv6Addrs
+	}
+
+	for _, ipAddr := range ipSet {
+		if ipAddr == tgtIp {
+			matchingResource.RID = fmt.Sprintf("%s/%s/%s", computeResource.AccountID, computeResource.Id, computeResource.Name)
+			matchingResource.CloudSvc = "compute"
+
+			found = true
+
+			break
+		}
+	}
+
+	return matchingResource, found
+}
+
 func GetPublicIPAddrsFromInstance(computeInstance *gcpcomputepbapi.Instance) ([]string, []string) {
 	var publicIPv4Addrs, publicIPv6Addrs []string
 
@@ -36,10 +63,10 @@ func GetPublicIPAddrsFromInstance(computeInstance *gcpcomputepbapi.Instance) ([]
 	return publicIPv4Addrs, publicIPv6Addrs
 }
 
-func (comp ComputePlugin) GetResources() ([]ComputeResource, error) {
+func (comp ComputePlugin) GetResources() ([]generalResource.Resource, error) {
 	var computeClient *gcpcomputeapi.InstancesClient
 	var instanceList *gcpcomputeapi.InstancesScopedListPairIterator
-	var computeResources []ComputeResource
+	var computeResources []generalResource.Resource
 
 	// REF: https://cloud.google.com/compute/docs/samples/compute-instances-list-all#compute_instances_list_all-go
 	ctx := context.Background()
@@ -76,10 +103,12 @@ func (comp ComputePlugin) GetResources() ([]ComputeResource, error) {
 
 			log.Debug("compute instance found - ID: ", instanceId, ", Name: ", instanceName, ", Status: ", instanceStatus)
 
-			currentResource := ComputeResource{
+			currentResource := generalResource.Resource{
 				Id:              instanceId,
+				AccountID:       comp.ProjectID,
 				Name:            instanceName,
 				Status:          instanceStatus,
+				CloudSvc:        "compute",
 				PublicIPv4Addrs: publicIPv4Addrs,
 				PublicIPv6Addrs: publicIPv6Addrs,
 			}
@@ -102,26 +131,17 @@ func (comp ComputePlugin) SearchResources(tgtIP string, matchingResource *genera
 		return *matchingResource, err
 	}
 
+	var found bool
 	for _, computeResource := range fetchedResources {
-		for _, ipv4Addr := range computeResource.PublicIPv4Addrs {
-			if ipv4Addr == tgtIP {
-				matchingResource.RID = fmt.Sprintf("%s/%s", computeResource.Id, computeResource.Name)
-				matchingResource.CloudSvc = "compute"
+		// IPv4 is checked first
+		matchingResource, found = CheckComputeIP(&computeResource, matchingResource, tgtIP, 4)
 
-				break
-			}
+		if !found {
+			// check IPv6 next
+			matchingResource, found = CheckComputeIP(&computeResource, matchingResource, tgtIP, 6)
 		}
 
-		for _, ipv6Addr := range computeResource.PublicIPv6Addrs {
-			if ipv6Addr == tgtIP {
-				matchingResource.RID = computeResource.Id
-				matchingResource.CloudSvc = "compute"
-
-				break
-			}
-		}
-
-		if matchingResource.RID != "" {
+		if found {
 			log.Debug("IP found as Compute VM -> ", matchingResource.RID)
 
 			break

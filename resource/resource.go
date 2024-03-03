@@ -1,6 +1,7 @@
 package resource
 
 type Resource struct {
-	RID, AccountID, CloudSvc   string
-	AccountAliases, NetworkMap []string
+	Id,
+	RID, AccountID, Name, Status, CloudSvc                       string
+	AccountAliases, NetworkMap, PublicIPv4Addrs, PublicIPv6Addrs []string
 }
