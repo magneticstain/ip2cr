@@ -24,7 +24,6 @@ func (lbp LoadBalancingPlugin) GetResources() ([]generalResource.Resource, error
 	var lbGlobalAddrList *gcpcomputeapi.AddressIterator
 	var lbResources []generalResource.Resource
 
-	// REF: https://cloud.google.com/compute/docs/samples/compute-instances-list-all#compute_instances_list_all-go
 	ctx := context.Background()
 
 	gaClient, err := gcpcomputeapi.NewGlobalAddressesRESTClient(ctx)
@@ -64,7 +63,11 @@ func (lbp LoadBalancingPlugin) GetResources() ([]generalResource.Resource, error
 
 		// for some god-awful reason, no value is being returned when calling the addr.GetIpVersion() mathod
 		// as such, we will need to determine it ourselves :(
-		ipVer := utils.DetermineIpAddrVersion(lbIpAddr)
+		ipVer, err := utils.DetermineIpAddrVersion(lbIpAddr)
+		if err != nil {
+			return lbResources, err
+		}
+
 		switch ipVer {
 		case 4:
 			currentResource.PublicIPv4Addrs = append(currentResource.PublicIPv4Addrs, lbIpAddr)

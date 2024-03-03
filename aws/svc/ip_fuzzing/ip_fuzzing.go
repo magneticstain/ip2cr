@@ -71,7 +71,11 @@ func FuzzIP(ipAddr string, attemptAdvancedFuzzing bool) (string, error) {
 	// AWS divides their prefixes by IP version, so we should determine that first to reduce the number of checks needed
 	// Here, we're checking the IP version and then converting the prefixes for the given version to generic prefixes
 	var ipPrefixSet []awsipprefix.GenericAWSPrefix
-	parsedIPVer := utils.DetermineIpAddrVersion(ipAddr)
+	parsedIPVer, err := utils.DetermineIpAddrVersion(ipAddr)
+	if err != nil {
+		return cloudSvc, err
+	}
+
 	if parsedIPVer == 4 {
 		// IPv4
 		ipPrefixSet, err = ConvertIPPrefixesToGeneric(awsIPSet.Prefixes, nil)

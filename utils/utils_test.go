@@ -69,3 +69,34 @@ func TestLookupFQDN(t *testing.T) {
 		})
 	}
 }
+
+func TestDetermineIpAddrVersion(t *testing.T) {
+	var tests = []struct {
+		ipAddr string
+		ipVer  int
+		valid  bool
+	}{
+		{"1.1.1.1", 4, true},
+		{"74.82.42.42", 4, true},
+		{"93.184.216.34", 4, true},
+		{"123.456.789.10", 4, false},
+		{"2606:2800:220:1:248:1893:25c8:1946", 6, true},
+		{"xxxx:2800:220:1:ggg:1893:25c8:nww", 6, false},
+	}
+
+	for _, td := range tests {
+		testName := td.ipAddr
+
+		t.Run(testName, func(t *testing.T) {
+			calculatedIpVer, err := utils.DetermineIpAddrVersion(td.ipAddr)
+
+			if !td.valid && err == nil {
+				t.Error("expected error when trying to determine bogus IP address version, but none was returned")
+			}
+
+			if td.valid && calculatedIpVer != td.ipVer {
+				t.Errorf("mismatched versions found for IP version test; IP: %s, Expected Version: %d, Calculated Version: %d, Valid IP?: %t", td.ipAddr, td.ipVer, calculatedIpVer, td.valid)
+			}
+		})
+	}
+}
