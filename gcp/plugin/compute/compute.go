@@ -18,7 +18,7 @@ type ComputePlugin struct {
 	ProjectID string
 }
 
-func checkComputeIP(computeResource, matchingResource *generalResource.Resource, tgtIp string, ipVer int) (*generalResource.Resource, bool) {
+func CheckComputeIP(computeResource, matchingResource *generalResource.Resource, tgtIp string, ipVer int) (*generalResource.Resource, bool) {
 	var ipSet []string
 	var found bool
 
@@ -134,11 +134,11 @@ func (comp ComputePlugin) SearchResources(tgtIP string, matchingResource *genera
 	var found bool
 	for _, computeResource := range fetchedResources {
 		// IPv4 is checked first
-		matchingResource, found = checkComputeIP(&computeResource, matchingResource, tgtIP, 4)
+		matchingResource, found = CheckComputeIP(&computeResource, matchingResource, tgtIP, 4)
 
 		if !found {
 			// check IPv6 next
-			matchingResource, found = checkComputeIP(&computeResource, matchingResource, tgtIP, 6)
+			matchingResource, found = CheckComputeIP(&computeResource, matchingResource, tgtIP, 6)
 		}
 
 		if found {
