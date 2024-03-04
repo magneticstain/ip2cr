@@ -152,6 +152,10 @@ Usage of ip2cr:
     	The name of the role in each child account of an AWS Organization to assume when performing a search (default "ip2cr")
   -org-search-xaccount-role-arn string
     	The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account
+  -platform string
+    	Platform to target for IP search (e.g. aws, gcp, etc) (default "aws")
+  -project-id string
+    	For cloud platforms that require it (e.g. GCP), set this to the ID of the target project to search
   -silent
     	If enabled, only output the results
   -svc string
