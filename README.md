@@ -9,7 +9,7 @@
 [![Codacy Badge - Quality](https://app.codacy.com/project/badge/Grade/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 [![Codacy Badge - Coverage](https://app.codacy.com/project/badge/Coverage/5137ec7cf2d14a9c9fc3eac1cd37e0d3)](https://app.codacy.com/gh/magneticstain/ip-2-cloudresource/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_coverage)
 
-![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v1.4.6)
+![GitHub commits since latest release (by SemVer including pre-releases)](https://img.shields.io/github/commits-since/magneticstain/ip-2-cloudresource/v2.0.0)
 ![GitHub issues](https://img.shields.io/github/issues/magneticstain/ip-2-cloudresource)
 ![GitHub pull requests](https://img.shields.io/github/issues-pr/magneticstain/ip-2-cloudresource)
 ![GitHub all releases](https://img.shields.io/github/downloads/magneticstain/ip-2-cloudresource/total)
@@ -49,7 +49,7 @@ IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address wit
 #### 2024
 
 - [X] Docker Support ( [Issue #367](https://github.com/magneticstain/ip-2-cloudresource/issues/367) )
-- [ ] GCP Support ( [Issue #361](https://github.com/magneticstain/ip-2-cloudresource/issues/361) )
+- [X] GCP Support ( [Issue #361](https://github.com/magneticstain/ip-2-cloudresource/issues/361) )
 - [ ] Azure Support ( [Issue #362](https://github.com/magneticstain/ip-2-cloudresource/issues/362) )
 
 ## Prerequisites
@@ -152,6 +152,10 @@ Usage of ip2cr:
     	The name of the role in each child account of an AWS Organization to assume when performing a search (default "ip2cr")
   -org-search-xaccount-role-arn string
     	The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account
+  -platform string
+    	Platform to target for IP search (e.g. aws, gcp, etc) (default "aws")
+  -project-id string
+    	For cloud platforms that require it (e.g. GCP), set this to the ID of the target project to search
   -silent
     	If enabled, only output the results
   -svc string
