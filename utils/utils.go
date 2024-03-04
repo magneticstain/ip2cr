@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"errors"
 	"net"
 	"strings"
 
@@ -27,6 +28,24 @@ func LookupFQDN(fqdn string) ([]net.IP, error) {
 	ipAddrs, err := net.LookupIP(fqdn)
 
 	return ipAddrs, err
+}
+
+func DetermineIpAddrVersion(ipAddr string) (int, error) {
+	var ipVer int
+
+	parsedIPAddr := net.ParseIP(ipAddr)
+	if parsedIPAddr == nil {
+		return ipVer, errors.New("invalid IP provided")
+	}
+
+	parsedIPAddrV4 := parsedIPAddr.To4()
+	if parsedIPAddrV4 != nil {
+		ipVer = 4
+	} else {
+		ipVer = 6
+	}
+
+	return ipVer, nil
 }
 
 func FormatStrSliceAsCSV(strs []string) string {
