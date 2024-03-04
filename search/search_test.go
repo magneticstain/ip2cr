@@ -7,7 +7,9 @@ import (
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 
-	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws_connector"
+	awscontroller "github.com/magneticstain/ip-2-cloudresource/aws"
+	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
+	gcpcontroller "github.com/magneticstain/ip-2-cloudresource/gcp"
 	"github.com/magneticstain/ip-2-cloudresource/search"
 	"golang.org/x/exp/slices"
 )
@@ -17,9 +19,14 @@ type TestIPAddr struct {
 }
 
 func searchFactory(ipAddr string) search.Search {
-	ac, _ := awsconnector.New()
+	ac, _ := awscontroller.New()
+	gcpc := gcpcontroller.GCPController{}
 
-	search := search.Search{AWSConn: ac, IpAddr: ipAddr}
+	search := search.Search{
+		AWSCtrlr: ac,
+		GCPCtrlr: gcpc,
+		IpAddr:   ipAddr,
+	}
 
 	return search
 }
@@ -42,12 +49,137 @@ func ipFactory() []TestIPAddr {
 
 func ipFuzzingCloudSvcsFactory() []string {
 	cloudSvcs := []string{
-		"CLOUDFRONT",
-		"EC2",
-		"UNKNOWN",
+		"cloudfront",
+		"ec2",
+		"elbv1",
+		"elbv2",
+		"unknown",
 	}
 
 	return cloudSvcs
+}
+
+func TestReconcileCloudSvcParam_AllSvcs(t *testing.T) {
+	var tests = []struct {
+		platform, cloudSvc  string
+		expectedCloudSvcSet []string
+	}{
+		{"aws", "all", []string{
+			"cloudfront",
+			"ec2",
+			"elbv1",
+			"elbv2",
+		}},
+		{"gcp", "all", []string{
+			"compute",
+			"load_balancing",
+			"cloud_sql",
+		}},
+	}
+
+	for _, td := range tests {
+		testName := fmt.Sprintf("%s_%s", td.platform, td.cloudSvc)
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+			search.Platform = td.platform
+			res := search.ReconcileCloudSvcParam(td.cloudSvc)
+
+			for _, svc := range res {
+				if !slices.Contains(td.expectedCloudSvcSet, svc) {
+					t.Errorf("Cloud service reconciliation failed due to unexpected service; returned: %s", svc)
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileCloudSvcParam_InvalidSvcs(t *testing.T) {
+	var tests = []struct {
+		platform, cloudSvc  string
+		expectedCloudSvcSet []string
+	}{
+		{"gcp", "all", []string{
+			"cloudfront",
+			"ec2",
+			"elbv1",
+			"elbv2",
+		}},
+		{"aws", "all", []string{
+			"compute",
+		}},
+	}
+
+	for _, td := range tests {
+		testName := fmt.Sprintf("%s_%s", td.platform, td.cloudSvc)
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+			search.Platform = td.platform
+			res := search.ReconcileCloudSvcParam(td.cloudSvc)
+
+			for _, svc := range res {
+				if slices.Contains(td.expectedCloudSvcSet, svc) {
+					t.Errorf("Cloud service reconciliation failed due to unexpected service; returned: %s", svc)
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileCloudSvcParam_CsvSvcs(t *testing.T) {
+	var tests = []struct {
+		svcCsv              string
+		expectedCloudSvcSet []string
+	}{
+		{"ec2,elbv1,elbv2", []string{
+			"ec2",
+			"elbv1",
+			"elbv2",
+		}},
+	}
+
+	for _, td := range tests {
+		testName := td.svcCsv
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+
+			res := search.ReconcileCloudSvcParam(td.svcCsv)
+
+			for i, svc := range res {
+				if svc != td.expectedCloudSvcSet[i] {
+					t.Errorf("Invalid service returned from service reconciliation via CSV slug; expected: %s, returned: %s", td.expectedCloudSvcSet[i], svc)
+				}
+			}
+		})
+	}
+}
+
+func TestReconcileCloudSvcParam_SingleSvc(t *testing.T) {
+	var tests = []struct {
+		cloudSvc string
+	}{
+		{"ec2"},
+	}
+
+	for _, td := range tests {
+		testName := td.cloudSvc
+
+		search := searchFactory("")
+
+		t.Run(testName, func(t *testing.T) {
+
+			res := search.ReconcileCloudSvcParam(td.cloudSvc)
+
+			if res[0] != td.cloudSvc {
+				t.Errorf("Invalid service returned from service reconciliation of singular service; expected: %s, returned: %s", td.cloudSvc, res[0])
+			}
+		})
+	}
 }
 
 func TestRunIPFuzzing(t *testing.T) {
@@ -60,13 +192,15 @@ func TestRunIPFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIPFuzzing(false)
+			fuzzedSvcSet, err := search.RunIPFuzzing(false)
 			if err != nil {
 				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
-			if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
-				t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+			for _, fuzzedSvc := range fuzzedSvcSet {
+				if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
+					t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+				}
 			}
 		})
 	}
@@ -82,70 +216,21 @@ func TestRunIPFuzzing_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			fuzzedSvc, err := search.RunIPFuzzing(true)
+			fuzzedSvcSet, err := search.RunIPFuzzing(true)
 			if err != nil {
-				t.Errorf("Advanced IP fuzzing routine unexpectedly failed; error: %s", err)
+				t.Errorf("Basic IP fuzzing routine unexpectedly failed; error: %s", err)
 			}
 
-			if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
-				t.Errorf("Advanced IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
-			}
-		})
-	}
-}
-
-func TestSearchAWS(t *testing.T) {
-	var tests = []struct {
-		cloudSvc, ipAddr string
-	}{
-		{"cloudfront", "1.1.1.1"},
-		{"ec2", "1.1.1.1"},
-		{"elbv1", "1.1.1.1"},
-		{"ELBv1", "1.1.1.1"},
-		{"elbv2", "1.1.1.1"},
-	}
-
-	for _, td := range tests {
-		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
-
-		search := searchFactory(td.ipAddr)
-
-		t.Run(testName, func(t *testing.T) {
-			res, _ := search.SearchAWS(td.cloudSvc, false)
-
-			resType := reflect.TypeOf(res)
-			expectedType := "Resource"
-			if resType.Name() != expectedType {
-				t.Errorf("AWS resource search failed; expected %s after search, received %s", expectedType, resType.Name())
+			for _, fuzzedSvc := range fuzzedSvcSet {
+				if !slices.Contains[[]string, string](validSvcs, fuzzedSvc) {
+					t.Errorf("Basic IP fuzzing routine failed; unexpected service was returned: %s", fuzzedSvc)
+				}
 			}
 		})
 	}
 }
 
-func TestSearchAWS_UnknownCloudSvc(t *testing.T) {
-	var tests = []struct {
-		cloudSvc, ipAddr string
-	}{
-		{"magic_svc", "1.1.1.1"},   // known invalid use case
-		{"cloudfront-", "1.1.1.1"}, // known valid use case with one character addition to make it invalid
-		{"iam", "1.1.1.1"},         // valid AWS service, but not one that would ever interact with IP addresses
-	}
-
-	for _, td := range tests {
-		testName := fmt.Sprintf("%s_%s", td.cloudSvc, td.ipAddr)
-
-		search := searchFactory(td.ipAddr)
-
-		t.Run(testName, func(t *testing.T) {
-			_, err := search.SearchAWS(td.cloudSvc, false)
-			if err == nil {
-				t.Errorf("Error was expected, but not seen, when performing general search; using %s for unknown cloud service key", td.cloudSvc)
-			}
-		})
-	}
-}
-
-func TestInitSearch_CloudSvcs(t *testing.T) {
+func TestStartSearch_CloudSvcs(t *testing.T) {
 	var tests = []struct {
 		ipAddr, cloudSvc string
 	}{
@@ -161,10 +246,10 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch(td.cloudSvc, false, false, false, "", "", "", false)
+			res, _ := search.StartSearch(td.cloudSvc, false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -172,7 +257,7 @@ func TestInitSearch_CloudSvcs(t *testing.T) {
 	}
 }
 
-func TestInitSearch_NoFuzzing(t *testing.T) {
+func TestStartSearch_NoFuzzing(t *testing.T) {
 	var tests = []struct {
 		ipAddr string
 	}{
@@ -188,10 +273,10 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, false, "", "", "", false)
+			res, _ := search.StartSearch("all", false, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing disabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -199,7 +284,7 @@ func TestInitSearch_NoFuzzing(t *testing.T) {
 	}
 }
 
-func TestInitSearch_BasicFuzzing(t *testing.T) {
+func TestStartSearch_BasicFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -208,10 +293,10 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "", "", false)
+			res, _ := search.StartSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with IP fuzzing enabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -219,7 +304,7 @@ func TestInitSearch_BasicFuzzing(t *testing.T) {
 	}
 }
 
-func TestInitSearch_AdvancedFuzzing(t *testing.T) {
+func TestStartSearch_AdvancedFuzzing(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -228,10 +313,10 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", true, false, false, "", "", "", false)
+			res, _ := search.StartSearch("all", true, false, false, "", "", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with advanced IP fuzzing disabled failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -239,7 +324,7 @@ func TestInitSearch_AdvancedFuzzing(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled(t *testing.T) {
 	var tests = ipFactory()
 
 	for _, td := range tests {
@@ -248,10 +333,10 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", "", false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", "", false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -259,7 +344,7 @@ func TestInitSearch_OrgSearchEnabled(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
 	var tests = []struct {
 		orgXaccountRoleARN string
 	}{
@@ -283,7 +368,7 @@ func TestInitSearch_OrgSearchEnabled_XaccountSvcRole(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 	// REF: https://docs.aws.amazon.com/organizations/latest/APIReference/API_Organization.html#organizations-Type-Organization-Id
 
 	var tests = []struct {
@@ -302,10 +387,10 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID, false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.orgID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -313,7 +398,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ParentOrgID(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 	// REF: https://docs.aws.amazon.com/organizations/latest/APIReference/API_OrganizationalUnit.html#organizations-Type-OrganizationalUnit-Id
 
 	var tests = []struct {
@@ -332,10 +417,10 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
@@ -343,7 +428,7 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_ChildOUID(t *testing.T) {
 	}
 }
 
-func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
+func TestStartSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 	var tests = []struct {
 		OUID, ipAddr string
 	}{
@@ -363,10 +448,10 @@ func TestInitSearch_OrgSearchEnabled_TargetOUID_InvalidID(t *testing.T) {
 		search := searchFactory(td.ipAddr)
 
 		t.Run(testName, func(t *testing.T) {
-			res, _ := search.InitSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
+			res, _ := search.StartSearch("all", false, false, true, "", "ip2cr-org-role", td.OUID, false)
 
 			matchedResourceType := reflect.TypeOf(res)
-			expectedType := "Resource"
+			expectedType := "bool"
 			if matchedResourceType.Name() != expectedType {
 				t.Errorf("Overall search with AWS Organizations support enabled has failed; expected %s after search, received %s", expectedType, matchedResourceType.Name())
 			}
