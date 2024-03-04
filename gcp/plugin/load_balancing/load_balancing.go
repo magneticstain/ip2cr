@@ -61,7 +61,7 @@ func (lbp LoadBalancingPlugin) GetResources() ([]generalResource.Resource, error
 			AccountAliases: []string{lbp.ProjectID},
 		}
 
-		// for some god-awful reason, no value is being returned when calling the addr.GetIpVersion() mathod
+		// for some god-awful reason, no value is being returned when calling the addr.GetIpVersion() method
 		// as such, we will need to determine it ourselves :(
 		ipVer, err := utils.DetermineIpAddrVersion(lbIpAddr)
 		if err != nil {
@@ -95,9 +95,11 @@ func (lbp LoadBalancingPlugin) SearchResources(tgtIP string, matchingResource *g
 	}
 
 	for _, lbResource := range fetchedResources {
+		ridSlug := fmt.Sprintf("%s/%s", lbResource.Id, lbResource.Name)
+
 		for _, ipv4Addr := range lbResource.PublicIPv4Addrs {
 			if ipv4Addr == tgtIP {
-				matchingResource.RID = fmt.Sprintf("%s/%s", lbResource.Id, lbResource.Name)
+				matchingResource.RID = ridSlug
 				matchingResource.CloudSvc = "load_balancing"
 
 				break
@@ -106,7 +108,7 @@ func (lbp LoadBalancingPlugin) SearchResources(tgtIP string, matchingResource *g
 
 		for _, ipv6Addr := range lbResource.PublicIPv6Addrs {
 			if ipv6Addr == tgtIP {
-				matchingResource.RID = lbResource.Id
+				matchingResource.RID = ridSlug
 				matchingResource.CloudSvc = "load_balancing"
 
 				break
