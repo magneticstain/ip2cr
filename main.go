@@ -101,7 +101,7 @@ func runCloudSearch(platform, projectID, ipAddr, cloudSvc, orgSearchXaccountRole
 
 	// search
 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " ", strings.ToUpper(platform), " service(s)")
-	
+
 	_, err = searchCtlr.StartSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
 	if err != nil {
 		log.Fatal(err)
