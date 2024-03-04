@@ -18,7 +18,7 @@ import (
 )
 
 const APP_ENV = "production"
-const APP_VER = "v2.0.0"
+const APP_VER = "v2.0.3"
 
 func getSupportedPlatforms() []string {
 	return []string{
