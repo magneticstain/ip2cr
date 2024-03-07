@@ -24,6 +24,7 @@ func getSupportedPlatforms() []string {
 	return []string{
 		"aws",
 		"gcp",
+		"azure",
 	}
 }
 
