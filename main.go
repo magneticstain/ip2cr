@@ -122,7 +122,7 @@ func main() {
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 
 	// base
-	platform := flag.String("platform", "aws", "Platform to target for IP search (e.g. aws, gcp, etc)")
+	platform := flag.String("platform", "aws", "Platform to target for IP search (supported values: aws, gcp, azure)")
 	ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]")
 
