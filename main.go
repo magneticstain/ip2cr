@@ -173,13 +173,13 @@ func main() {
 	}
 
 	// modify flags based on platform's supported feature set
-	switch *platform {
-	case "gcp":
+	switch {
+	case *platform != "aws":
 		*ipFuzzing = false
 		*advIPFuzzing = false
 		*orgSearch = false
 		*networkMapping = false
-
+	case *platform == "gcp":
 		if *projectID == "" {
 			log.Fatal("project ID is required for searching GCP")
 		}
