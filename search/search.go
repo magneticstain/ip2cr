@@ -14,16 +14,18 @@ import (
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
+	azurecontroller "github.com/magneticstain/ip-2-cloudresource/azure"
 	gcpcontroller "github.com/magneticstain/ip-2-cloudresource/gcp"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
 type Search struct {
-	AWSCtrlr                    awscontroller.AWSController
-	CloudSvcs                   []string
-	GCPCtrlr                    gcpcontroller.GCPController
-	MatchedResource             generalResource.Resource
-	IpAddr, Platform, ProjectID string
+	AWSCtrlr                   awscontroller.AWSController
+	AzureCtrlr                 azurecontroller.AzureController
+	CloudSvcs                  []string
+	GCPCtrlr                   gcpcontroller.GCPController
+	MatchedResource            generalResource.Resource
+	IpAddr, Platform, TenantID string
 }
 
 func (search *Search) connectToPlatform() (bool, error) {
@@ -36,6 +38,13 @@ func (search *Search) connectToPlatform() (bool, error) {
 		}
 
 		search.AWSCtrlr = ac
+	case "azure":
+		azc, err := azurecontroller.New()
+		if err != nil {
+			return false, err
+		}
+
+		search.AzureCtrlr = azc
 	}
 
 	return true, nil
@@ -112,8 +121,10 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 		switch search.Platform {
 		case "aws":
 			matchingResource, err = search.AWSCtrlr.SearchAWSSvc(search.IpAddr, svc, doNetMapping)
+		case "azure":
+			_, err = search.AzureCtrlr.SearchAzureSvc(search.TenantID, search.IpAddr, svc, &matchingResource)
 		case "gcp":
-			_, err = search.GCPCtrlr.SearchGCPSvc(search.ProjectID, search.IpAddr, svc, &matchingResource)
+			_, err = search.GCPCtrlr.SearchGCPSvc(search.TenantID, search.IpAddr, svc, &matchingResource)
 		default:
 			errorMsg := fmt.Sprintf("%s is not a supported platform for searching", search.Platform)
 			return matchingResource, errors.New(errorMsg)
