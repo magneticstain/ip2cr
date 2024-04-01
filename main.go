@@ -94,14 +94,14 @@ func runCloudSearch(platform, tenantID, ipAddr, cloudSvc, orgSearchXaccountRoleA
 		return
 	}
 
+	// search
+	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " ", strings.ToUpper(platform), " service(s)")
+
 	searchCtlr := platformsearch.Search{
 		Platform: platform,
 		TenantID: tenantID,
 		IpAddr:   ipAddr,
 	}
-
-	// search
-	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " ", strings.ToUpper(platform), " service(s)")
 
 	_, err = searchCtlr.StartSearch(
 		cloudSvc,

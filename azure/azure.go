@@ -6,8 +6,8 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	// "github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	virtual_machine "github.com/magneticstain/ip-2-cloudresource/azure/plugin/virtual_machines"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
@@ -39,20 +39,22 @@ func GetSupportedSvcs() []string {
 	}
 }
 
-func (azctrlr *AzureController) SearchAzureSvc(subscriptionID, ipAddr, cloudSvc string, matchingResource *generalResource.Resource) (generalResource.Resource, error) {
-	// var err error
+func (azctrlr AzureController) SearchAzureSvc(subscriptionID, ipAddr, cloudSvc string, matchingResource *generalResource.Resource) (generalResource.Resource, error) {
+	var err error
 
-	log.Debug("searching ", cloudSvc, " in subscription ", subscriptionID, "using Azure controller")
+	log.Debug("searching ", cloudSvc, " in subscription ", subscriptionID, " using Azure controller")
 
 	switch cloudSvc {
 	case "virtual_machines":
-		// comp := compute.ComputePlugin{
-		// 	ProjectID: projectID,
-		// }
-		// _, err = comp.SearchResources(ipAddr, matchingResource)
-		// if err != nil {
-		// 	return *matchingResource, err
-		// }
+		azvmp := virtual_machine.AzVirtualMachinePlugin{
+			SubscriptionID: subscriptionID,
+			AzureConn:      azctrlr.AzureConn,
+		}
+
+		matchingResource, err = azvmp.SearchResources(ipAddr, matchingResource)
+		if err != nil {
+			return *matchingResource, err
+		}
 	default:
 		msg := fmt.Sprintf("unknown Azure service provided: '%s'", cloudSvc)
 
