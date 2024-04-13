@@ -1,4 +1,4 @@
-package virtual_machine
+package virtual_machines
 
 import (
 	"context"

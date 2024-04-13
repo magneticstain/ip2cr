@@ -1,4 +1,4 @@
-package plugin_test
+package gcp_test
 
 import (
 	"fmt"
@@ -21,6 +21,7 @@ func TestSearchGCPSvc(t *testing.T) {
 	}{
 		{"compute", "1.1.1.1"},
 		{"load_balancing", "1.1.1.1"},
+		{"cloud_sql", "1.1.1.1"},
 	}
 
 	for _, td := range tests {
