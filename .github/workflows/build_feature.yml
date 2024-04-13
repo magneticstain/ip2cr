@@ -3,19 +3,17 @@
 # https://github.com/mvdan/github-actions-golang
 # 
 
-name: Build and Test - Release Branches
+name: Build and Test - Feature Branches
 
 on:
-  # push:
-  #   branches: [ release-* ]
   pull_request:
-    branches: [ release-* ]
+    branches: [ feature_* ]
 
 jobs:
   build:
     strategy:
       matrix:
-        go-version: ['stable', 'oldstable']
+        go-version: ['stable']
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:

@@ -14,20 +14,24 @@ import (
 	awsconnector "github.com/magneticstain/ip-2-cloudresource/aws/aws_connector"
 	iamp "github.com/magneticstain/ip-2-cloudresource/aws/plugin/iam"
 	ipfuzzing "github.com/magneticstain/ip-2-cloudresource/aws/svc/ip_fuzzing"
+	azurecontroller "github.com/magneticstain/ip-2-cloudresource/azure"
 	gcpcontroller "github.com/magneticstain/ip-2-cloudresource/gcp"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
 type Search struct {
-	AWSCtrlr                    awscontroller.AWSController
-	CloudSvcs                   []string
-	GCPCtrlr                    gcpcontroller.GCPController
-	MatchedResource             generalResource.Resource
-	IpAddr, Platform, ProjectID string
+	AWSCtrlr                   awscontroller.AWSController
+	AzureCtrlr                 azurecontroller.AzureController
+	CloudSvcs                  []string
+	GCPCtrlr                   gcpcontroller.GCPController
+	MatchedResource            generalResource.Resource
+	IpAddr, Platform, TenantID string
 }
 
 func (search *Search) connectToPlatform() (bool, error) {
 	// generate a connection to the specified platform via plugin
+	// GCP does not require a connector as it uses ADC ( https://cloud.google.com/docs/authentication/application-default-credentials / https://archive.is/tSqC2 )
+
 	switch search.Platform {
 	case "aws":
 		ac, err := awscontroller.New()
@@ -36,6 +40,13 @@ func (search *Search) connectToPlatform() (bool, error) {
 		}
 
 		search.AWSCtrlr = ac
+	case "azure":
+		azc, err := azurecontroller.New()
+		if err != nil {
+			return false, err
+		}
+
+		search.AzureCtrlr = azc
 	}
 
 	return true, nil
@@ -48,6 +59,8 @@ func (search Search) ReconcileCloudSvcParam(cloudSvc string) []string {
 		switch search.Platform {
 		case "aws":
 			cloudSvcs = awscontroller.GetSupportedSvcs()
+		case "azure":
+			cloudSvcs = azurecontroller.GetSupportedSvcs()
 		case "gcp":
 			cloudSvcs = gcpcontroller.GetSupportedSvcs()
 		}
@@ -55,6 +68,7 @@ func (search Search) ReconcileCloudSvcParam(cloudSvc string) []string {
 		// csv provided, split the values into a slice
 		cloudSvcs = strings.Split(cloudSvc, ",")
 	} else {
+		// assume single service
 		cloudSvcs = []string{cloudSvc}
 	}
 
@@ -112,8 +126,10 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 		switch search.Platform {
 		case "aws":
 			matchingResource, err = search.AWSCtrlr.SearchAWSSvc(search.IpAddr, svc, doNetMapping)
+		case "azure":
+			matchingResource, err = search.AzureCtrlr.SearchAzureSvc(search.TenantID, search.IpAddr, svc, &matchingResource)
 		case "gcp":
-			_, err = search.GCPCtrlr.SearchGCPSvc(search.ProjectID, search.IpAddr, svc, &matchingResource)
+			matchingResource, err = search.GCPCtrlr.SearchGCPSvc(search.TenantID, search.IpAddr, svc, &matchingResource)
 		default:
 			errorMsg := fmt.Sprintf("%s is not a supported platform for searching", search.Platform)
 			return matchingResource, errors.New(errorMsg)
@@ -125,7 +141,8 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 			// resource was found
 			matchingResource.AccountID = acctID
 			matchingResource.AccountAliases = acctAliases
-			return matchingResource, nil
+
+			break
 		}
 	}
 
@@ -135,8 +152,9 @@ func (search Search) doAccountLevelSearch(acctID string, doNetMapping bool) (gen
 func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResource.Resource, acctID string, orgSearchRoleName string, doNetMapping bool, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	// org support is only available for AWS at this time
 	if acctID != "current" && search.Platform == "aws" {
-		// replace connector with assumed role connector
+		// replace connector with assumed role connector before running rest of logic
 		acctRoleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", acctID, orgSearchRoleName)
 		ac, err := awsconnector.NewAWSConnectorAssumeRole(acctRoleArn, aws.Config{})
 		if err != nil {
@@ -156,7 +174,7 @@ func (search Search) runSearchWorker(matchingResourceBuffer chan<- generalResour
 	}
 }
 
-func (search *Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleName string, doNetMapping bool) bool {
+func (search *Search) initSearchWorkers(acctsToSearch []string, orgSearchRoleName string, doNetMapping bool) bool {
 	log.Info("beginning resource gathering")
 
 	matchingResourceBuffer := make(chan generalResource.Resource, 1)
@@ -164,7 +182,14 @@ func (search *Search) StartSearchWorkers(acctsToSearch []string, orgSearchRoleNa
 
 	for _, acctID := range acctsToSearch {
 		wg.Add(1)
-		go rollbar.WrapAndWait(search.runSearchWorker, matchingResourceBuffer, acctID, orgSearchRoleName, doNetMapping, &wg)
+		go rollbar.WrapAndWait(
+			search.runSearchWorker,
+			matchingResourceBuffer,
+			acctID,
+			orgSearchRoleName,
+			doNetMapping,
+			&wg,
+		)
 	}
 
 	go func() {
@@ -211,7 +236,7 @@ func (search *Search) StartSearch(cloudSvc string, doIPFuzzing bool, doAdvIPFuzz
 		acctsToSearch = append(acctsToSearch, "current")
 	}
 
-	resourceFound = search.StartSearchWorkers(acctsToSearch, orgSearchRoleName, doNetMapping)
+	resourceFound = search.initSearchWorkers(acctsToSearch, orgSearchRoleName, doNetMapping)
 
 	return resourceFound, nil
 }
