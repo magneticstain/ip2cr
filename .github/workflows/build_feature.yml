@@ -39,7 +39,9 @@ jobs:
         run: go mod verify
 
       - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        # tmp fix for https://github.com/golang/go/issues/66139
+        # run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        run: go install golang.org/x/vuln/cmd/govulncheck@v1.0.3
       - name: Run govulncheck
         run: govulncheck -test ./...
 
