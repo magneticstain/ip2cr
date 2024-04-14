@@ -15,12 +15,12 @@ func azvmPlugFactory() plugin.AzVirtualMachinePlugin {
 }
 
 func TestGetResources(t *testing.T) {
-	virtual_machinesPlug := azvmPlugFactory()
+	azvmPlug := azvmPlugFactory()
 
-	virtual_machinesResources, _ := virtual_machinesPlug.GetResources()
+	vmResources, _ := azvmPlug.GetResources()
 
 	expectedType := "Resource"
-	for _, resource := range virtual_machinesResources {
+	for _, resource := range vmResources {
 		resourceType := reflect.TypeOf(resource)
 		if resourceType.Name() != expectedType {
 			t.Errorf("Fetching resources via Azure Virtual Machines Plugin failed; wanted %s type, received %s", expectedType, resourceType.Name())
@@ -29,7 +29,7 @@ func TestGetResources(t *testing.T) {
 }
 
 func TestSearchResources(t *testing.T) {
-	compPlug := azvmPlugFactory()
+	azvmPlug := azvmPlugFactory()
 
 	var tests = []struct {
 		ipAddr, expectedType string
@@ -46,8 +46,8 @@ func TestSearchResources(t *testing.T) {
 		testName := td.ipAddr
 
 		t.Run(testName, func(t *testing.T) {
-			matchedInstance, _ := compPlug.SearchResources(td.ipAddr, &matchingResource)
-			matchedInstanceType := reflect.TypeOf(matchedInstance)
+			matchedInstance, _ := azvmPlug.SearchResources(td.ipAddr, &matchingResource)
+			matchedInstanceType := reflect.TypeOf(*matchedInstance)
 
 			if matchedInstanceType.Name() != td.expectedType {
 				t.Errorf("Azure Virtual Machines search failed; expected %s after search, received %s", td.expectedType, matchedInstanceType.Name())
