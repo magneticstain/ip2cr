@@ -90,7 +90,7 @@ func (azvmp *AzVirtualMachinePlugin) GatherVMPublicIPAddrData(vmInstance *armcom
 					publicIPAddrs = append(publicIPAddrs, *ipAddr)
 				}
 			} else {
-				log.Debug("no public ", IpVer, " address found for NIC [ ", nicData.Name, " ] on VM [ ", vmInstance.Name, " ] in resource group [ ", parsedNicId.ResourceGroupName, " ]")
+				log.Debug("no public ", IpVer, " address found for NIC [ ", *nicData.Name, " ] on VM [ ", *vmInstance.Name, " ] in resource group [ ", parsedNicId.ResourceGroupName, " ]")
 			}
 		}
 	}

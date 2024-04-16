@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	"github.com/magneticstain/ip-2-cloudresource/azure/plugin/load_balancer"
 	virtual_machine "github.com/magneticstain/ip-2-cloudresource/azure/plugin/virtual_machines"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
@@ -36,6 +37,7 @@ func ConnectToAzure() (azidentity.DefaultAzureCredential, error) {
 func GetSupportedSvcs() []string {
 	return []string{
 		"virtual_machines",
+		"load_balancer",
 	}
 }
 
@@ -52,6 +54,16 @@ func (azctrlr AzureController) SearchAzureSvc(subscriptionID, ipAddr, cloudSvc s
 		}
 
 		matchingResource, err = azvmp.SearchResources(ipAddr, matchingResource)
+		if err != nil {
+			return *matchingResource, err
+		}
+	case "load_balancer":
+		azlbp := load_balancer.AzLoadBalancerPlugin{
+			SubscriptionID: subscriptionID,
+			AzureConn:      azctrlr.AzureConn,
+		}
+
+		matchingResource, err = azlbp.SearchResources(ipAddr, matchingResource)
 		if err != nil {
 			return *matchingResource, err
 		}
