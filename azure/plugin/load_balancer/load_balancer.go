@@ -41,9 +41,6 @@ func (azlbp *AzLoadBalancerPlugin) GetResources() ([]generalResource.Resource, e
 			lbID = azlb.ID
 			lbName = azlb.Name
 			lbStatus = string(*azlb.Properties.ProvisioningState)
-			if err != nil {
-				return lbResources, err
-			}
 
 			log.Debug("Azure Load Balancer found - ID: ", *lbID, ", Name: ", *lbName, ", Status: ", lbStatus)
 
