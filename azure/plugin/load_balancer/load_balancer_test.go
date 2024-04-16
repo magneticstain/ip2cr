@@ -4,14 +4,15 @@ import (
 	"reflect"
 	"testing"
 
+	plugin "github.com/magneticstain/ip-2-cloudresource/azure/plugin/load_balancer"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
-// func azlbPlugFactory() plugin.AzLoadBalancerPlugin {
-// 	azlbPlug := plugin.AzLoadBalancerPlugin{}
+func azlbPlugFactory() plugin.AzLoadBalancerPlugin {
+	azlbPlug := plugin.AzLoadBalancerPlugin{}
 
-// 	return azlbPlug
-// }
+	return azlbPlug
+}
 
 func TestGetResources(t *testing.T) {
 	azlbPlug := azlbPlugFactory()
