@@ -10,11 +10,11 @@ import (
 	az_public_ip "github.com/magneticstain/ip-2-cloudresource/azure/public_ip"
 )
 
-func azpipaPlugFactory() az_public_ip.AzPublicIPAddr {
-	azpipa := az_public_ip.AzPublicIPAddr{}
+// func azpipaPlugFactory() az_public_ip.AzPublicIPAddr {
+// 	azpipa := az_public_ip.AzPublicIPAddr{}
 
-	return azpipa
-}
+// 	return azpipa
+// }
 
 func TestGetPublicIPAddressProperties(t *testing.T) {
 	azCreds := azidentity.DefaultAzureCredential{}
