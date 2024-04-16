@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type AzPublicIPAddr struct {}
+type AzPublicIPAddr struct{}
 
 func GetPublicIPAddressProperties(azureConn *azidentity.DefaultAzureCredential, publicIpData *armnetwork.PublicIPAddress, ctx context.Context) (armnetwork.PublicIPAddressesClientGetResponse, error) {
 	var pubIpAddrClient *armnetwork.PublicIPAddressesClient
