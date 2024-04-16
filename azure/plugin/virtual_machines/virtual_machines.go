@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork"
 	log "github.com/sirupsen/logrus"
 
+	az_public_ip "github.com/magneticstain/ip-2-cloudresource/azure/public_ip"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
 )
 
@@ -17,29 +18,28 @@ type AzVirtualMachinePlugin struct {
 	SubscriptionID string
 }
 
-func (azvmp *AzVirtualMachinePlugin) GetPublicIPAddressProperties(publicIpData *armnetwork.PublicIPAddress, ctx context.Context) (armnetwork.PublicIPAddressesClientGetResponse, error) {
-	var pubIpAddrClient *armnetwork.PublicIPAddressesClient
-	var publicIpAddrProps armnetwork.PublicIPAddressesClientGetResponse
-	var err error
+func GetVMStatus(vmClient *armcompute.VirtualMachinesClient, vm *armcompute.VirtualMachine, ctx context.Context) (*string, error) {
+	var vmStatus *string
 
-	log.Debug("fetching public IP address properties directly for ", *publicIpData.ID)
+	// DEV NOTE: if you're wondering why vm.Properties.InstanceView is always nil and we need to make two API calls here, this is why: https://github.com/Azure/azure-sdk-for-go/issues/4828
 
-	parsedPublicIpId, err := arm.ParseResourceID(*publicIpData.ID)
+	vmIDData, err := arm.ParseResourceID(*vm.ID)
 	if err != nil {
-		return publicIpAddrProps, err
+		return vmStatus, err
 	}
 
-	pubIpAddrClient, err = armnetwork.NewPublicIPAddressesClient(parsedPublicIpId.SubscriptionID, &azvmp.AzureConn, nil)
+	instView, err := vmClient.InstanceView(ctx, vmIDData.ResourceGroupName, *vm.Name, nil)
 	if err != nil {
-		return publicIpAddrProps, err
+		return vmStatus, err
 	}
 
-	publicIpAddrProps, err = pubIpAddrClient.Get(ctx, parsedPublicIpId.ResourceGroupName, parsedPublicIpId.Name, nil)
+	// we only care about the latest status
+	vmStatus = instView.Statuses[len(instView.Statuses)-1].DisplayStatus
 
-	return publicIpAddrProps, err
+	return vmStatus, nil
 }
 
-func (azvmp *AzVirtualMachinePlugin) GetPublicIPAddrsFromInstance(vmInstance *armcompute.VirtualMachine, IpVer armnetwork.IPVersion, ctx context.Context) ([]string, error) {
+func (azvmp *AzVirtualMachinePlugin) GatherVMPublicIPAddrData(vmInstance *armcompute.VirtualMachine, IpVer armnetwork.IPVersion, ctx context.Context) ([]string, error) {
 	var publicIPAddrs []string
 	var publicIpVer *armnetwork.IPVersion
 	var ipAddr *string
@@ -51,7 +51,7 @@ func (azvmp *AzVirtualMachinePlugin) GetPublicIPAddrsFromInstance(vmInstance *ar
 
 	vmNics := vmInstance.Properties.NetworkProfile.NetworkInterfaces
 	for _, nicRef := range vmNics {
-		// to get the public IP, we need to get the details of each NIC, traverse each IP config, check if it has the PublicIPAddress data present, and if so, either grab it from the included properties. If no properties exist (because reasons I guess), then we need to fetch the PublicIPAddress data with the given ID, then parse the data from that
+		// to get the public IP, we need to get the details of each NIC, traverse each IP config, check if it has the PublicIPAddress data present, and if so, grab it from the included properties. If no properties exist (because reasons I guess), then we need to fetch the PublicIPAddress data with the given ID, then parse the data from that
 
 		parsedNicId, err := arm.ParseResourceID(*nicRef.ID)
 		if err != nil {
@@ -77,7 +77,7 @@ func (azvmp *AzVirtualMachinePlugin) GetPublicIPAddrsFromInstance(vmInstance *ar
 
 					log.Debug("public IP address properties not included with ", *vmInstance.ID, " / ", *vmInstance.Name, " public IP address data (this is common) - fetching it more directly from Azure...")
 
-					publicIpProps, err := azvmp.GetPublicIPAddressProperties(publicIpData, ctx)
+					publicIpProps, err := az_public_ip.GetPublicIPAddressProperties(&azvmp.AzureConn, publicIpData, ctx)
 					if err != nil {
 						return publicIPAddrs, err
 					}
@@ -90,33 +90,12 @@ func (azvmp *AzVirtualMachinePlugin) GetPublicIPAddrsFromInstance(vmInstance *ar
 					publicIPAddrs = append(publicIPAddrs, *ipAddr)
 				}
 			} else {
-				log.Debug("no public ", IpVer, " address found for NIC [ ", nicData.Name, " ] on VM [ ", vmInstance.Name, " ] in resource group [ ", parsedNicId.ResourceGroupName, " ]")
+				log.Debug("no public ", IpVer, " address found for NIC [ ", *nicData.Name, " ] on VM [ ", *vmInstance.Name, " ] in resource group [ ", parsedNicId.ResourceGroupName, " ]")
 			}
 		}
 	}
 
 	return publicIPAddrs, err
-}
-
-func GetVMStatus(vmClient *armcompute.VirtualMachinesClient, vm *armcompute.VirtualMachine, ctx context.Context) (*string, error) {
-	var vmStatus *string
-
-	// DEV NOTE: if you're wondering why vm.Properties.InstanceView is always nil and we need to make two API calls here, this is why: https://github.com/Azure/azure-sdk-for-go/issues/4828
-
-	vmIDData, err := arm.ParseResourceID(*vm.ID)
-	if err != nil {
-		return vmStatus, err
-	}
-
-	instView, err := vmClient.InstanceView(ctx, vmIDData.ResourceGroupName, *vm.Name, nil)
-	if err != nil {
-		return vmStatus, err
-	}
-
-	// we only care about the latest status
-	vmStatus = instView.Statuses[len(instView.Statuses)-1].DisplayStatus
-
-	return vmStatus, nil
 }
 
 func (azvmp *AzVirtualMachinePlugin) GetResources() ([]generalResource.Resource, error) {
@@ -136,7 +115,6 @@ func (azvmp *AzVirtualMachinePlugin) GetResources() ([]generalResource.Resource,
 		if err != nil {
 			return vmResources, err
 		}
-
 		vmSet := nextVmSet.Value
 		log.Debug("found [ ", len(vmSet), " ] Azure virtual machines")
 
@@ -151,13 +129,13 @@ func (azvmp *AzVirtualMachinePlugin) GetResources() ([]generalResource.Resource,
 			log.Debug("Azure VM instance found - ID: ", *vmID, ", Name: ", *vmName, ", Status: ", *vmStatus)
 
 			log.Debug("fetching IPv4 addresses")
-			publicIPv4Addrs, err := azvmp.GetPublicIPAddrsFromInstance(vm, armnetwork.IPVersionIPv4, ctx)
+			publicIPv4Addrs, err := azvmp.GatherVMPublicIPAddrData(vm, armnetwork.IPVersionIPv4, ctx)
 			if err != nil {
 				return vmResources, err
 			}
 
 			log.Debug("fetching IPv6 addresses")
-			publicIPv6Addrs, err := azvmp.GetPublicIPAddrsFromInstance(vm, armnetwork.IPVersionIPv6, ctx)
+			publicIPv6Addrs, err := azvmp.GatherVMPublicIPAddrData(vm, armnetwork.IPVersionIPv6, ctx)
 			if err != nil {
 				return vmResources, err
 			}
