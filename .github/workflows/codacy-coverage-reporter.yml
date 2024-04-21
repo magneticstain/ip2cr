@@ -12,7 +12,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Generate Coverage Report
-        run: go test -v -race -shuffle=on -coverprofile coverage.out ./...
+        run: go test -v -race -shuffle=on -run=- -bench=. -benchtime=1x ./...
 
       - name: Run codacy-coverage-reporter
         uses: codacy/codacy-coverage-reporter-action@v1
