@@ -7,6 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/azidentity"
+	azcdn "github.com/magneticstain/ip-2-cloudresource/azure/plugin/cdn"
 	"github.com/magneticstain/ip-2-cloudresource/azure/plugin/load_balancer"
 	virtual_machine "github.com/magneticstain/ip-2-cloudresource/azure/plugin/virtual_machines"
 	generalResource "github.com/magneticstain/ip-2-cloudresource/resource"
@@ -38,6 +39,7 @@ func GetSupportedSvcs() []string {
 	return []string{
 		"virtual_machines",
 		"load_balancer",
+		"cdn",
 	}
 }
 
@@ -64,6 +66,16 @@ func (azctrlr AzureController) SearchAzureSvc(subscriptionID, ipAddr, cloudSvc s
 		}
 
 		matchingResource, err = azlbp.SearchResources(ipAddr, matchingResource)
+		if err != nil {
+			return *matchingResource, err
+		}
+	case "cdn":
+		azcdnp := azcdn.AzCDNPlugin{
+			SubscriptionID: subscriptionID,
+			AzureConn:      azctrlr.AzureConn,
+		}
+
+		matchingResource, err = azcdnp.SearchResources(ipAddr, matchingResource)
 		if err != nil {
 			return *matchingResource, err
 		}

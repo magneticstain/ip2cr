@@ -62,7 +62,7 @@ func (azlbp *AzLoadBalancerPlugin) GetResources() ([]generalResource.Resource, e
 				AccountID:       azlbp.SubscriptionID,
 				Name:            *lbName,
 				Status:          lbStatus,
-				CloudSvc:        "virtual_machines",
+				CloudSvc:        "load_balancers",
 				PublicIPv4Addrs: publicIPv4Addrs,
 			}
 
