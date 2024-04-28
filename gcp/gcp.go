@@ -1,4 +1,4 @@
-package plugin
+package gcp
 
 import (
 	"errors"
