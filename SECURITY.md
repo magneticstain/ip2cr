@@ -8,8 +8,8 @@ See below for a list of versions and their current support status for security p
 
 | Version | Supported          |
 | ------- | ------------------ |
-|   1.x.x | :white_check_mark: |
-| < 1.0.0 | :x:                |
+|   2.x.x | :white_check_mark: |
+| < 2.0.0 | :x:                |
 
 ## Reporting a Vulnerability
 
