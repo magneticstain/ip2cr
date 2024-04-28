@@ -17,11 +17,62 @@ type AzCDNPlugin struct {
 	SubscriptionID string
 }
 
-func (azcdnp *AzCDNPlugin) GetResources() ([]generalResource.Resource, error) {
+func (azcdnp *AzCDNPlugin) ProceesCdnEndpointSet(cdnEndpointSet []*armcdn.AFDEndpoint) ([]generalResource.Resource, error) {
 	var cdnResources []generalResource.Resource
 	var currentResource generalResource.Resource
 	var cdnEndpointID, cdnEndpointName *string
 	var cdnEndpointStatus string
+
+	for _, cdnEndpoint := range cdnEndpointSet {
+		cdnEndpointID = cdnEndpoint.ID
+		cdnEndpointName = cdnEndpoint.Name
+		cdnEndpointStatus = string(*cdnEndpoint.Properties.EnabledState)
+
+		log.Debug("Azure Front Door CDN endpoint found - ID: ", *cdnEndpointID, ", Name: ", *cdnEndpointName, ", Status: ", cdnEndpointStatus)
+
+		var publicIPv4Addrs, publicIPv6Addrs []string
+		cdnFQDN := cdnEndpoint.Properties.HostName
+
+		pubIPAddrData, err := utils.LookupFQDN(*cdnFQDN)
+		if err != nil {
+			return cdnResources, err
+		}
+
+		for _, ipAddr := range pubIPAddrData {
+			ipVer, err := utils.DetermineIpAddrVersion(ipAddr.String())
+			if err != nil {
+				return cdnResources, err
+			}
+
+			if ipVer == 4 {
+				publicIPv4Addrs = append(publicIPv4Addrs, ipAddr.String())
+			} else {
+				publicIPv6Addrs = append(publicIPv6Addrs, ipAddr.String())
+			}
+		}
+
+		currentResource = generalResource.Resource{
+			Id:              *cdnEndpointID,
+			RID:             *cdnEndpointID,
+			AccountID:       azcdnp.SubscriptionID,
+			Name:            *cdnEndpointName,
+			Status:          cdnEndpointStatus,
+			CloudSvc:        "cdn",
+			PublicIPv4Addrs: publicIPv4Addrs,
+			PublicIPv6Addrs: publicIPv6Addrs,
+		}
+
+		cdnResources = append(
+			cdnResources,
+			currentResource,
+		)
+	}
+
+	return cdnResources, nil
+}
+
+func (azcdnp *AzCDNPlugin) GetResources() ([]generalResource.Resource, error) {
+	var cdnResources []generalResource.Resource
 
 	afdClientFactory, err := armcdn.NewClientFactory(azcdnp.SubscriptionID, &azcdnp.AzureConn, nil)
 	if err != nil {
@@ -46,8 +97,12 @@ func (azcdnp *AzCDNPlugin) GetResources() ([]generalResource.Resource, error) {
 				return cdnResources, err
 			}
 
-			// second, list all endpoints for each profile
-			cdnEndpointPager := afdClientFactory.NewAFDEndpointsClient().NewListByProfilePager(parsedProfileData.ResourceGroupName, *cdnProfile.Name, nil)
+			// second, traverse all endpoints for each profile
+			cdnEndpointPager := afdClientFactory.NewAFDEndpointsClient().NewListByProfilePager(
+				parsedProfileData.ResourceGroupName,
+				*cdnProfile.Name,
+				nil,
+			)
 			for cdnEndpointPager.More() {
 				nextCDNEndpointSet, err := cdnEndpointPager.NextPage(ctx)
 				if err != nil {
@@ -56,50 +111,12 @@ func (azcdnp *AzCDNPlugin) GetResources() ([]generalResource.Resource, error) {
 				cdnEndpointSet := nextCDNEndpointSet.Value
 				log.Debug("found [ ", len(cdnEndpointSet), " ] Azure Front Door CDN endpoints")
 
-				for _, cdnEndpoint := range cdnEndpointSet {
-					cdnEndpointID = cdnEndpoint.ID
-					cdnEndpointName = cdnEndpoint.Name
-					cdnEndpointStatus = string(*cdnEndpoint.Properties.EnabledState)
-
-					log.Debug("Azure Front Door CDN endpoint found - ID: ", *cdnEndpointID, ", Name: ", *cdnEndpointName, ", Status: ", cdnEndpointStatus)
-
-					var publicIPv4Addrs, publicIPv6Addrs []string
-					cdnFQDN := cdnEndpoint.Properties.HostName
-
-					pubIPAddrData, err := utils.LookupFQDN(*cdnFQDN)
-					if err != nil {
-						return cdnResources, err
-					}
-
-					for _, ipAddr := range pubIPAddrData {
-						ipVer, err := utils.DetermineIpAddrVersion(ipAddr.String())
-						if err != nil {
-							return cdnResources, err
-						}
-
-						if ipVer == 4 {
-							publicIPv4Addrs = append(publicIPv4Addrs, ipAddr.String())
-						} else {
-							publicIPv6Addrs = append(publicIPv6Addrs, ipAddr.String())
-						}
-					}
-
-					currentResource = generalResource.Resource{
-						Id:              *cdnEndpointID,
-						RID:             *cdnEndpointID,
-						AccountID:       azcdnp.SubscriptionID,
-						Name:            *cdnEndpointName,
-						Status:          cdnEndpointStatus,
-						CloudSvc:        "cdn",
-						PublicIPv4Addrs: publicIPv4Addrs,
-						PublicIPv6Addrs: publicIPv6Addrs,
-					}
-
-					cdnResources = append(
-						cdnResources,
-						currentResource,
-					)
+				processedCdnResources, err := azcdnp.ProceesCdnEndpointSet(cdnEndpointSet)
+				if err != nil {
+					return cdnResources, err
 				}
+
+				cdnResources = append(cdnResources, processedCdnResources...)
 			}
 		}
 	}

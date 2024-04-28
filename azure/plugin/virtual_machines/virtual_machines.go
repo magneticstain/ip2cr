@@ -39,7 +39,7 @@ func GetVMStatus(vmClient *armcompute.VirtualMachinesClient, vm *armcompute.Virt
 	return vmStatus, nil
 }
 
-func (azvmp *AzVirtualMachinePlugin) GatherVMPublicIPAddrData(vmInstance *armcompute.VirtualMachine, IpVer armnetwork.IPVersion, ctx context.Context) ([]string, error) {
+func (azvmp *AzVirtualMachinePlugin) GatherPublicIPAddrData(vmInstance *armcompute.VirtualMachine, IpVer armnetwork.IPVersion, ctx context.Context) ([]string, error) {
 	var publicIPAddrs []string
 	var publicIpVer *armnetwork.IPVersion
 	var ipAddr *string
@@ -129,13 +129,13 @@ func (azvmp *AzVirtualMachinePlugin) GetResources() ([]generalResource.Resource,
 			log.Debug("Azure VM instance found - ID: ", *vmID, ", Name: ", *vmName, ", Status: ", *vmStatus)
 
 			log.Debug("fetching IPv4 addresses")
-			publicIPv4Addrs, err := azvmp.GatherVMPublicIPAddrData(vm, armnetwork.IPVersionIPv4, ctx)
+			publicIPv4Addrs, err := azvmp.GatherPublicIPAddrData(vm, armnetwork.IPVersionIPv4, ctx)
 			if err != nil {
 				return vmResources, err
 			}
 
 			log.Debug("fetching IPv6 addresses")
-			publicIPv6Addrs, err := azvmp.GatherVMPublicIPAddrData(vm, armnetwork.IPVersionIPv6, ctx)
+			publicIPv6Addrs, err := azvmp.GatherPublicIPAddrData(vm, armnetwork.IPVersionIPv6, ctx)
 			if err != nil {
 				return vmResources, err
 			}
