@@ -20,6 +20,8 @@ func TestSearchAzureSvc(t *testing.T) {
 		cloudSvc, ipAddr string
 	}{
 		{"virtual_machines", "1.1.1.1"},
+		{"load_balancer", "1.1.1.1"},
+		{"cdn", "1.1.1.1"},
 	}
 
 	for _, td := range tests {
