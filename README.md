@@ -1,3 +1,4 @@
+<!-- markdownlint-disable-next-line MD041 -->
 ![IP2CR Logo](./assets/logo-transparent.png)
 
 ---
