@@ -18,12 +18,13 @@ import (
 )
 
 const APP_ENV = "production"
-const APP_VER = "v2.0.3"
+const APP_VER = "v2.1.0"
 
 func getSupportedPlatforms() []string {
 	return []string{
 		"aws",
 		"gcp",
+		"azure",
 	}
 }
 
@@ -83,7 +84,7 @@ func outputResults(matchedResource resource.Resource, networkMapping bool, silen
 	}
 }
 
-func runCloudSearch(platform, projectID, ipAddr, cloudSvc, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID string, ipFuzzing, advIPFuzzing, orgSearch, networkMapping, silent, jsonOutput bool) {
+func runCloudSearch(platform, tenantID, ipAddr, cloudSvc, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID string, ipFuzzing, advIPFuzzing, orgSearch, networkMapping, silent, jsonOutput bool) {
 	var err error
 
 	platform = strings.ToLower(platform)
@@ -93,16 +94,25 @@ func runCloudSearch(platform, projectID, ipAddr, cloudSvc, orgSearchXaccountRole
 		return
 	}
 
-	searchCtlr := platformsearch.Search{
-		Platform:  platform,
-		ProjectID: projectID,
-		IpAddr:    ipAddr,
-	}
-
 	// search
 	log.Info("searching for IP ", ipAddr, " in ", cloudSvc, " ", strings.ToUpper(platform), " service(s)")
 
-	_, err = searchCtlr.StartSearch(cloudSvc, ipFuzzing, advIPFuzzing, orgSearch, orgSearchXaccountRoleARN, orgSearchRoleName, orgSearchOrgUnitID, networkMapping)
+	searchCtlr := platformsearch.Search{
+		Platform: platform,
+		TenantID: tenantID,
+		IpAddr:   ipAddr,
+	}
+
+	_, err = searchCtlr.StartSearch(
+		cloudSvc,
+		ipFuzzing,
+		advIPFuzzing,
+		orgSearch,
+		orgSearchXaccountRoleARN,
+		orgSearchRoleName,
+		orgSearchOrgUnitID,
+		networkMapping,
+	)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -121,13 +131,12 @@ func main() {
 	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 
 	// base
-	platform := flag.String("platform", "aws", "Platform to target for IP search (e.g. aws, gcp, etc)")
+	platform := flag.String("platform", "aws", "Platform to target for IP search (supported values: aws, gcp, azure)")
 	ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
 	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]")
 
-	// platform specific
-	// > GCP
-	projectID := flag.String("project-id", "", "For cloud platforms that require it (e.g. GCP), set this to the ID of the target project to search")
+	// platform
+	tenantID := flag.String("tenant-id", "", "For cloud platforms that require or support it, set this to the ID of the target tenant (e.g. project, account, subscription, etc) ID to search")
 
 	// FEATURE FLAGS
 	// IP fuzzing
@@ -172,15 +181,15 @@ func main() {
 	}
 
 	// modify flags based on platform's supported feature set
-	switch *platform {
-	case "gcp":
+	switch {
+	case *platform != "aws":
 		*ipFuzzing = false
 		*advIPFuzzing = false
 		*orgSearch = false
 		*networkMapping = false
-
-		if *projectID == "" {
-			log.Fatal("project ID is required for searching GCP")
+	case *platform == "gcp", *platform == "azure":
+		if *tenantID == "" {
+			log.Fatal("tenant ID is required for searching ", strings.ToUpper(*platform))
 		}
 	}
 
@@ -191,7 +200,7 @@ func main() {
 	rollbar.WrapAndWait(
 		runCloudSearch,
 		*platform,
-		*projectID,
+		*tenantID,
 		*ipAddr,
 		*cloudSvc,
 		*orgSearchXaccountRoleARN,

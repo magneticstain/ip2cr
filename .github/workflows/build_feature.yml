@@ -3,19 +3,17 @@
 # https://github.com/mvdan/github-actions-golang
 # 
 
-name: Build and Test - Release Branches
+name: Build and Test - Feature Branches
 
 on:
-  # push:
-  #   branches: [ release-* ]
   pull_request:
-    branches: [ release-* ]
+    branches: [ feature_* ]
 
 jobs:
   build:
     strategy:
       matrix:
-        go-version: ['stable', 'oldstable']
+        go-version: ['stable']
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     env:
@@ -41,7 +39,9 @@ jobs:
         run: go mod verify
 
       - name: Install govulncheck
-        run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        # tmp fix for https://github.com/golang/go/issues/66139
+        # run: go install golang.org/x/vuln/cmd/govulncheck@latest
+        run: go install golang.org/x/vuln/cmd/govulncheck@master
       - name: Run govulncheck
         run: govulncheck -test ./...
 
