@@ -13,7 +13,7 @@ require (
 	github.com/Azure/azure-sdk-for-go/sdk/resourcemanager/network/armnetwork v1.1.0
 	github.com/aws/aws-sdk-go-v2 v1.26.1
 	github.com/aws/aws-sdk-go-v2/config v1.27.11
-	github.com/aws/aws-sdk-go-v2/service/ec2 v1.156.0
+	github.com/aws/aws-sdk-go-v2/service/ec2 v1.161.1
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancing v1.24.4
 	github.com/aws/aws-sdk-go-v2/service/elasticloadbalancingv2 v1.30.5
 	github.com/aws/aws-sdk-go-v2/service/iam v1.32.0
