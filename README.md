@@ -133,6 +133,7 @@ cd /opt/ip2cr/
 
 After installing, run the `ip2cr` binary to see available parameters:
 
+<!-- markdownlint-disable MD010 -->
 ```bash
 > ip2cr --help
 Usage of ip2cr:
