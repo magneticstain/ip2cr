@@ -147,9 +147,6 @@ func runCloudSearch(platform, tenantID, ipAddr, cloudSvc, orgSearchXaccountRoleA
 func main() {
 	cmd.Execute()
 
-	// CLI param parsing
-	version := flag.Bool("version", false, "Outputs the version of IP2CR in use and exits")
-
 	// output
 	silentOutput := flag.Bool("silent", false, "If enabled, only output the results")
 	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
@@ -178,11 +175,6 @@ func main() {
 	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found")
 
 	flag.Parse()
-
-	if *version {
-		fmt.Println("ip-2-cloudresource", APP_VER)
-		return
-	}
 
 	if *ipAddr == "" {
 		log.Error("IP address is required")

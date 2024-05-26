@@ -31,19 +31,13 @@ var rootCmd = &cobra.Command{
 	Use:   "ip-2-cloudresource",
 	Short: "a CLI tool for correlating a cloud IP address with its associated resources, with a focus on speed and ease-of-use.",
 	Long: `IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
-
-	Features:
-	Support for searching a subset of resources in AWS, Azure, or GCP 
-	Support for searching through accounts within an AWS Organization
-	IPv6 support
-	JSON output to easily integrate with scripts
-	Ability to map the network path taken from the internet to the identified resource
 	
 	Basic Usage:
 	ip2cr -ipaddr=1.2.3.4
 	
 	Org Search
 	ip2cr -ipaddr=1.2.3.4 -org-search -org-search-role-name=ip2cr-xaccount-role -org-search-role-name=arn:aws:iam::123456789012:role/org-manage -org-search-ou-id=ou-abcd-12345`,
+	Version: "2.1.0",
 }
 
 func Execute() {
@@ -54,13 +48,5 @@ func Execute() {
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.ip-2-cloudresource.yaml)")
-
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
