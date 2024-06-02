@@ -24,15 +24,20 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
 	"fmt"
+	"io"
+	"os"
 	"slices"
 	"strings"
 
+	"github.com/rollbar/rollbar-go"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/magneticstain/ip-2-cloudresource/cmd"
 	"github.com/magneticstain/ip-2-cloudresource/resource"
 	platformsearch "github.com/magneticstain/ip-2-cloudresource/search"
+	"github.com/magneticstain/ip-2-cloudresource/utils"
 )
 
 const APP_ENV = "production"
@@ -142,89 +147,89 @@ func runCloudSearch(platform, tenantID, ipAddr, cloudSvc, orgSearchXaccountRoleA
 func main() {
 	cmd.Execute()
 
-	// // output
-	// silentOutput := flag.Bool("silent", false, "If enabled, only output the results")
-	// jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
-	// verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
+	// output
+	silentOutput := flag.Bool("silent", false, "If enabled, only output the results")
+	jsonOutput := flag.Bool("json", false, "Outputs results in JSON format; implies usage of --silent flag")
+	verboseOutput := flag.Bool("verbose", false, "Outputs all logs, from debug level to critical")
 
-	// // base
-	// platform := flag.String("platform", "aws", "Platform to target for IP search (supported values: aws, gcp, azure)")
-	// ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
-	// cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]")
+	// base
+	platform := flag.String("platform", "aws", "Platform to target for IP search (supported values: aws, gcp, azure)")
+	ipAddr := flag.String("ipaddr", "", "IP address to search for (REQUIRED)")
+	cloudSvc := flag.String("svc", "all", "Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]")
 
-	// // platform
-	// tenantID := flag.String("tenant-id", "", "For cloud platforms that require or support it, set this to the ID of the target tenant (e.g. project, account, subscription, etc) ID to search")
+	// platform
+	tenantID := flag.String("tenant-id", "", "For cloud platforms that require or support it, set this to the ID of the target tenant (e.g. project, account, subscription, etc) ID to search")
 
-	// // FEATURE FLAGS
-	// // IP fuzzing
-	// ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts due to overhead outweighing value)")
-	// advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
+	// FEATURE FLAGS
+	// IP fuzzing
+	ipFuzzing := flag.Bool("ip-fuzzing", true, "Toggle the IP fuzzing feature to evaluate the IP and help optimize search (not recommended for small accounts due to overhead outweighing value)")
+	advIPFuzzing := flag.Bool("adv-ip-fuzzing", true, "Toggle the advanced IP fuzzing feature to perform a more intensive heuristics evaluation to fuzz the service (not recommended for IPv6 addresses)")
 
-	// // org search
-	// orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)")
-	// orgSearchXaccountRoleARN := flag.String("org-search-xaccount-role-arn", "", "The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account")
-	// orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search")
-	// orgSearchOrgUnitID := flag.String("org-search-ou-id", "", "The ID of the AWS Organizations Organizational Unit to target when performing a search")
+	// org search
+	orgSearch := flag.Bool("org-search", false, "Search through all child accounts of the organization for resources, as well as target account (target account should be parent account)")
+	orgSearchXaccountRoleARN := flag.String("org-search-xaccount-role-arn", "", "The ARN of the role to assume for gathering AWS Organizations information for search, e.g. the role to assume with R/O access to your AWS Organizations account")
+	orgSearchRoleName := flag.String("org-search-role-name", "ip2cr", "The name of the role in each child account of an AWS Organization to assume when performing a search")
+	orgSearchOrgUnitID := flag.String("org-search-ou-id", "", "The ID of the AWS Organizations Organizational Unit to target when performing a search")
 
-	// // network mapping
-	// networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found")
+	// network mapping
+	networkMapping := flag.Bool("network-mapping", false, "If enabled, generate a network map associated with the identified resource if it's found")
 
-	// flag.Parse()
+	flag.Parse()
 
-	// if *ipAddr == "" {
-	// 	log.Error("IP address is required")
-	// 	os.Exit(1)
-	// }
+	if *ipAddr == "" {
+		log.Error("IP address is required")
+		os.Exit(1)
+	}
 
-	// if *jsonOutput {
-	// 	*silentOutput = true
-	// }
-	// if *silentOutput {
-	// 	log.SetOutput(io.Discard)
-	// }
-	// if *verboseOutput {
-	// 	log.SetLevel(log.DebugLevel)
-	// }
+	if *jsonOutput {
+		*silentOutput = true
+	}
+	if *silentOutput {
+		log.SetOutput(io.Discard)
+	}
+	if *verboseOutput {
+		log.SetLevel(log.DebugLevel)
+	}
 
-	// // if the service(s) are specified, then we don't need to spend our time fuzzing the IP
-	// if *cloudSvc != "all" {
-	// 	*ipFuzzing = false
-	// 	*advIPFuzzing = false
-	// }
+	// if the service(s) are specified, then we don't need to spend our time fuzzing the IP
+	if *cloudSvc != "all" {
+		*ipFuzzing = false
+		*advIPFuzzing = false
+	}
 
-	// // modify flags based on platform's supported feature set
-	// switch {
-	// case *platform != "aws":
-	// 	*ipFuzzing = false
-	// 	*advIPFuzzing = false
-	// 	*orgSearch = false
-	// 	*networkMapping = false
-	// case *platform == "gcp", *platform == "azure":
-	// 	if *tenantID == "" {
-	// 		log.Fatal("tenant ID is required for searching ", strings.ToUpper(*platform))
-	// 	}
-	// }
+	// modify flags based on platform's supported feature set
+	switch {
+	case *platform != "aws":
+		*ipFuzzing = false
+		*advIPFuzzing = false
+		*orgSearch = false
+		*networkMapping = false
+	case *platform == "gcp", *platform == "azure":
+		if *tenantID == "" {
+			log.Fatal("tenant ID is required for searching ", strings.ToUpper(*platform))
+		}
+	}
 
-	// log.Info("starting IP-2-CloudResource")
+	log.Info("starting IP-2-CloudResource")
 
-	// utils.InitRollbar(APP_ENV, APP_VER)
+	utils.InitRollbar(APP_ENV, APP_VER)
 
-	// rollbar.WrapAndWait(
-	// 	runCloudSearch,
-	// 	*platform,
-	// 	*tenantID,
-	// 	*ipAddr,
-	// 	*cloudSvc,
-	// 	*orgSearchXaccountRoleARN,
-	// 	*orgSearchRoleName,
-	// 	*orgSearchOrgUnitID,
-	// 	*ipFuzzing,
-	// 	*advIPFuzzing,
-	// 	*orgSearch,
-	// 	*networkMapping,
-	// 	*silentOutput,
-	// 	*jsonOutput,
-	// )
+	rollbar.WrapAndWait(
+		runCloudSearch,
+		*platform,
+		*tenantID,
+		*ipAddr,
+		*cloudSvc,
+		*orgSearchXaccountRoleARN,
+		*orgSearchRoleName,
+		*orgSearchOrgUnitID,
+		*ipFuzzing,
+		*advIPFuzzing,
+		*orgSearch,
+		*networkMapping,
+		*silentOutput,
+		*jsonOutput,
+	)
 
-	// rollbar.Close()
+	rollbar.Close()
 }
