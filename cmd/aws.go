@@ -28,25 +28,31 @@ import (
 )
 
 // awsCmd represents the aws command
-var awsCmd = &cobra.Command{
-	Use:   "aws",
-	Short: "Search for IP in AWS",
-	Long:  `Search for a given IP address within one or more AWS accounts.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("aws called")
-	},
-}
+var (
+	// FLAGS
+	IpFuzzing, AdvancedIpFuzzing, OrgSearch, NetworkMapping                    bool
+	AccountID, OrgSearchXaccountRoleARN, OrgSearchRoleName, OrgSearchOrgUnitID string
+
+	// CMDS
+	awsCmd = &cobra.Command{
+		Use:   "aws",
+		Short: "Search for IP in AWS",
+		Long:  `Search for a given IP address within one or more AWS accounts.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("aws called")
+		},
+	}
+)
 
 func init() {
+	awsCmd.PersistentFlags().StringVarP(
+		&AccountID,
+		"account-id",
+		"",
+		"",
+		"The ID of the AWS account to target",
+	)
+	awsCmd.MarkFlagRequired("account-id")
+
 	rootCmd.AddCommand(awsCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// awsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// awsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
