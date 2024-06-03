@@ -28,25 +28,30 @@ import (
 )
 
 // gcpCmd represents the gcp command
-var gcpCmd = &cobra.Command{
-	Use:   "gcp",
-	Short: "Search for IP in GCP",
-	Long:  `Search for a given IP address within one or more Google Cloud Platform subscriptions.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("gcp called")
-	},
-}
+var (
+	// FLAGS
+	ProjectID string
+
+	// CMDS
+	gcpCmd = &cobra.Command{
+		Use:   "gcp",
+		Short: "Search for IP in GCP",
+		Long:  `Search for a given IP address within one or more Google Cloud Platform subscriptions.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("gcp called")
+		},
+	}
+)
 
 func init() {
+	gcpCmd.PersistentFlags().StringVarP(
+		&ProjectID,
+		"project-id",
+		"",
+		"",
+		"The ID of the GCP project to target",
+	)
+	gcpCmd.MarkFlagRequired("project-id") //nolint:errcheck
+
 	rootCmd.AddCommand(gcpCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// gcpCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// gcpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

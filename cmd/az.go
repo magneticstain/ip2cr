@@ -28,25 +28,30 @@ import (
 )
 
 // azCmd represents the az command
-var azCmd = &cobra.Command{
-	Use:   "az",
-	Short: "Search for IP in Azure",
-	Long:  `Search for a given IP address within one or more Microsoft Azure subscriptions.`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("az called")
-	},
-}
+var (
+	// FLAGS
+	TenantID string
+
+	// CMDS
+	azCmd = &cobra.Command{
+		Use:   "az",
+		Short: "Search for IP in Azure",
+		Long:  `Search for a given IP address within one or more Microsoft Azure subscriptions.`,
+		Run: func(cmd *cobra.Command, args []string) {
+			fmt.Println("az called")
+		},
+	}
+)
 
 func init() {
+	azCmd.PersistentFlags().StringVarP(
+		&TenantID,
+		"tenant-id",
+		"",
+		"",
+		"The ID of the Azure tenant to target",
+	)
+	azCmd.MarkFlagRequired("tenant-id") //nolint:errcheck
+
 	rootCmd.AddCommand(azCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// azCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// azCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }

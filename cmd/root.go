@@ -27,18 +27,19 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var rootCmd = &cobra.Command{
-	Use:   "ip-2-cloudresource",
-	Short: "a CLI tool for correlating a cloud IP address with its associated resources, with a focus on speed and ease-of-use.",
-	Long: `IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.
-	
-	Basic Usage:
-	ip2cr -ipaddr=1.2.3.4
-	
-	Org Search
-	ip2cr -ipaddr=1.2.3.4 -org-search -org-search-role-name=ip2cr-xaccount-role -org-search-role-name=arn:aws:iam::123456789012:role/org-manage -org-search-ou-id=ou-abcd-12345`,
-	Version: "2.1.0",
-}
+var (
+	// FLAGS
+	Silent, Verbose, JsonOutput bool
+	IpAddress, CloudSvc         string
+
+	// CMDS
+	rootCmd = &cobra.Command{
+		Use:     "ip-2-cloudresource",
+		Short:   "a CLI tool for correlating a cloud IP address with its associated resources, with a focus on speed and ease-of-use.",
+		Long:    "IP-2-CloudResource (IP2CR) is a tool used for correlating a cloud IP address with its associated resources. It focuses on providing as much context to the user as possible, as fast as possible.",
+		Version: "2.1.0",
+	}
+)
 
 func Execute() {
 	err := rootCmd.Execute()
@@ -48,5 +49,23 @@ func Execute() {
 }
 
 func init() {
+	rootCmd.PersistentFlags().BoolVarP(&Silent, "silent", "s", false, "Suppress all output except results")
+	rootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "Write all logs to the console")
+	rootCmd.PersistentFlags().BoolVarP(&JsonOutput, "json", "", false, "Outputs results in JSON format; implies usage of --silent flag")
 
+	rootCmd.PersistentFlags().StringVarP(
+		&CloudSvc,
+		"cloud-svc",
+		"",
+		"all",
+		"Specific cloud service(s) to search. Multiple services can be listed in CSV format, e.g. elbv1,elbv2. Available services are: [all, cloudfront , ec2 , elbv1 , elbv2]",
+	)
+	rootCmd.PersistentFlags().StringVarP(
+		&IpAddress,
+		"ip-address",
+		"",
+		"",
+		"IP address to search for (required)",
+	)
+	rootCmd.MarkFlagRequired("ipaddr") //nolint:errcheck
 }
