@@ -51,7 +51,7 @@ func init() {
 		"",
 		"The ID of the GCP project to target",
 	)
-	gcpCmd.MarkFlagRequired("project-id")
+	gcpCmd.MarkFlagRequired("project-id") //nolint:errcheck
 
 	rootCmd.AddCommand(gcpCmd)
 }

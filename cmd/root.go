@@ -67,5 +67,5 @@ func init() {
 		"",
 		"IP address to search for (required)",
 	)
-	rootCmd.MarkFlagRequired("ipaddr")
+	rootCmd.MarkFlagRequired("ipaddr") //nolint:errcheck
 }

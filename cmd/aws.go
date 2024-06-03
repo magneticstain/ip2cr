@@ -52,7 +52,7 @@ func init() {
 		"",
 		"The ID of the AWS account to target",
 	)
-	awsCmd.MarkFlagRequired("account-id")
+	awsCmd.MarkFlagRequired("account-id") //nolint:errcheck
 
 	rootCmd.AddCommand(awsCmd)
 }

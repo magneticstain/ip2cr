@@ -51,7 +51,7 @@ func init() {
 		"",
 		"The ID of the Azure tenant to target",
 	)
-	azCmd.MarkFlagRequired("tenant-id")
+	azCmd.MarkFlagRequired("tenant-id") //nolint:errcheck
 
 	rootCmd.AddCommand(azCmd)
 }
